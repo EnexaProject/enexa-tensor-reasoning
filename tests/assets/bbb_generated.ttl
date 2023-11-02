@@ -1,0 +1,819 @@
+@prefix ns1: <rdf:> .
+
+<gentev:q_1> ns1:type <Erloeskonto> .
+
+<gentev:q_10> ns1:type <Erloeskonto> .
+
+<gentev:q_11> ns1:type <Erloeskonto> .
+
+<gentev:q_12> ns1:type <Erloeskonto> .
+
+<gentev:q_14> ns1:type <Erloeskonto> .
+
+<gentev:q_15> ns1:type <Erloeskonto> .
+
+<gentev:q_18> ns1:type <Erloeskonto> .
+
+<gentev:q_19> ns1:type <Erloeskonto> .
+
+<gentev:q_22> ns1:type <Erloeskonto> .
+
+<gentev:q_24> ns1:type <Erloeskonto> .
+
+<gentev:q_25> ns1:type <Erloeskonto> .
+
+<gentev:q_26> ns1:type <Erloeskonto> .
+
+<gentev:q_27> ns1:type <Erloeskonto> .
+
+<gentev:q_28> ns1:type <Erloeskonto> .
+
+<gentev:q_30> ns1:type <Erloeskonto> .
+
+<gentev:q_31> ns1:type <Erloeskonto> .
+
+<gentev:q_33> ns1:type <Erloeskonto> .
+
+<gentev:q_36> ns1:type <Erloeskonto> .
+
+<gentev:q_39> ns1:type <Erloeskonto> .
+
+<gentev:q_4> ns1:type <Erloeskonto> .
+
+<gentev:q_40> ns1:type <Erloeskonto> .
+
+<gentev:q_43> ns1:type <Erloeskonto> .
+
+<gentev:q_46> ns1:type <Erloeskonto> .
+
+<gentev:q_48> ns1:type <Erloeskonto> .
+
+<gentev:q_49> ns1:type <Erloeskonto> .
+
+<gentev:q_5> ns1:type <Erloeskonto> .
+
+<gentev:q_50> ns1:type <Erloeskonto> .
+
+<gentev:q_52> ns1:type <Erloeskonto> .
+
+<gentev:q_54> ns1:type <Erloeskonto> .
+
+<gentev:q_57> ns1:type <Erloeskonto> .
+
+<gentev:q_58> ns1:type <Erloeskonto> .
+
+<gentev:q_59> ns1:type <Erloeskonto> .
+
+<gentev:q_60> ns1:type <Erloeskonto> .
+
+<gentev:q_69> ns1:type <Erloeskonto> .
+
+<gentev:q_7> ns1:type <Erloeskonto> .
+
+<gentev:q_71> ns1:type <Erloeskonto> .
+
+<gentev:q_74> ns1:type <Erloeskonto> .
+
+<gentev:q_75> ns1:type <Erloeskonto> .
+
+<gentev:q_77> ns1:type <Erloeskonto> .
+
+<gentev:q_79> ns1:type <Erloeskonto> .
+
+<gentev:q_80> ns1:type <Erloeskonto> .
+
+<gentev:q_83> ns1:type <Erloeskonto> .
+
+<gentev:q_89> ns1:type <Erloeskonto> .
+
+<gentev:q_90> ns1:type <Erloeskonto> .
+
+<gentev:q_94> ns1:type <Erloeskonto> .
+
+<gentev:q_95> ns1:type <Erloeskonto> .
+
+<gentev:q_96> ns1:type <Erloeskonto> .
+
+<gentev:q_97> ns1:type <Erloeskonto> .
+
+<gentev:q_98> ns1:type <Erloeskonto> .
+
+<gentev:q_99> ns1:type <Erloeskonto> .
+
+<gentev:x_11> <hatLeistungserbringer> <gentev:y_11> .
+
+<gentev:x_17> <hatBelegzeile> <gentev:z_17> .
+
+<gentev:x_18> <hatBelegzeile> <gentev:z_18> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_2> <hatLeistungserbringer> <gentev:y_2> .
+
+<gentev:x_21> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_25> <hatBelegzeile> <gentev:z_25> .
+
+<gentev:x_30> <hatLeistungserbringer> <gentev:y_30> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_31> <hatLeistungserbringer> <gentev:y_31> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_34> <hatBelegzeile> <gentev:z_34> ;
+    <hatLeistungserbringer> <gentev:y_34> .
+
+<gentev:x_35> <hatLeistungserbringer> <gentev:y_35> .
+
+<gentev:x_36> <hatBelegzeile> <gentev:z_36> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_4> <hatLeistungserbringer> <gentev:y_4> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_40> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_43> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_44> <hatBelegzeile> <gentev:z_44> .
+
+<gentev:x_47> <hatBelegzeile> <gentev:z_47> ;
+    <hatLeistungserbringer> <gentev:y_47> .
+
+<gentev:x_5> <hatBelegzeile> <gentev:z_5> ;
+    <hatLeistungserbringer> <gentev:y_5> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_50> <hatLeistungserbringer> <gentev:y_50> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_54> <hatBelegzeile> <gentev:z_54> ;
+    <hatLeistungserbringer> <gentev:y_54> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_57> <hatBelegzeile> <gentev:z_57> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_6> <hatBelegzeile> <gentev:z_6> ;
+    <hatLeistungserbringer> <gentev:y_6> .
+
+<gentev:x_62> <hatLeistungserbringer> <gentev:y_62> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_63> <hatLeistungserbringer> <gentev:y_63> .
+
+<gentev:x_65> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_66> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_67> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_68> <hatBelegzeile> <gentev:z_68> .
+
+<gentev:x_71> <hatBelegzeile> <gentev:z_71> .
+
+<gentev:x_73> <hatBelegzeile> <gentev:z_73> ;
+    <hatLeistungserbringer> <gentev:y_73> .
+
+<gentev:x_74> <hatLeistungserbringer> <gentev:y_74> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_76> <hatBelegzeile> <gentev:z_76> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_78> <hatLeistungserbringer> <gentev:y_78> .
+
+<gentev:x_79> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_80> <hatBelegzeile> <gentev:z_80> ;
+    <hatLeistungserbringer> <gentev:y_80> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_82> <hatLeistungserbringer> <gentev:y_82> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_83> <hatBelegzeile> <gentev:z_83> ;
+    <hatLeistungserbringer> <gentev:y_83> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_85> <hatBelegzeile> <gentev:z_85> ;
+    <hatLeistungserbringer> <gentev:y_85> .
+
+<gentev:x_86> <hatBelegzeile> <gentev:z_86> .
+
+<gentev:x_87> <hatBelegzeile> <gentev:z_87> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_88> <hatLeistungserbringer> <gentev:y_88> .
+
+<gentev:x_9> <hatBelegzeile> <gentev:z_9> .
+
+<gentev:x_91> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_95> <hatLeistungserbringer> <gentev:y_95> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_97> <hatBelegzeile> <gentev:z_97> .
+
+<gentev:y_1> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_1> .
+
+<gentev:y_18> ns1:type <Bautischlerei> .
+
+<gentev:y_19> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_19> .
+
+<gentev:y_21> ns1:type <Bautischlerei> .
+
+<gentev:y_22> <versandterBeleg> <gentev:x_22> .
+
+<gentev:y_23> <versandterBeleg> <gentev:x_23> .
+
+<gentev:y_24> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_24> .
+
+<gentev:y_28> <versandterBeleg> <gentev:x_28> .
+
+<gentev:y_3> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_3> .
+
+<gentev:y_33> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_33> .
+
+<gentev:y_37> <versandterBeleg> <gentev:x_37> .
+
+<gentev:y_38> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_38> .
+
+<gentev:y_39> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_39> .
+
+<gentev:y_41> <versandterBeleg> <gentev:x_41> .
+
+<gentev:y_42> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_42> .
+
+<gentev:y_43> ns1:type <Bautischlerei> .
+
+<gentev:y_45> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_45> .
+
+<gentev:y_46> <versandterBeleg> <gentev:x_46> .
+
+<gentev:y_48> <versandterBeleg> <gentev:x_48> .
+
+<gentev:y_49> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_49> .
+
+<gentev:y_51> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_51> .
+
+<gentev:y_56> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_56> .
+
+<gentev:y_57> ns1:type <Bautischlerei> .
+
+<gentev:y_59> <versandterBeleg> <gentev:x_59> .
+
+<gentev:y_61> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_61> .
+
+<gentev:y_64> <versandterBeleg> <gentev:x_64> .
+
+<gentev:y_66> ns1:type <Bautischlerei> .
+
+<gentev:y_67> ns1:type <Bautischlerei> .
+
+<gentev:y_70> <versandterBeleg> <gentev:x_70> .
+
+<gentev:y_71> ns1:type <Bautischlerei> .
+
+<gentev:y_75> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_75> .
+
+<gentev:y_77> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_77> .
+
+<gentev:y_79> ns1:type <Bautischlerei> .
+
+<gentev:y_8> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_8> .
+
+<gentev:y_87> ns1:type <Bautischlerei> .
+
+<gentev:y_89> <versandterBeleg> <gentev:x_89> .
+
+<gentev:y_9> ns1:type <Bautischlerei> .
+
+<gentev:y_91> ns1:type <Bautischlerei> .
+
+<gentev:y_97> ns1:type <Bautischlerei> .
+
+<gentev:y_98> <versandterBeleg> <gentev:x_98> .
+
+<gentev:z_0> ns1:type <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_0> .
+
+<gentev:z_10> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_14> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_16> <wirdVerbuchtIn> <gentev:q_16> .
+
+<gentev:z_19> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_20> ns1:type <Moebel> .
+
+<gentev:z_21> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_21> .
+
+<gentev:z_23> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_23> .
+
+<gentev:z_28> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_29> <wirdVerbuchtIn> <gentev:q_29> .
+
+<gentev:z_3> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_3> .
+
+<gentev:z_30> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_31> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_32> <wirdVerbuchtIn> <gentev:q_32> .
+
+<gentev:z_35> ns1:type <Moebel> ;
+    <wirdVerbuchtIn> <gentev:q_35> .
+
+<gentev:z_37> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_37> .
+
+<gentev:z_40> ns1:type <Moebel> .
+
+<gentev:z_45> <wirdVerbuchtIn> <gentev:q_45> .
+
+<gentev:z_48> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_50> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_51> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_51> .
+
+<gentev:z_53> <wirdVerbuchtIn> <gentev:q_53> .
+
+<gentev:z_55> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_55> .
+
+<gentev:z_56> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_56> .
+
+<gentev:z_58> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_63> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_63> .
+
+<gentev:z_65> <wirdVerbuchtIn> <gentev:q_65> .
+
+<gentev:z_66> <wirdVerbuchtIn> <gentev:q_66> .
+
+<gentev:z_67> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_67> .
+
+<gentev:z_72> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_72> .
+
+<gentev:z_78> ns1:type <Moebel> ;
+    <wirdVerbuchtIn> <gentev:q_78> .
+
+<gentev:z_8> <wirdVerbuchtIn> <gentev:q_8> .
+
+<gentev:z_81> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_81> .
+
+<gentev:z_82> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_82> .
+
+<gentev:z_84> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_84> .
+
+<gentev:z_88> <wirdVerbuchtIn> <gentev:q_88> .
+
+<gentev:z_91> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_94> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_95> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_96> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_98> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:q_0> ns1:type <Erloeskonto> .
+
+<gentev:q_13> ns1:type <Erloeskonto> .
+
+<gentev:q_16> ns1:type <Erloeskonto> .
+
+<gentev:q_17> ns1:type <Erloeskonto> .
+
+<gentev:q_21> ns1:type <Erloeskonto> .
+
+<gentev:q_29> ns1:type <Erloeskonto> .
+
+<gentev:q_3> ns1:type <Erloeskonto> .
+
+<gentev:q_32> ns1:type <Erloeskonto> .
+
+<gentev:q_34> ns1:type <Erloeskonto> .
+
+<gentev:q_37> ns1:type <Erloeskonto> .
+
+<gentev:q_38> ns1:type <Erloeskonto> .
+
+<gentev:q_41> ns1:type <Erloeskonto> .
+
+<gentev:q_44> ns1:type <Erloeskonto> .
+
+<gentev:q_45> ns1:type <Erloeskonto> .
+
+<gentev:q_47> ns1:type <Erloeskonto> .
+
+<gentev:q_51> ns1:type <Erloeskonto> .
+
+<gentev:q_53> ns1:type <Erloeskonto> .
+
+<gentev:q_56> ns1:type <Erloeskonto> .
+
+<gentev:q_6> ns1:type <Erloeskonto> .
+
+<gentev:q_61> ns1:type <Erloeskonto> .
+
+<gentev:q_64> ns1:type <Erloeskonto> .
+
+<gentev:q_67> ns1:type <Erloeskonto> .
+
+<gentev:q_68> ns1:type <Erloeskonto> .
+
+<gentev:q_72> ns1:type <Erloeskonto> .
+
+<gentev:q_76> ns1:type <Erloeskonto> .
+
+<gentev:q_78> ns1:type <Erloeskonto> .
+
+<gentev:q_8> ns1:type <Erloeskonto> .
+
+<gentev:q_81> ns1:type <Erloeskonto> .
+
+<gentev:q_82> ns1:type <Erloeskonto> .
+
+<gentev:q_84> ns1:type <Erloeskonto> .
+
+<gentev:q_86> ns1:type <Erloeskonto> .
+
+<gentev:q_88> ns1:type <Erloeskonto> .
+
+<gentev:q_9> ns1:type <Erloeskonto> .
+
+<gentev:q_92> ns1:type <Erloeskonto> .
+
+<gentev:x_0> <hatLeistungserbringer> <gentev:y_0> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_1> <hatBelegzeile> <gentev:z_1> .
+
+<gentev:x_10> <hatLeistungserbringer> <gentev:y_10> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_13> <hatBelegzeile> <gentev:z_13> ;
+    <hatLeistungserbringer> <gentev:y_13> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_15> <hatBelegzeile> <gentev:z_15> ;
+    <hatLeistungserbringer> <gentev:y_15> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_16> <hatLeistungserbringer> <gentev:y_16> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_20> <hatLeistungserbringer> <gentev:y_20> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_22> <hatBelegzeile> <gentev:z_22> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_26> <hatLeistungserbringer> <gentev:y_26> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_27> <hatBelegzeile> <gentev:z_27> ;
+    <hatLeistungserbringer> <gentev:y_27> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_29> <hatLeistungserbringer> <gentev:y_29> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_3> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_32> <hatLeistungserbringer> <gentev:y_32> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_33> <hatBelegzeile> <gentev:z_33> .
+
+<gentev:x_38> <hatBelegzeile> <gentev:z_38> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_39> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_41> <hatBelegzeile> <gentev:z_41> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_42> <hatBelegzeile> <gentev:z_42> .
+
+<gentev:x_46> <hatBelegzeile> <gentev:z_46> .
+
+<gentev:x_48> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_49> <hatBelegzeile> <gentev:z_49> .
+
+<gentev:x_51> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_52> <hatBelegzeile> <gentev:z_52> ;
+    <hatLeistungserbringer> <gentev:y_52> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_53> <hatLeistungserbringer> <gentev:y_53> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_55> <hatLeistungserbringer> <gentev:y_55> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_56> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_58> <hatLeistungserbringer> <gentev:y_58> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_59> <hatBelegzeile> <gentev:z_59> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_60> <hatLeistungserbringer> <gentev:y_60> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_61> <hatBelegzeile> <gentev:z_61> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_64> <hatBelegzeile> <gentev:z_64> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_69> <hatBelegzeile> <gentev:z_69> ;
+    <hatLeistungserbringer> <gentev:y_69> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_7> <hatLeistungserbringer> <gentev:y_7> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_70> <hatBelegzeile> <gentev:z_70> .
+
+<gentev:x_72> <hatLeistungserbringer> <gentev:y_72> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_75> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_77> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_81> <hatLeistungserbringer> <gentev:y_81> .
+
+<gentev:x_84> <hatLeistungserbringer> <gentev:y_84> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_89> <hatBelegzeile> <gentev:z_89> .
+
+<gentev:x_90> <hatBelegzeile> <gentev:z_90> ;
+    <hatLeistungserbringer> <gentev:y_90> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_92> <hatBelegzeile> <gentev:z_92> ;
+    <hatLeistungserbringer> <gentev:y_92> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_93> <hatLeistungserbringer> <gentev:y_93> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_94> <hatLeistungserbringer> <gentev:y_94> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:x_96> <hatLeistungserbringer> <gentev:y_96> .
+
+<gentev:x_98> ns1:type <Ausgangsrechnung> .
+
+<gentev:x_99> <hatBelegzeile> <gentev:z_99> ;
+    <hatLeistungserbringer> <gentev:y_99> ;
+    ns1:type <Ausgangsrechnung> .
+
+<gentev:y_0> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_0> .
+
+<gentev:y_10> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_10> .
+
+<gentev:y_11> ns1:type <Bautischlerei> .
+
+<gentev:y_13> <versandterBeleg> <gentev:x_13> .
+
+<gentev:y_15> <versandterBeleg> <gentev:x_15> .
+
+<gentev:y_16> <versandterBeleg> <gentev:x_16> .
+
+<gentev:y_2> ns1:type <Bautischlerei> .
+
+<gentev:y_20> <versandterBeleg> <gentev:x_20> .
+
+<gentev:y_26> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_26> .
+
+<gentev:y_27> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_27> .
+
+<gentev:y_29> <versandterBeleg> <gentev:x_29> .
+
+<gentev:y_32> <versandterBeleg> <gentev:x_32> .
+
+<gentev:y_34> ns1:type <Bautischlerei> .
+
+<gentev:y_50> ns1:type <Bautischlerei> .
+
+<gentev:y_52> <versandterBeleg> <gentev:x_52> .
+
+<gentev:y_53> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_53> .
+
+<gentev:y_55> <versandterBeleg> <gentev:x_55> .
+
+<gentev:y_58> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_58> .
+
+<gentev:y_6> ns1:type <Bautischlerei> .
+
+<gentev:y_60> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_60> .
+
+<gentev:y_69> <versandterBeleg> <gentev:x_69> .
+
+<gentev:y_7> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_7> .
+
+<gentev:y_72> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_72> .
+
+<gentev:y_73> ns1:type <Bautischlerei> .
+
+<gentev:y_74> ns1:type <Bautischlerei> .
+
+<gentev:y_80> ns1:type <Bautischlerei> .
+
+<gentev:y_81> <versandterBeleg> <gentev:x_81> .
+
+<gentev:y_83> ns1:type <Bautischlerei> .
+
+<gentev:y_84> <versandterBeleg> <gentev:x_84> .
+
+<gentev:y_90> <versandterBeleg> <gentev:x_90> .
+
+<gentev:y_92> <versandterBeleg> <gentev:x_92> .
+
+<gentev:y_93> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_93> .
+
+<gentev:y_94> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_94> .
+
+<gentev:y_96> <versandterBeleg> <gentev:x_96> .
+
+<gentev:y_99> ns1:type <Bautischlerei> ;
+    <versandterBeleg> <gentev:x_99> .
+
+<gentev:z_13> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_13> .
+
+<gentev:z_17> ns1:type <Moebel> ;
+    <wirdVerbuchtIn> <gentev:q_17> .
+
+<gentev:z_25> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_33> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_34> <wirdVerbuchtIn> <gentev:q_34> .
+
+<gentev:z_36> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_38> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_38> .
+
+<gentev:z_41> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_41> .
+
+<gentev:z_42> <wirdVerbuchtIn> <gentev:q_42> .
+
+<gentev:z_44> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_44> .
+
+<gentev:z_47> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_47> .
+
+<gentev:z_49> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_52> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_54> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_6> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_6> .
+
+<gentev:z_61> <wirdVerbuchtIn> <gentev:q_61> .
+
+<gentev:z_64> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_64> .
+
+<gentev:z_68> <wirdVerbuchtIn> <gentev:q_68> .
+
+<gentev:z_70> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_71> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_73> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_73> .
+
+<gentev:z_76> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_76> .
+
+<gentev:z_80> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_85> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_85> .
+
+<gentev:z_86> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_86> .
+
+<gentev:z_87> ns1:type <Moebel>,
+        <Unterschrank> ;
+    <wirdVerbuchtIn> <gentev:q_87> .
+
+<gentev:z_89> ns1:type <Moebel> .
+
+<gentev:z_9> <wirdVerbuchtIn> <gentev:q_9> .
+
+<gentev:z_90> ns1:type <Moebel>,
+        <Unterschrank> .
+
+<gentev:z_92> <wirdVerbuchtIn> <gentev:q_92> .
+
+<gentev:z_97> ns1:type <Moebel> .
+
+<gentev:z_99> ns1:type <Moebel>,
+        <Unterschrank> .
+
