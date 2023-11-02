@@ -1,0 +1,91 @@
+@prefix ns1: <rdf:> .
+@prefix ns2: <tev:> .
+
+ns2:x_0 ns1:type ns2:Ausgangsrechnung,
+        ns2:Spezialrechnung ;
+    ns2:zuMandant ns2:y_0 .
+
+ns2:x_5 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung,
+        ns2:Spezialrechnung ;
+    ns2:enthaelt ns2:z_5 ;
+    ns2:zuMandant ns2:y_5 .
+
+ns2:x_6 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung,
+        ns2:Spezialrechnung ;
+    ns2:enthaelt ns2:z_6 ;
+    ns2:zuMandant ns2:y_6 .
+
+ns2:x_8 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung,
+        ns2:Spezialrechnung ;
+    ns2:zuMandant ns2:y_8 .
+
+ns2:y_0 ns1:type ns2:Rechnung ;
+    ns2:versandt ns2:x_0 .
+
+ns2:y_1 ns1:type ns2:Rechnung ;
+    ns2:bearbeitet ns2:x_1 ;
+    ns2:versandt ns2:x_1 .
+
+ns2:y_2 ns1:type ns2:Rechnung ;
+    ns2:bearbeitet ns2:x_2 ;
+    ns2:versandt ns2:x_2 .
+
+ns2:y_3 ns2:bearbeitet ns2:x_3 ;
+    ns2:versandt ns2:x_3 .
+
+ns2:y_4 ns1:type ns2:Rechnung ;
+    ns2:bearbeitet ns2:x_4 ;
+    ns2:versandt ns2:x_4 .
+
+ns2:y_5 ns1:type ns2:Rechnung ;
+    ns2:versandt ns2:x_5 .
+
+ns2:y_6 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung ;
+    ns2:versandt ns2:x_6 .
+
+ns2:y_7 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung ;
+    ns2:bearbeitet ns2:x_7 ;
+    ns2:versandt ns2:x_7 .
+
+ns2:y_8 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung ;
+    ns2:versandt ns2:x_8 .
+
+ns2:y_9 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung ;
+    ns2:bearbeitet ns2:x_9 ;
+    ns2:versandt ns2:x_9 .
+
+ns2:x_1 ns1:type ns2:Ausgangsrechnung ;
+    ns2:zuMandant ns2:y_1 .
+
+ns2:x_2 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung,
+        ns2:Spezialrechnung ;
+    ns2:enthaelt ns2:z_2 ;
+    ns2:zuMandant ns2:y_2 .
+
+ns2:x_3 ns1:type ns2:Ausgangsrechnung ;
+    ns2:zuMandant ns2:y_3 .
+
+ns2:x_4 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung,
+        ns2:Spezialrechnung ;
+    ns2:enthaelt ns2:z_4 ;
+    ns2:zuMandant ns2:y_4 .
+
+ns2:x_7 ns1:type ns2:Ausgangsrechnung,
+        ns2:Rechnung,
+        ns2:Spezialrechnung ;
+    ns2:enthaelt ns2:z_7 ;
+    ns2:zuMandant ns2:y_7 .
+
+ns2:x_9 ns1:type ns2:Ausgangsrechnung,
+        ns2:Spezialrechnung ;
+    ns2:zuMandant ns2:y_9 .
+
