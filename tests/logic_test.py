@@ -1,7 +1,5 @@
-from logic import coordinate_calculus as cc
-from logic import basis_calculus as bc
-from logic import expression_calculus as ec
-from logic import optimization_calculus as oc
+from tensor_reasoning.logic import expression_calculus as ec, basis_calculus as bc, coordinate_calculus as cc, \
+    optimization_calculus as oc
 
 import numpy as np
 

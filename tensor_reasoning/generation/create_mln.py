@@ -1,5 +1,4 @@
-from logic import basis_calculus as bc
-from logic import expression_calculus as ec
+from tensor_reasoning.logic import expression_calculus as ec, basis_calculus as bc
 
 from pgmpy.models import MarkovNetwork
 from pgmpy.factors.discrete import DiscreteFactor

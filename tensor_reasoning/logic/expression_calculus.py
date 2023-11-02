@@ -1,6 +1,5 @@
-from logic import coordinate_calculus as cc
-
 import numpy as np
+import tensor_reasoning.logic.coordinate_calculus as cc
 
 def calculate_core(atom_dict, expression):
     if type(expression) == str:
@@ -85,7 +84,7 @@ def generate_relation_values(factDf,individuals1,individuals2,relationKey):
 
 
 if __name__ == "__main__":
-    from logic import basis_calculus as bc
+    from tensor_reasoning.logic import basis_calculus as bc, coordinate_calculus as cc
 
     core0_values = np.random.normal(size=(100, 10, 5))
     core0_colors = ["a", "b", "c"]

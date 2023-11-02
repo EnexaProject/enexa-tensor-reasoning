@@ -1,5 +1,4 @@
-from representations import factdf_to_cores as ftoc
-from representations import sampledf_to_cores as stoc
+from tensor_reasoning.representation import factdf_to_cores as ftoc, sampledf_to_cores as stoc
 
 import pandas as pd
 

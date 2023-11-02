@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 
-from pgm import generate_test_data as gtd
+from tensor_reasoning.generation import generate_test_data as gtd
 
-from expression_learning import expression_learning as el
+from tensor_reasoning.learning import expression_learning as el
 
 ## DATA GENERATION ##
 
@@ -23,7 +23,7 @@ example_expression_dict = {
 }
 dataNum = 10
 regenerate = True
-savePath = "./demonstration/synthetic_test_data/synthetic_ec/"
+savePath = "./examples/synthetic_test_data/learning/synthetic_ec/"
 if regenerate:
     factDf, pairDf = gtd.generate_factDf_and_pairDf(example_expression_dict, sampleNum=dataNum, prefix="")
     factDf.to_csv(savePath + "generated_factDf.csv")

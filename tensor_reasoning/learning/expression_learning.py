@@ -1,14 +1,14 @@
-import representations.factdf_to_cores as ftoc
-import representations.sampledf_to_cores as stoc
-import representations.pairdf_to_cores as ptoc
+import tensor_reasoning.representation.factdf_to_cores as ftoc
+import tensor_reasoning.representation.sampledf_to_cores as stoc
+import tensor_reasoning.representation.pairdf_to_cores as ptoc
 
-import logic.expression_calculus as ec
-import logic.coordinate_calculus as cc
-import logic.expression_generation as eg
+import tensor_reasoning.logic.expression_calculus as ec
+import tensor_reasoning.logic.coordinate_calculus as cc
+import tensor_reasoning.logic.expression_generation as eg
 
-import als.generalized_als as gals
+import tensor_reasoning.optimization.generalized_als as gals
 
-import pgm.create_mln as cmln
+import tensor_reasoning.generation.create_mln as cmln
 
 import numpy as np
 

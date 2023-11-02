@@ -1,8 +1,7 @@
 import pandas as pd
 
-from pgm import create_mln as cmln
-from representations import sampledf_to_factdf as stof
-from representations import sampledf_to_pairdf as stop
+from tensor_reasoning.generation import create_mln as cmln
+from tensor_reasoning.representation import sampledf_to_factdf as stof, sampledf_to_pairdf as stop
 
 from pgmpy.sampling import GibbsSampling
 

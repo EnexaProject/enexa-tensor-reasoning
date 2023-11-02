@@ -1,4 +1,4 @@
-from logic import coordinate_calculus as cc
+from tensor_reasoning.logic import coordinate_calculus as cc
 
 import numpy as np
 

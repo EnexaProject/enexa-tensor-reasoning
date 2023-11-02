@@ -1,11 +1,9 @@
 import pandas as pd
 import numpy as np
 
-from representations import sampledf_to_factdf as stof
-from representations import sampledf_to_pairdf as stop
+from tensor_reasoning.representation import sampledf_to_factdf as stof, sampledf_to_pairdf as stop
 
-from expression_learning import expression_learning as el
-from expression_learning import check_cores as checkcc
+from tensor_reasoning.learning import check_cores as checkcc, expression_learning as el
 
 ## DATA LOADING ##
 

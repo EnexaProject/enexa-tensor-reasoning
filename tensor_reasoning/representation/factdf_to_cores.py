@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-import representations.ttl_to_csv as ttodf
+import tensor_reasoning.representation.ttl_to_csv as ttodf
 
 
 def generate_factDf(ttlPath, limit=None):

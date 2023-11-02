@@ -1,7 +1,6 @@
-from als import generalized_als
+from tensor_reasoning.optimization import generalized_als
 
-from logic import coordinate_calculus as cc
-from logic import expression_generation as eg
+from tensor_reasoning.logic import expression_generation as eg, coordinate_calculus as cc
 
 import numpy as np
 

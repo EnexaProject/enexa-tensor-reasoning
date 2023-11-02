@@ -1,8 +1,6 @@
-from als import generalized_als as gals
+from tensor_reasoning.optimization import generalized_als as gals
 
-from logic import coordinate_calculus as cc
-from logic import expression_calculus as ec
-from logic import optimization_calculus as oc
+from tensor_reasoning.logic import coordinate_calculus as cc, optimization_calculus as oc
 
 import numpy as np
 

@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 
-import expression_learning.expression_learning as el
-import expression_learning.check_cores as chcc
+from tensor_reasoning.learning import expression_learning as el
+import tensor_reasoning.learning.check_cores as chcc
 
-import logic.coordinate_calculus as cc
+import tensor_reasoning.logic.coordinate_calculus as cc
 
 ## Based on BBB generated data (sampleDf)
 
