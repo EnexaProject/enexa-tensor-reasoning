@@ -1,4 +1,4 @@
-from tnreason.generation import generate_test_data as gtd
+from tnreason.model import generate_test_data as gtd
 from tnreason.representation import csv_to_ttl as ctt
 
 example_expression_dict = {
@@ -15,7 +15,7 @@ example_expression_dict = {
 dataNum = 10
 factDf, pairDf = gtd.generate_factDf_and_pairDf(example_expression_dict, sampleNum=dataNum, prefix="tev:")
 
-savePath = "./examples/generation/synthetic_test_data/"
+savePath = "./examples/model/synthetic_test_data/"
 factDf.to_csv(savePath+"generated_factDf.csv")
 
 g = ctt.dataframe_to_kg(factDf)

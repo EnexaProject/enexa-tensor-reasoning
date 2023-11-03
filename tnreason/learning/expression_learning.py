@@ -8,7 +8,7 @@ import tnreason.logic.expression_generation as eg
 
 import tnreason.optimization.generalized_als as gals
 
-import tnreason.generation.create_mln as cmln
+import tnreason.model.create_mln as cmln
 
 import numpy as np
 

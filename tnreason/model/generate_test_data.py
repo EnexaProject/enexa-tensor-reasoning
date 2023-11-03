@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tnreason.generation import create_mln as cmln
+from tnreason.model import create_mln as cmln
 from tnreason.representation import sampledf_to_factdf as stof, sampledf_to_pairdf as stop
 
 from pgmpy.sampling import GibbsSampling

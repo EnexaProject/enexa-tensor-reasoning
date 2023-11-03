@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from tnreason.generation import generate_test_data as gtd
+from tnreason.model import generate_test_data as gtd
 
 from tnreason.learning import expression_learning as el
 

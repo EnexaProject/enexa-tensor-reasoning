@@ -57,7 +57,7 @@ def generate_pracmln_formulastring(expression):
         return expression
     elif expression[0] == "not":
         return "!(" + generate_pracmln_string(expression[1]) + ")"
-        # raise TypeError("pracmln string generation does not yet support {}.".format(expression))
+        # raise TypeError("pracmln string model does not yet support {}.".format(expression))
     elif expression[1] == "and":
         return generate_pracmln_string(expression[0]) + " ^ " + generate_pracmln_string(expression[2])
 
