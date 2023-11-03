@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from tensor_reasoning.logic import expression_generation as eg, optimization_calculus as oc
+from tnreason.logic import expression_generation as eg, optimization_calculus as oc
 
 
 class GeneralizedALS:

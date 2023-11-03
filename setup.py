@@ -4,7 +4,7 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 setup(
-    name="tensorreasoning",
+    name="tnreason",
     version="0.0",
     author="Alex Goeßmann",
     description="A package for reasoning with tensors",
@@ -22,6 +22,6 @@ setup(
         "pgmpy>=0.1.24"
     ],
     python_requires=">=3.8.5",
-    py_modules=["tensorreasoning"],
-    package_dir={'':'tensor_reasoning'},
+    py_modules=["tnreason"],
+    package_dir={'':'tnreason'},
 )

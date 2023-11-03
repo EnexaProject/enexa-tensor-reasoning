@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 
-from tensor_reasoning.generation import generate_test_data as gtd
+from tnreason.generation import generate_test_data as gtd
 
-from tensor_reasoning.learning import expression_learning as el
+from tnreason.learning import expression_learning as el
 
 ## DATA GENERATION ##
 

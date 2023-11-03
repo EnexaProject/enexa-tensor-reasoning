@@ -1,6 +1,6 @@
-from tensor_reasoning.optimization import generalized_als as gals
+from tnreason.optimization import generalized_als as gals
 
-from tensor_reasoning.logic import coordinate_calculus as cc, optimization_calculus as oc
+from tnreason.logic import coordinate_calculus as cc, optimization_calculus as oc
 
 import numpy as np
 

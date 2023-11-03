@@ -3,4 +3,4 @@
 
 dist/*
 build/*
-tensor_reasoning/tensorreasoning.egg-info/*
+tnreason/tensorreasoning.egg-info/*

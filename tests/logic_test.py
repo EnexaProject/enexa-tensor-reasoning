@@ -1,4 +1,4 @@
-from tensor_reasoning.logic import expression_calculus as ec, basis_calculus as bc, coordinate_calculus as cc, \
+from tnreason.logic import expression_calculus as ec, basis_calculus as bc, coordinate_calculus as cc, \
     optimization_calculus as oc
 
 import numpy as np

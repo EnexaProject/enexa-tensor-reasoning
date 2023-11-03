@@ -1,5 +1,5 @@
-from tensor_reasoning.generation import generate_test_data as gtd
-from tensor_reasoning.representation import csv_to_ttl as ctt
+from tnreason.generation import generate_test_data as gtd
+from tnreason.representation import csv_to_ttl as ctt
 
 example_expression_dict = {
     "e0": ["Rechnung(x)", 1.5],

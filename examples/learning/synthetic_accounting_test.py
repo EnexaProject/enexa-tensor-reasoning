@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 
-from tensor_reasoning.generation import generate_test_data as gtd
-from tensor_reasoning.learning import expression_learning as el
+from tnreason.generation import generate_test_data as gtd
+from tnreason.learning import expression_learning as el
 
-from tensor_reasoning.logic import expression_calculus as ec
+from tnreason.logic import expression_calculus as ec
 
 ## DATA GENERATION ##
 
