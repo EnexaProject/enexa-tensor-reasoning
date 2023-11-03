@@ -12,6 +12,14 @@ def calculate_core(atom_dict, expression):
     else:
         raise ValueError("Expression {} not understood.".format(expression))
 
+
+def get_all_variables(expressionList):
+    variables = []
+    for expression in expressionList:
+        variables = variables + get_variables(expression)
+    return variables
+
+
 def get_variables(expression):
     if type(expression) == str:
         return [expression]

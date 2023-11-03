@@ -19,7 +19,8 @@ setup(
     install_requires=[
         "numpy>=1.23.4",
         "pandas>=1.5.3",
-        "pgmpy>=0.1.24"
+        "pgmpy>=0.1.24",
+        #"pracmln>=1.2.4"
     ],
     python_requires=">=3.8.5",
     py_modules=["tnreason"],
