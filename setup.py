@@ -24,5 +24,5 @@ setup(
     ],
     python_requires=">=3.8.5",
     py_modules=["tnreason"],
-    package_dir={'':'tnreason'},
+    package_dir={'':'.'},
 )
