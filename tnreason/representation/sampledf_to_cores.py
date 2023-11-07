@@ -38,3 +38,8 @@ def sampleDf_to_relation_values(sampleDf,
                 coreValues[i, relColumns.index(column), i] = 1
     endTime = time.time()
     return coreValues, relColumns, endTime - startTime
+
+def sampleDf_to_universal_core(sampleDf,candidates):
+    return sampleDf[candidates].values
+
+

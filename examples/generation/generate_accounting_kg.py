@@ -13,7 +13,7 @@ example_rule_dict = {
 example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), value[2]] for (key,value) in example_rule_dict.items()}
 
 ## A list of facts is generated using Gibbs Sampling of the associated Markov Logic Network
-dataNum = 10
+dataNum = 1000
 factDf, pairDf = gtd.generate_factDf_and_pairDf(example_expression_dict, sampleNum=dataNum, prefix="tev:")
 sampleDf = gtd.generate_sampleDf(example_expression_dict, sampleNum=dataNum, chainSize=10)
 
