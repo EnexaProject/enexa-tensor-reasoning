@@ -16,9 +16,12 @@ def generate_samples(model, sampleNum, chainSize):
         df = pd.concat([df, row_df])
     return df
 
-def generate_factDf_and_pairDf(expressionDict,sampleNum,chainSize = 10, prefix ="tev"):
+def generate_sampleDf(expressionDict,sampleNum,chainSize=10):
     mln = cmln.create_markov_logic_network(expressionDict)
-    sampleDf = generate_samples(mln,sampleNum = sampleNum, chainSize=chainSize)
+    return generate_samples(mln,sampleNum = sampleNum, chainSize=chainSize)
+
+def generate_factDf_and_pairDf(expressionDict,sampleNum,chainSize = 10, prefix ="tev"):
+    sampleDf = generate_sampleDf(expressionDict,sampleNum,chainSize=chainSize)
     factDf = stof.sampleDf_to_factDf(sampleDf, prefix = prefix)
     pairDf = stop.sampleDf_to_pairDf(sampleDf, prefix = prefix)
     return factDf, pairDf

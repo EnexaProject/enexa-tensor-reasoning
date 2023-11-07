@@ -109,7 +109,7 @@ class ExpressionLearner:
         self.optimizer.sweep(sweepnum=sweepnum, contractionScheme=self.skeleton)
         self.variablesCoresDict = self.optimizer.variableCoresDict
 
-        self.optimizer.visualize_residua()
+        #self.optimizer.visualize_residua()
 
     def get_solution(self):
         self.solutionDict = {}

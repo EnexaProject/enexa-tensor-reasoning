@@ -15,9 +15,11 @@ example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), v
 ## A list of facts is generated using Gibbs Sampling of the associated Markov Logic Network
 dataNum = 10
 factDf, pairDf = gtd.generate_factDf_and_pairDf(example_expression_dict, sampleNum=dataNum, prefix="tev:")
+sampleDf = gtd.generate_sampleDf(example_expression_dict, sampleNum=dataNum, chainSize=10)
 
 savePath = "./examples/generation/synthetic_test_data/"
 factDf.to_csv(savePath+"generated_factDf.csv")
+sampleDf.to_csv(savePath+"generated_sampleDf.csv")
 
 g = ctt.dataframe_to_kg(factDf)
 g.serialize(savePath+"generated_kg.ttl")
