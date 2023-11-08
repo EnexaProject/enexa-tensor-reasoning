@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from tnreason.learning import expression_learning as el
+from tnreason.learning import variable_learning as el
 import tnreason.learning.check_cores as chcc
 
 import tnreason.logic.coordinate_calculus as cc

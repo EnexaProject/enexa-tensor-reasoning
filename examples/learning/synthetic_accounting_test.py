@@ -49,16 +49,17 @@ individualsDict = {
 # candidatesDict provides the possible atoms to be plugged in the placeholder
 skeletonExpression = ["R1(y,x)", "and", "C1(x)"]  # ,"and","R2(x,z)"]
 candidatesDict = {
-    "C1(x)": ["Ausgangsrechnung", "Rechnung"],
-    "C2(y)": ["Ausgangsrechnung", "Rechnung"],
-    "R1(y,x)": ["versandt", "bearbeitet"],
-    "R2(x,z)": ["enthaelt"]
+    "C1(x)": ["Ausgangsrechnung(x)", "Rechnung(x)"],
+    "C2(y)": ["Ausgangsrechnung(y)", "Rechnung(y)"],
+    "R1(y,x)": ["versandt(y,x)", "bearbeitet(y,x)"],
+    "R2(x,z)": ["enthaelt(x,z)"]
 }
 ## Initialize the ExpressionLearner and generate all Tensor Cores
 # fixedCores based on the factDf
 # targetCore and filterCore based on the pairDf
 # variableCores from random
-learner = el.ExpressionLearner(skeletonExpression=skeletonExpression)
+learner = el.VariableLearner(skeletonExpression=skeletonExpression)
+#learner = el.ExpressionLearner(skeletonExpression=skeletonExpression)
 learner.generate_fixedCores_factDf(factDf, individualsDict, candidatesDict, prefix="")
 
 positiveExpression = ["versandt(y,x)","and","Rechnung(x)"]

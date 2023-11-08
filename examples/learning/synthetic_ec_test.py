@@ -22,8 +22,8 @@ example_expression_dict = {
     "i12": [["not", ["holdsAt(x,t1)", "and", [["not", "holdsAt(x,t2)"], "and", ["not", "terminatedAt(x,t2)"]]]], weight]
 }
 dataNum = 10
-regenerate = True
-savePath = "./examples/synthetic_test_data/learning/synthetic_ec/"
+regenerate = False
+savePath = "./examples/learning/synthetic_test_data/synthetic_ec/"
 if regenerate:
     factDf, pairDf = gtd.generate_factDf_and_pairDf(example_expression_dict, sampleNum=dataNum, prefix="")
     factDf.to_csv(savePath + "generated_factDf.csv")
@@ -56,10 +56,9 @@ candidatesDict = {
 # fixedCores based on the factDf
 # targetCore and filterCore based on the pairDf
 # variableCores from random
-learner = el.ExpressionLearner(skeletonExpression=skeletonExpression)
+learner = el.VariableLearner(skeletonExpression=skeletonExpression)
 learner.generate_fixedCores_factDf(factDf, individualsDict, candidatesDict, prefix="")
 learner.generate_targetCore_pairDf(pairDf, individualsDict)
-learner.set_filterCore(learner.targetCore)
 learner.random_initialize_variableCoresDict()
 
 ## Optimize the variableCores using Alternating Least Squares and create the solution based on the largest core values
