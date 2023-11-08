@@ -77,6 +77,30 @@ class AtomicLearner(LearnerBase):
 
 
 class VariableLearner(LearnerBase):
+
+    def generate_fixedCores_sampledf(self, sampleDf):
+        self.candidatesDict = {}
+        self.fixedCoresDict = {}
+
+        for atomKey in self.skeletonAtoms:
+            if "," in atomKey:
+                indSpec = atomKey.split("(")[1][:-1]
+                indKey1, indKey2 = indSpec.split(",")
+                relationKey = atomKey.split("(")[0]
+
+                coreValues, candidates, latency = stoc.sampleDf_to_relation_values(sampleDf, indKey1, indKey2)
+
+                self.candidatesDict[atomKey] = candidates
+                self.fixedCoresDict[atomKey] = cc.CoordinateCore(coreValues, [indKey1, relationKey, indKey2])
+            else:
+                indKey = atomKey.split("(")[1][:-1]
+                classKey = atomKey.split("(")[0]
+
+                coreValues, candidates, latency = stoc.sampleDf_to_class_values(sampleDf, indKey)
+
+                self.candidatesDict[atomKey] = candidates
+                self.fixedCoresDict[atomKey] = cc.CoordinateCore(coreValues, [indKey, classKey])
+
     def generate_fixedCores_factDf(self, df, individualsDict, candidatesDict, prefix=""):
         self.candidatesDict = candidatesDict
         self.fixedCoresDict = {}
