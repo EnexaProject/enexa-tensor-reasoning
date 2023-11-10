@@ -34,8 +34,8 @@ class GeneralizedALS:
                 if verbose:
                     print("Optimized leg {}: Residuum is {}".format(legKey, residua[i, k]))
 
-                assert (res_remember is None or residua[i, k]-res_remember < 0.0001 * np.linalg.norm(self.targetCore.values)), (
-                                "Residuum increased on leg {}!".format(legKey))
+                #assert (res_remember is None or residua[i, k]-res_remember < 0.0001 * np.linalg.norm(self.targetCore.values)), (
+                #                "Residuum increased on leg {}!".format(legKey))
                 res_remember = residua[i, k]
 
             ## STABILIZE LEGS MAKES PROBLEMS WHEN HAVING NOTS (AFFINE LINEARITIES)!

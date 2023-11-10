@@ -91,6 +91,17 @@ def generate_relation_values(factDf,individuals1,individuals2,relationKey):
     return outValues
 
 
+def evaluate_expression_on_sampleDf(sampleDf, expression):
+    variables = get_variables(expression)
+    atomDict = {}
+    for variable in variables:
+        if variable == "Thing":
+            values = np.ones(sampleDf.shape[0])
+        else:
+            values = sampleDf[variable].astype("int64").values
+        atomDict[variable] = cc.CoordinateCore(values,["j"],variable)
+    return calculate_core(atomDict,expression)
+
 if __name__ == "__main__":
     from tnreason.logic import basis_calculus as bc, coordinate_calculus as cc
 
