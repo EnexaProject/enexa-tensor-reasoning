@@ -57,7 +57,7 @@ class AtomicLearner(LearnerBase):
         self.fixedCoresDict = {}
 
         for atomKey in self.skeletonAtoms:
-            values = stoc.sampleDf_to_universal_core(sampleDf, candidatesDict[atomKey])
+            values = stoc.sampleDf_to_universal_core(sampleDf, self.candidatesDict[atomKey])
             self.fixedCoresDict[atomKey] = cc.CoordinateCore(values, ["j", atomKey])
 
     def random_initialize_variableCoresDict(self):
