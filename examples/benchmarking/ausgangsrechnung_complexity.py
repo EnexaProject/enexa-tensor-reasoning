@@ -17,16 +17,16 @@ example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), v
 example_expression_dict["r3"]=[["not","Ausgangsrechnung(x)"], 2]
 
 experimentDict = {
-    "No Marker": [
-        "Thing",
-        ['not', ['H', 'and', [['not', 'P1'], 'and', ['not', 'P2']]]],
-        ['not', ['Ausgangsrechnung(x)', 'and',[['not', 'versandterBeleg(y,x)'], 'and', ['not', 'hatLeistungserbringer(x,y)']]]],
-    ],
-    "Full Marker" : [
-        ['not', ['Ausgangsrechnung(x)', 'and', [['not', 'versandterBeleg(y,x)'], 'and', ['not', 'hatLeistungserbringer(x,y)']]]],
-        ['not', ['H', 'and', [['not', 'P1'], 'and', ['not', 'P2']]]],
-        None
-    ],
+    #"No Marker": [
+    #    "Thing",
+    #    ['not', ['H', 'and', [['not', 'P1'], 'and', ['not', 'P2']]]],
+    #    ['not', ['Ausgangsrechnung(x)', 'and',[['not', 'versandterBeleg(y,x)'], 'and', ['not', 'hatLeistungserbringer(x,y)']]]],
+    #],
+    #"Full Marker" : [
+    #    ['not', ['Ausgangsrechnung(x)', 'and', [['not', 'versandterBeleg(y,x)'], 'and', ['not', 'hatLeistungserbringer(x,y)']]]],
+    #    ['not', ['H', 'and', [['not', 'P1'], 'and', ['not', 'P2']]]],
+    #    None
+    #],
     "Head Marker" :  [
         "Ausgangsrechnung(x)",
         ["P1","and","P2"],
@@ -41,7 +41,7 @@ candidatesDict = {
 }
 
 repetitions = 10
-dataNums = range(500,550,50)
+dataNums = range(50,100,50)
 experimentKeys = experimentDict.keys()
 
 successRates = np.empty((len(experimentKeys),len(dataNums)))
