@@ -17,6 +17,34 @@ def generate_negated_conjunctions(positive_atoms, negated_atoms):
     return generate_conjunctions(positive_atoms + [["not", atom] for atom in negated_atoms])
 
 
+def generate_from_or_expression(expression):
+    if type(expression) == str:
+        return expression
+    elif expression[0] == "not":
+        return ["not", generate_from_or_expression(expression[1])]
+    elif expression[1] == "and":
+        return [generate_from_or_expression(expression[0]), "and", generate_from_or_expression(expression[2])]
+    elif expression[1] == "or":
+        return ["not", [["not", generate_from_or_expression(expression[0])], "and",
+                        ["not", generate_from_or_expression(expression[2])]]]
+    else:
+        raise ValueError("Expression {} not understood!".format(expression))
+
+
+def remove_double_not(expression):
+    if type(expression) == str:
+        return expression
+    elif expression[0] == "not":
+        if expression[1][0] == "not":
+            return remove_double_not(expression[1][1])
+        else:
+            return ["not", remove_double_not(expression[1])]
+    elif expression[1] == "and":
+        return [remove_double_not(expression[0]), "and", remove_double_not(expression[2])]
+    else:
+        raise ValueError("Expression {} not understood!".format(expression))
+
+
 def replace_atoms(expression, atomDict):
     if type(expression) == str:
         return atomDict[expression]
@@ -52,6 +80,7 @@ def generate_graph(expression):
 def generate_pracmln_string(expression, weight):
     return str(weight) + " " + generate_pracmln_formulastring(expression)
 
+
 def generate_pracmln_formulastring(expression):
     if type(expression) == str:
         return expression
@@ -63,6 +92,12 @@ def generate_pracmln_formulastring(expression):
 
 
 if __name__ == "__main__":
+    and_expression = generate_from_or_expression(["jaszczur", "or", ["sikorka", "or", ["not", "sledz"]]])
+    assert remove_double_not(and_expression) == ['not',
+                                                 [['not', 'jaszczur'], 'and', [['not', 'sikorka'], 'and', 'sledz']]], \
+        "Generate from disjunctions or double not does not work"
+    assert remove_double_not(["not", ["not", "sledz"]]) == "sledz", "Removing double not does not work"
+
     nodes, headNode, edgesAnd, edgesNot = generate_graph(["R2(x,z)", "and", ["C1(x)", "and", ["not", "R1(y,x)"]]])
 
     import networkx as nx
@@ -75,4 +110,4 @@ if __name__ == "__main__":
     graph.add_edges_from([[str(edge[0]), str(edge[1])] for edge in edgesNot])
 
     nx.draw(graph)
-    plt.show()
+    # plt.show()
