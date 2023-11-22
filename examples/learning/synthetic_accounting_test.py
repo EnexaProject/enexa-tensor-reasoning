@@ -28,7 +28,7 @@ savePath = "./examples/learning/synthetic_test_data/synthetic_accounting/"
 if regenerate:
     factDf, pairDf = gtd.generate_factDf_and_pairDf(example_expression_dict, sampleNum=dataNum, prefix="")
     factDf.to_csv(savePath + "generated_factDf.csv")
-    pairDf.to_csv(savePath + "generated_pairDf.csv")
+    pairDf.to_csv(savePath + "generatedfr_pairDf.csv")
 else:
     factDf = pd.read_csv(savePath + "generated_factDf.csv", index_col=0)
     pairDf = pd.read_csv(savePath + "generated_pairDf.csv", index_col=0)

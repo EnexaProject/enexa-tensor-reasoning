@@ -75,27 +75,3 @@ if __name__ == "__main__":
                                                  [['not', 'jaszczur'], 'and', [['not', 'sikorka'], 'and', 'sledz']]], \
         "Generate from disjunctions or double not does not work"
     assert remove_double_not(["not", ["not", "sledz"]]) == "sledz", "Removing double not does not work"
-
-    atomNodes, expressionNodes, edgesAnd, edgesNot = generate_expression_graph(["R2(x,z)", "and", ["C1(x)", "and", ["not", "R1(y,x)"]]])
-
-    import networkx as nx
-    import matplotlib.pyplot as plt
-
-    graph = nx.DiGraph()
-    graph.add_nodes_from([str(node) for node in expressionNodes])
-    graph.add_edges_from([[str(edge[0]), str(edge[1])] for edge in edgesAnd + edgesNot])
-
-    pos = nx.spring_layout(graph)
-
-    #nx.draw_networkx_edges(graph, pos, width=1.0, alpha=0.5)
-    nx.draw_networkx_edges(graph, pos,
-                           edgelist=[[str(edge[0]), str(edge[1])] for edge in edgesAnd],
-                           width=4, alpha=0.8, edge_color='r')
-    nx.draw_networkx_edges(graph, pos,
-                           edgelist=[[str(edge[0]), str(edge[1])] for edge in edgesNot],
-                           width=4, alpha=0.8, edge_color='b')
-
-    labels = { atom : atom for atom in atomNodes}
-    nx.draw_networkx_labels(graph, pos, labels, font_size=16)
-
-    plt.show()

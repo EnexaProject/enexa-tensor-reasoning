@@ -45,7 +45,7 @@ class LearnerBase:
 
     @property
     def factor_core(self):
-        return mln.calculate_dangling_basis(self.solutionExpression).calculate_truth()
+        return markov_logic_network.calculate_dangling_basis(self.solutionExpression).calculate_truth()
 
 
 class AtomicLearner(LearnerBase):

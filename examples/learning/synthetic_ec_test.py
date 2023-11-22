@@ -22,7 +22,7 @@ example_expression_dict = {
     "i12": [["not", ["holdsAt(x,t1)", "and", [["not", "holdsAt(x,t2)"], "and", ["not", "terminatedAt(x,t2)"]]]], weight]
 }
 dataNum = 10
-regenerate = False
+regenerate = True
 savePath = "./examples/learning/synthetic_test_data/synthetic_ec/"
 if regenerate:
     factDf, pairDf = gtd.generate_factDf_and_pairDf(example_expression_dict, sampleNum=dataNum, prefix="")
