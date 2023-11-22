@@ -58,6 +58,9 @@ class BasisCore:
     def calculate_truth(self):
         truthvec = create_truth_vec()
 
+        if self.headcolor == "TruthEvaluated":
+            return ValueError("Already evaluated truth at Basis Core {}!".format(self.name))
+
         core0 = self.clone()
         contracted = np.tensordot(core0.values, truthvec, axes=([core0.colors.index(core0.headcolor)], [0]))
         contracted_colors = (core0.colors.copy())
@@ -95,6 +98,8 @@ class BasisCore:
 
         return BasisCore(np.einsum(contraction_string, self.values, delta_values), newColors)
 
+    def count_satisfaction(self):
+        return np.sum(self.values)/2**len(self.values.shape)
 
 def create_negation_tensor():
     negation_tensor = np.zeros((2, 2))
@@ -124,3 +129,5 @@ def create_truth_vec():
     truthvec = np.zeros(2)
     truthvec[1] = 1
     return truthvec
+
+

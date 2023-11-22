@@ -52,5 +52,6 @@ if __name__ == "__main__":
     assert count_satisfaction(["not",["losos","and",["sledz","and","sikorka"]]])==7, "Satisfaction Counter wrong"
     assert count_satisfaction(["not",["losos","and",["losos","and","sikorka"]]])==3, "Satisfaction Counter wrong"
 
-    print(compute_conjunctionList(["jaszczur","and",["not",["jaszczur","and","sledz"]]]))
+    #print(compute_conjunctionList(["jaszczur","and",["not",["jaszczur","and","sledz"]]]))
+    print(count_satisfaction(["sledz","and",["not","sledz"]]))
     assert count_satisfaction(["jaszczur","and",["not",["jaszczur","and","sledz"]]])==1, "Satisfaction Counter wrong"

@@ -26,12 +26,12 @@ class AtomicMLNLearner:
 
         atoms = list(sampleDf.columns)
         self.atomDict = {
-            atom: cc.CoordinateCore(stoc.sampleDf_to_universal_core(sampleDf, [atom]).flatten(), ["j"]) for atom in
-            atoms
+            atom: cc.CoordinateCore(stoc.sampleDf_to_universal_core(sampleDf, [atom]).flatten(), ["j"])
+            for atom in atoms
         }
 
-    def learn_independent_weight(self, expression):
-        return wees.calculate_weight(expression, self.atomDict)
+    def learn_independent_weight(self, expression, verbose = True):
+        return wees.calculate_weight(expression, self.atomDict, verbose=verbose)
 
     def add_independent_formula(self, expression):
         weight = self.learn_independent_weight(expression)

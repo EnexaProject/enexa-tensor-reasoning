@@ -16,10 +16,10 @@ class GeneralizedALS:
     def set_filterCore(self, filterCore):
         self.filterCore = filterCore
 
-    def sweep(self, sweepnum=1, contractionScheme=None, verbose=True):
+    def sweep(self, sweepnum=1, contractionScheme=None, verbose=False):
         residua = np.empty((sweepnum, len(self.variableCoresDict)))
 
-        if np.linalg.norm(self.targetCore.values)==0:
+        if np.linalg.norm(self.targetCore.values)==0 and verbose:
             print("Warning: Target Core is Zero!")
 
         if contractionScheme is None:
@@ -30,7 +30,7 @@ class GeneralizedALS:
             if verbose:
                 print("## SWEEP {} ##".format(i))
             for k, legKey in enumerate(self.variableCoresDict):
-                residua[i, k] = self.leg_optimization(legKey, contractionScheme=contractionScheme)
+                residua[i, k] = self.leg_optimization(legKey, contractionScheme=contractionScheme,verbose=verbose)
                 if verbose:
                     print("Optimized leg {}: Residuum is {}".format(legKey, residua[i, k]))
 
@@ -53,7 +53,7 @@ class GeneralizedALS:
 
     ## Limited to situation, where each datacore has a legcore with same key
     # contractionScheme is a nested list determining contraction to be used in a customized way, default: conjunctions
-    def leg_optimization(self, legKey, contractionScheme):
+    def leg_optimization(self, legKey, contractionScheme, verbose):
         core_dict = oc.calculate_core_dict(self.variableCoresDict, self.fixedCoresDict, legKey)
 
         #operator, constant = ec.calculate_operator_and_constant(core_dict, contractionScheme, legKey,
@@ -64,7 +64,7 @@ class GeneralizedALS:
         if self.filterCore is not None:
             operator = operator.compute_and(self.filterCore)
             constant = constant.compute_and(self.filterCore)
-            if np.linalg.norm(operator.values) == 0:
+            if np.linalg.norm(operator.values) == 0 and verbose:
                 print("Warning: Operator is Zero! Possible reasons: Zero targetCore resulted in zero solution, "
                       "filterCore is orthogonal to prefiltered operator.")
 

@@ -35,7 +35,7 @@ class MarkovLogicNetwork:
                         if startnode != endnode:
                             edges.append((startnode, endnode))
 
-            core = calculate_dangling_basis(expression).calculate_truth()
+            core = calculate_dangling_basis(expression)
             variables = core.colors
 
             factors.append(DiscreteFactor(variables, [2 for node in variables], np.exp(weight * core.values)))
@@ -62,7 +62,7 @@ class MarkovLogicNetwork:
         for ind in range(sampleNum):
             row_df = pd.DataFrame(sampler.sample(size=chainSize).iloc[-1].to_dict(), index=[ind])
             df = pd.concat([df, row_df])
-        return df.astype("bool")
+        return df.astype("int64")
 
     def visualize(self, regenerate_graph=True, truthDict={}, fontsize=10):
         if regenerate_graph:
@@ -108,7 +108,7 @@ def calculate_dangling_basis(expression):
     atom_dict = {}
     for variable in variables:
         atom_dict[variable] = bc.BasisCore(np.eye(2), [variable, "head"], headcolor="head", name=variable)
-    return ec.calculate_core(atom_dict, expression).reduce_identical_colors()
+    return ec.calculate_core(atom_dict, expression).calculate_truth().reduce_identical_colors()
 
 
 if __name__ == "__main__":

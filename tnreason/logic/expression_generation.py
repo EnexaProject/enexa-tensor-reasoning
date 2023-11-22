@@ -1,8 +1,9 @@
 def generate_list_from_rule(premises, head):
-    expression = ["not", premises[0]]
+    expression = premises[0]
     for premise in premises[1:]:
-        expression = [["not", premise], "and", expression]
-    expression = ["not", [head, "and", expression]]
+        expression = [premise, "and", expression]
+    expression = ["not", [["not", head], "and", expression]]
+
     return expression
 
 
