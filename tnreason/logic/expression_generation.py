@@ -55,28 +55,6 @@ def replace_atoms(expression, atomDict):
             return [replace_atoms(expression[0], atomDict), "and", replace_atoms(expression[2], atomDict)]
 
 
-def generate_graph(expression):
-    if type(expression) == str:
-        nodes = []
-        edgesAnd = []
-        edgesNot = []
-    elif expression[0] == "not":
-        nodes, headNode, edgesAnd, edgesNot = generate_graph(expression[1])
-        edgesNot.append([headNode, expression])
-    elif expression[1] == "and":
-        nodes0, headNode0, edgesAnd0, edgesNot0 = generate_graph(expression[0])
-        nodes2, headNode2, edgesAnd2, edgesNot2 = generate_graph(expression[2])
-        nodes = nodes0 + nodes2
-        edgesAnd = edgesAnd0 + edgesAnd2
-        edgesNot = edgesNot0 + edgesNot2
-        edgesAnd.append([headNode0, expression])
-        edgesAnd.append([headNode2, expression])
-
-    nodes.append(expression)
-    headNode = expression
-    return nodes, headNode, edgesAnd, edgesNot
-
-
 def generate_pracmln_string(expression, weight):
     return str(weight) + " " + generate_pracmln_formulastring(expression)
 
@@ -98,16 +76,26 @@ if __name__ == "__main__":
         "Generate from disjunctions or double not does not work"
     assert remove_double_not(["not", ["not", "sledz"]]) == "sledz", "Removing double not does not work"
 
-    nodes, headNode, edgesAnd, edgesNot = generate_graph(["R2(x,z)", "and", ["C1(x)", "and", ["not", "R1(y,x)"]]])
+    atomNodes, expressionNodes, edgesAnd, edgesNot = generate_expression_graph(["R2(x,z)", "and", ["C1(x)", "and", ["not", "R1(y,x)"]]])
 
     import networkx as nx
     import matplotlib.pyplot as plt
 
     graph = nx.DiGraph()
+    graph.add_nodes_from([str(node) for node in expressionNodes])
+    graph.add_edges_from([[str(edge[0]), str(edge[1])] for edge in edgesAnd + edgesNot])
 
-    graph.add_nodes_from([str(node) for node in nodes])
-    graph.add_edges_from([[str(edge[0]), str(edge[1])] for edge in edgesAnd])
-    graph.add_edges_from([[str(edge[0]), str(edge[1])] for edge in edgesNot])
+    pos = nx.spring_layout(graph)
 
-    nx.draw(graph)
-    # plt.show()
+    #nx.draw_networkx_edges(graph, pos, width=1.0, alpha=0.5)
+    nx.draw_networkx_edges(graph, pos,
+                           edgelist=[[str(edge[0]), str(edge[1])] for edge in edgesAnd],
+                           width=4, alpha=0.8, edge_color='r')
+    nx.draw_networkx_edges(graph, pos,
+                           edgelist=[[str(edge[0]), str(edge[1])] for edge in edgesNot],
+                           width=4, alpha=0.8, edge_color='b')
+
+    labels = { atom : atom for atom in atomNodes}
+    nx.draw_networkx_labels(graph, pos, labels, font_size=16)
+
+    plt.show()

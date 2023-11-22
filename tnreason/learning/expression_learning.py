@@ -8,7 +8,7 @@ import tnreason.representation.pairdf_to_cores as ptoc
 
 import tnreason.optimization.generalized_als as gals
 
-import tnreason.model.create_mln as cmln
+from tnreason.model import markov_logic_network
 
 import numpy as np
 
@@ -45,7 +45,7 @@ class LearnerBase:
 
     @property
     def factor_core(self):
-        return cmln.calculate_dangling_basis(self.solutionExpression).calculate_truth()
+        return mln.calculate_dangling_basis(self.solutionExpression).calculate_truth()
 
 
 class AtomicLearner(LearnerBase):

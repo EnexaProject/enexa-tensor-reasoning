@@ -6,15 +6,13 @@ import tnreason.representation.factdf_to_cores as ftoc
 import tnreason.representation.sampledf_to_cores as stoc
 import tnreason.representation.pairdf_to_cores as ptoc
 
-import tnreason.optimization.generalized_als as gals
 import tnreason.optimization.weight_estimation as wees
 
 import tnreason.learning.expression_learning as el
 
-import tnreason.model.create_mln as cmln
+from tnreason.model import markov_logic_network as mln
 
 import numpy as np
-import pgmpy
 
 
 class MLNLearner:
@@ -34,12 +32,14 @@ class MLNLearner:
         solutionExpression = exLearner.solutionExpression
         atoms = np.unique(ec.get_variables(solutionExpression))
         atomDict = {
-            atom : cc.CoordinateCore(stoc.sampleDf_to_universal_core(sampleDf,[atom]).flatten(),["j"]) for atom in atoms
+            atom: cc.CoordinateCore(stoc.sampleDf_to_universal_core(sampleDf, [atom]).flatten(), ["j"]) for atom in
+            atoms
         }
-        solutionWeight = wees.calculate_weight(solutionExpression,atomDict)
+        solutionWeight = wees.calculate_weight(solutionExpression, atomDict)
 
         self.weightedFormulas.append([solutionExpression, solutionWeight])
 
     def generate_mln(self):
-        expressionsDict = {str(i) : [self.weightedFormulas[i][0],self.weightedFormulas[i][1]] for i in range(len(self.weightedFormulas))}
-        self.mln = cmln.create_markov_logic_network(expressionsDict)
+        self.graphicalModel = mln.MarkovLogicNetwork(expressionsDict=
+                                                     {str(i): [self.weightedFormulas[i][0], self.weightedFormulas[i][1]]
+                                                      for i in range(len(self.weightedFormulas))})
