@@ -25,7 +25,7 @@ class GeneralizedALS:
         if contractionScheme is None:
             contractionScheme = eg.generate_conjunctions([key for key in self.variableCoresDict.keys()])
 
-        res_remember = None
+        #res_remember = None
         for i in range(sweepnum):
             if verbose:
                 print("## SWEEP {} ##".format(i))
@@ -36,7 +36,7 @@ class GeneralizedALS:
 
                 #assert (res_remember is None or residua[i, k]-res_remember < 0.0001 * np.linalg.norm(self.targetCore.values)), (
                 #                "Residuum increased on leg {}!".format(legKey))
-                res_remember = residua[i, k]
+                #res_remember = residua[i, k]
 
             ## STABILIZE LEGS MAKES PROBLEMS WHEN HAVING NOTS (AFFINE LINEARITIES)!
             # self.stabilize_legs()

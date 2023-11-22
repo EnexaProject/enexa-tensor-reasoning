@@ -13,19 +13,24 @@ example_rule_dict = {
 
 
 savePath = "./examples/learning/synthetic_test_data/synthetic_accounting/"
-sampleDf = pd.read_csv(savePath + "generated_sampleDf.csv", index_col=0)
-#print(sampleDf)
-learner = mlnl.MLNLearner()
+sampleDf = pd.read_csv(savePath + "generated_sampleDf.csv", index_col=0).astype("int64")
+
+learner = mlnl.AtomicMLNLearner()
+learner.load_sampleDf(sampleDf)
 
 skeletonExpression = ["P1", "and", "P2"]  # ,"and","R2(x,z)"]
 candidatesDict = {
     "P1": ["versandterBeleg(y,x)", "hatBelegzeile(x,z)"],
-    "P2": ["Ausgangsrechnung(x)", "Bautischlerei(y)"],
+    "P2": ["hatLeistungserbringer(x,y)", "Bautischlerei(y)"],
 }
-positiveCore = ec.evaluate_expression_on_sampleDf(sampleDf, ["versandterBeleg(y,x)","and","Ausgangsrechnung(x)"])
-negativeCore = positiveCore.negate()
-learner.learn_formula(skeletonExpression,candidatesDict,sampleDf,positiveCore,negativeCore)
+learner.learn_equivalence("Ausgangsrechnung(x)",skeletonExpression,candidatesDict)
 
-learner.generate_mln()
+skeletonExpression2 = ["not",[["not","P2"],"and","P1"]]
+candidatesDict2 = {
+    "P1": ["versandterBeleg(y,x)", "hatBelegzeile(x,z)", "Unterschrank(z)"],
+    "P2": ["hatLeistungserbringer(x,y)", "Bautischlerei(y)","Moebel(z)"],
+}
+learner.learn_tautology(skeletonExpression2,candidatesDict2)
 
-learner.graphicalModel.vi
+model = learner.generate_mln()
+#model.visualize()
