@@ -22,7 +22,6 @@ class MLNLearner:
     def learn_formula(self, skeletonExpression, candidatesDict, sampleDf, positiveCore, negativeCore):
         exLearner = el.AtomicLearner(skeletonExpression, candidatesDict)
 
-        print(exLearner.candidatesDict)
         exLearner.generate_fixedCores_sampleDf(sampleDf)
         exLearner.generate_target_and_filterCore_from_exampleCores(positiveCore, negativeCore)
         exLearner.random_initialize_variableCoresDict()

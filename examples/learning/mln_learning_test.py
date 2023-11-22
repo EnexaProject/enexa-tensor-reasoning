@@ -27,3 +27,5 @@ negativeCore = positiveCore.negate()
 learner.learn_formula(skeletonExpression,candidatesDict,sampleDf,positiveCore,negativeCore)
 
 learner.generate_mln()
+
+learner.graphicalModel.vi
