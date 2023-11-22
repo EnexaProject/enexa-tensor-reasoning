@@ -8,6 +8,8 @@ from tnreason.logic import expression_calculus as ec
 
 import numpy as np
 import pandas as pd
+import networkx as nx
+import matplotlib.pyplot as plt
 
 class MarkovLogicNetwork:
     def __init__(self, expressionsDict = None):
@@ -61,6 +63,43 @@ class MarkovLogicNetwork:
             df = pd.concat([df, row_df])
         return df.astype("bool")
 
+    def visualize(self, regenerate_graph=True, truthDict ={}, fontsize=10):
+        if regenerate_graph:
+            self.graph = nx.Graph()
+            self.graph.add_nodes_from(self.model.nodes)
+            self.graph.add_edges_from(self.model.edges)
+            self.graph_pos = nx.spring_layout(self.graph)
+        labels = {atom: atom for atom in self.graph.nodes}
+        nx.draw_networkx_labels(self.graph, self.graph_pos, labels, font_size=fontsize)
+
+        colorList = ["r","g","b","r","g","b","r","g","b"]
+        for i, factor in enumerate(self.model.get_factors()):
+            variables = factor.variables
+            color = colorList[i]
+            edges = [(var1,var2) for var1 in variables for var2 in variables]
+            nx.draw_networkx_edges(self.graph, self.graph_pos,
+                                   edgelist=edges, width=10, alpha=0.2, edge_color=color)
+
+        trueNodes = [atom for atom in truthDict.keys() if truthDict[atom]==True]
+        falseNodes = [atom for atom in truthDict.keys() if truthDict[atom]==False]
+        otherNodes = {atom: atom for atom in self.graph.nodes if atom not in truthDict.keys()}
+        nx.draw_networkx_nodes(self.graph, self.graph_pos,
+                               nodelist=otherNodes,
+                               node_color="grey",
+                               node_size=3000,
+                               alpha=0.2)
+        nx.draw_networkx_nodes(self.graph, self.graph_pos,
+                               nodelist=trueNodes,
+                               node_color="b",
+                               node_size=3000,
+                               alpha=0.6)
+        nx.draw_networkx_nodes(self.graph, self.graph_pos,
+                               nodelist=falseNodes,
+                               node_color="r",
+                               node_size=3000,
+                               alpha=0.6)
+        plt.show()
+
 def calculate_dangling_basis(expression):
     variables = np.unique(ec.get_variables(expression))
     atom_dict = {}
@@ -69,22 +108,23 @@ def calculate_dangling_basis(expression):
     return ec.calculate_core(atom_dict,expression)
 
 if __name__ == "__main__":
-    test_mln = MarkovLogicNetwork()
-
     example_expression_dict = {
         "e0": [["not",["Unterschrank(z)","and",["not","Moebel(z)"]]], 20],
         "e0.5": ["Moebel(z)", -2],
+        "e0.75": [["not",[["Unterschrank(z)","and","Sledz"],"and",["not","Ausgangsrechnung(x)"]]], 2],
         "e1": [["not", "Ausgangsrechnung(x)"], 12],
         "e2": [[["not", "Ausgangsrechnung(x)"], "and", ["not", "Rechnung(x)"]], 14]
     }
-    test_mln.create_from_expressionsDict(example_expression_dict)
+    test_mln = MarkovLogicNetwork(example_expression_dict)
 
     ## 1 = True, 0 = False
     example_evidence_dict = {
         "Unterschrank(z)": 1,
         "Ausgangsrechnung(x)": 1
     }
-    print(test_mln.map_query_given_evidenceDict(example_evidence_dict,["Moebel(z)"])["Moebel(z)"])
+    #print(test_mln.map_query_given_evidenceDict(example_evidence_dict,["Moebel(z)"])["Moebel(z)"])
     cond_query_result = test_mln.cond_query_given_evidenceDict(example_evidence_dict,["Moebel(z)"])
     cond_query_result.normalize()
-    print(cond_query_result.values)
+    #print(cond_query_result.values)
+
+    test_mln.visualize(truthDict={"Unterschrank(z)":True, "Ausgangsrechnung(x)":False})
