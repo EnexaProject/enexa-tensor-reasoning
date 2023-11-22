@@ -1,5 +1,8 @@
 import numpy as np
 
+alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+            'u', 'v', 'w', 'x', 'y', 'z']
+
 
 class BasisCore:
     def __init__(self, core_values, core_colors, headcolor=None, name=None):
@@ -62,6 +65,36 @@ class BasisCore:
 
         return BasisCore(contracted, contracted_colors, "TruthEvaluated", core0.name)
 
+    def reduce_identical_colors(self):
+        toBeReduced = []
+        for color in self.colors:
+            if self.colors.count(color) > 1 and color not in toBeReduced:
+                toBeReduced.append(color)
+        reducedCore = self.clone()
+        for color in toBeReduced:
+            reducedCore = reducedCore.reduce_color(color)
+        return reducedCore
+
+    def reduce_color(self, reductionColor):
+        left_string = ""
+        new_string = ""
+        for i, color in enumerate(self.colors):
+            if color == reductionColor:
+                left_string = left_string + alphabet[-1]
+            else:
+                left_string = left_string + alphabet[i]
+                new_string = new_string + alphabet[i]
+        new_string = new_string + alphabet[-1]
+        right_string = "".join(alphabet[-1] for i in range(self.colors.count(reductionColor)))
+        contraction_string = left_string + "," + right_string + "->" + new_string
+
+        delta_values = create_delta_tensor(order=self.colors.count(reductionColor), legDim=2)
+
+        newColors = [color for color in self.colors if color != reductionColor]
+        newColors.append(reductionColor)
+
+        return BasisCore(np.einsum(contraction_string, self.values, delta_values), newColors)
+
 
 def create_negation_tensor():
     negation_tensor = np.zeros((2, 2))
@@ -80,11 +113,12 @@ def create_and_tensor():
 
 
 # Not required!
-def create_delta_tensor(order=3, legim=2):
+def create_delta_tensor(order=3, legDim=2):
     delta_tensor = np.zeros((tuple([2 for k in range(order)])))
-    for i in range(legim):
+    for i in range(legDim):
         delta_tensor[tuple([i for k in range(order)])] = 1
     return delta_tensor
+
 
 def create_truth_vec():
     truthvec = np.zeros(2)

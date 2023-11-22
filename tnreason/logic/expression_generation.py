@@ -17,16 +17,30 @@ def generate_negated_conjunctions(positive_atoms, negated_atoms):
     return generate_conjunctions(positive_atoms + [["not", atom] for atom in negated_atoms])
 
 
-def generate_from_or_expression(expression):
+def generate_from_generic_expression(expression):
     if type(expression) == str:
         return expression
     elif expression[0] == "not":
-        return ["not", generate_from_or_expression(expression[1])]
+        return ["not", generate_from_generic_expression(expression[1])]
     elif expression[1] == "and":
-        return [generate_from_or_expression(expression[0]), "and", generate_from_or_expression(expression[2])]
+        return [generate_from_generic_expression(expression[0]), "and", generate_from_generic_expression(expression[2])]
     elif expression[1] == "or":
-        return ["not", [["not", generate_from_or_expression(expression[0])], "and",
-                        ["not", generate_from_or_expression(expression[2])]]]
+        return ["not", [["not", generate_from_generic_expression(expression[0])], "and",
+                        ["not", generate_from_generic_expression(expression[2])]]]
+    elif expression[1] == "eq":
+        left = generate_from_generic_expression(expression[0])
+        right = generate_from_generic_expression(expression[2])
+        return ["not", [
+            ["not", [left, "and", right]]
+            , "and",
+            ["not", [["not", left], "and", ["not", right]]]
+        ]]
+    elif expression[1] == "imp":
+        left = generate_from_generic_expression(expression[0])
+        right = generate_from_generic_expression(expression[2])
+        return ["not", [
+            left, "and", ["not", right]
+        ]]
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 
@@ -70,7 +84,7 @@ def generate_pracmln_formulastring(expression):
 
 
 if __name__ == "__main__":
-    and_expression = generate_from_or_expression(["jaszczur", "or", ["sikorka", "or", ["not", "sledz"]]])
+    and_expression = generate_from_generic_expression(["jaszczur", "or", ["sikorka", "or", ["not", "sledz"]]])
     assert remove_double_not(and_expression) == ['not',
                                                  [['not', 'jaszczur'], 'and', [['not', 'sikorka'], 'and', 'sledz']]], \
         "Generate from disjunctions or double not does not work"

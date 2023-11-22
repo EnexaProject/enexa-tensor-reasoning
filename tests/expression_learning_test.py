@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from tnreason.learning import variable_learning as el
+from tnreason.learning import expression_learning as el
 import tnreason.learning.check_cores as chcc
 
 import tnreason.logic.coordinate_calculus as cc
@@ -25,7 +25,7 @@ learner.get_solution()
 ## Based on BBB generated data (factDf)
 
 skeleton = [["C1(a)", "and", "R1(a,b)"], "and", ["not", "C1(a)"]]
-learner = el.ExpressionLearner(skeleton)
+learner = el.VariableLearner(skeleton)
 
 individualsDict = {
     "a": ["http://datev.de/ontology#ocr_item_5f3d5dc5-c55e-d6bc-50bf-7071e0f90d61_6"],
