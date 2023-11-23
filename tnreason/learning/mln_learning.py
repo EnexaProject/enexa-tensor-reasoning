@@ -30,7 +30,7 @@ class AtomicMLNLearner:
             for atom in atoms
         }
 
-    def learn_independent_weight(self, expression, verbose = True):
+    def learn_independent_weight(self, expression, verbose = False):
         return wees.calculate_weight(expression, self.atomDict, verbose=verbose)
 
     def add_independent_formula(self, expression):

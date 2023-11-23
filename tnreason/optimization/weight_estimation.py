@@ -16,6 +16,11 @@ def solve_rate_equation(satRate, empRate):
 def regularize_empRate(empRate, regFactor):
     return regFactor * (empRate - 0.5) + 0.5
 
+def cutoff_weight(weight, cutoff):
+    if weight > cutoff:
+        return cutoff
+    else:
+        return  weight
 
 def calculate_empRate(expression, atomDict, filterCore=None):
     expressionCore = ec.calculate_core(atomDict, expression)
@@ -37,14 +42,14 @@ def calculate_satRate(expression):
     return satNum / modelNum
 
 
-def calculate_weight(expression, atomDict, filterCore=None, regFactor=1, verbose=False, check=True):
+def calculate_weight(expression, atomDict, filterCore=None, regFactor=1, verbose=False, check=True, cut = 20):
     satRate = calculate_satRate(expression)
 
     if check:
         assert satRate == calculate_satRate_bc(expression), "Saturation Rate does not coincide with Basis Calculus!"
 
     empRate = regularize_empRate(calculate_empRate(expression, atomDict, filterCore), regFactor)
-    weight = solve_rate_equation(satRate, empRate)
+    weight = cutoff_weight(solve_rate_equation(satRate, empRate), cut)
     if verbose:
         print("## Calculationg the weight of {} ##".format(expression))
         print("World satisfaction rate: {}".format(satRate))
