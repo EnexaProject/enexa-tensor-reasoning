@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from tnreason.logic import expression_generation as eg
-from examples.benchmarking import recovery_experiment as re
+from benchmarking import recovery_experiment as re
 
 ## Each rule is stored as value in the dictionary, and has format [list of premises, head, MLN weight]
 example_rule_dict = {
@@ -59,5 +59,5 @@ plt.colorbar()
 plt.yticks(range(len(experimentKeys)),list(experimentKeys))
 plt.xticks(range(len(dataNums)),dataNums)
 plt.xlabel("Number of Samples")
-plt.savefig("./examples/benchmarking/diagrams/ausgangsrechnung_differentmodes.png")
+plt.savefig("./benchmarking/diagrams/ausgangsrechnung_differentmodes.png")
 plt.show()

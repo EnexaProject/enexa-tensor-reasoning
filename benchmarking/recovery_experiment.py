@@ -1,9 +1,6 @@
-import pandas as pd
-import numpy as np
-
 from tnreason.model import generate_test_data as gtd
 from tnreason.learning import expression_learning as el
-
+from tnreason.learning import mln_learning as mlnl
 from tnreason.logic import expression_calculus as ec
 
 
@@ -35,3 +32,18 @@ def sampleDf_experiment(formulaDict, sampleNum, skeletonExpression, candidatesDi
         return 1
     else:
         return 0
+
+
+def weight_recovery(expressionDict, trueFormula, weight, sampleNum, skeletonExpression, candidatesDict,
+                    positiveExpression=None, testMod="imp"):
+    learner = mlnl.AtomicMLNLearner()
+    learner.load_sampleDf(generate_data(expressionDict, sampleNum))
+
+    if testMod == "imp":
+        learner.learn_implication(positiveExpression, skeletonExpression, candidatesDict)
+        estFormula, estWeight = learner.weightedFormulas[0]
+
+    if estFormula != trueFormula:
+        return 0, -1
+    else:
+        return 1, abs(weight - estWeight)

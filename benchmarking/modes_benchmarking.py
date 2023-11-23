@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from tnreason.logic import expression_generation as eg
-from examples.benchmarking import recovery_experiment as re
+from benchmarking import recovery_experiment as re
 
 ## Each rule is stored as value in the dictionary, and has format [list of premises, head, MLN weight]
 example_rule_dict = {
@@ -16,10 +16,6 @@ example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), v
 
 positiveExpression = ['not', ['Ausgangsrechnung(x)', 'and', [['not', 'versandterBeleg(y,x)'], 'and', ['not', 'hatLeistungserbringer(x,y)']]]]
 skeletonExpression = ['not', ['H', 'and', [['not', 'P1'], 'and', ['not', 'P2']]]]
-
-#positiveExpression = ['Ausgangsrechnung(x)', 'and', 'versandterBeleg(y,x)']#, 'and', "hatLeistungserbringer(x,y)"]]
-#skeletonExpression = ['H', 'and', 'P1']#, 'and', 'P2']]
-
 candidatesDict = {
     "H": ["Ausgangsrechnung(x)","Bautischlerei(y)"],
     "P1": ["versandterBeleg(y,x)","hatBelegzeile(x,z)"],
@@ -36,13 +32,10 @@ for i, dataNum in enumerate(dataNums):
         rate += re.sampleDf_experiment(example_expression_dict, dataNum, skeletonExpression, candidatesDict, positiveExpression)
     successRates[i] = rate/repetitions
 
-print(successRates)
-
-
 plt.scatter(dataNums,successRates, marker = "+")
 plt.xlabel("Number of Data")
 plt.ylabel("Success rate of {} repetitions".format(repetitions))
 plt.ylim(0,1)
-plt.savefig("./examples/benchmarking/diagrams/ausgangsrechnung.png")
+plt.savefig("./benchmarking/diagrams/ausgangsrechnung.png")
 plt.show()
 
