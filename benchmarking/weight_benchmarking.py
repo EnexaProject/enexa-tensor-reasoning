@@ -43,7 +43,7 @@ plt.ylabel("Weights")
 plt.xlabel("Samples")
 plt.yticks(range(len(weights)), weights)
 plt.xticks(range(len(sampleNums)), sampleNums)
-plt.savefig("./examples/benchmarking/diagrams/success_rate.png")
+plt.savefig("./benchmarking/diagrams/success_rate.png")
 plt.close()
 
 plt.imshow(precisions, cmap="coolwarm", vmax=10, vmin=0)

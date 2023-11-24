@@ -10,7 +10,7 @@ This module can be used for different tasks, as demonstrated in the `examples` f
 
 Given a set of logical formulas a Markov Logic Network can be created using the Basis Calculus. One can then sample from the model to generate random data, in this case interpreted as a Random Knowledge Graph.
 
-An example can be found in `examples/generation/generate_accounting_kg.py`
+An example can be found in `examples/generation/generate_accounting_kg.py`.
 
 ### Learning of logical formulas
 
@@ -18,17 +18,7 @@ Given a Knowledge Graph and positive and negative examples (each a pair of indiv
 Examples can be found in `examples/learning/`.
 
 
-## Submodules
-
-The repository contains these submodules, each performing a dedicated task.
-
-### Representation
-
-On KG represented in turtle files:
-
-`ttl_to_csv.py` Transform turtle file into a DataFrame containing facts.
-
-`csv_to_cores.py` Transform Fact DataFrame into CoordinateCalculus 
+## Packages
 
 ### Logic
 
@@ -40,12 +30,26 @@ Expression Calculus: Evaluation of expressions given dictionaries of `Coordinate
 
 ### Optimization
 
-`generalized_als.py`: Performing the Alternating Least Squares.
+`generalized_als.py` Performs the Alternating Least Squares to solve tensor regression problems.
 
 ### Learning
 
-`expression_learning.py` Class `ExpressionLearner` is a wrapper of the representation and optimization module to learn logical formulas.
+`expression_learning.py` Optimizes formulas using Coordinate Calculus and the Alternating Least Squares.
+
+`mln_learning.py` Learns Markov Logic Networks based on data.
 
 ### Models
 
-`create_mln.py` Creates a Markov Logic Network base
+`markov_logic_network.py` Creates a Markov Logic Network using Basis Calculus based on `pgmpy.models.MarkovNetwork`.
+
+### Representation
+
+On KG represented in turtle files:
+
+`ttl_to_csv.py` Transform turtle file into a DataFrame containing facts.
+
+`factdf_to_cores.py` Transforms the fact DataFrame into CoordinateCalculus Cores in the variable-based representation.
+
+`pairdf_to_cores.py` Uses the pair DataFrame to initialize the targetCore.
+
+`sampledf_to_cores.py` Transform sample DataFrame into CoordinateCalculus Cores in the atom-based representation.

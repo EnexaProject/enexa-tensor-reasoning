@@ -6,23 +6,24 @@ with open('README.md', 'r') as f:
 setup(
     name="tnreason",
     version="0.0",
-    author="Alex Goeßmann",
+    author="Alex Goessmann",
+    author_email="alex.goessmann@web.de",
     description="A package for reasoning with tensors",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=[],
+    packages=find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.8",
+        "License :: OSI Approved :: GNU Affero General Public License v3 (AGPL-3.0)",
         "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence"
     ],
     install_requires=[
         "numpy>=1.23.4",
-        "pandas>=1.5.3",
-        "pgmpy>=0.1.24",
-        #"pracmln>=1.2.4"
+        "pandas>=1.5.3"
     ],
-    python_requires=">=3.8.5",
-    py_modules=["tnreason"],
-    package_dir={'':'.'},
+    python_requires=">=3.8",
+    license="AGPL-3.0",
+    url="https://github.com/EnexaProject/enexa-tensor-reasoning",
+    keywords="inductive reasoning, tensor networks, alternating least squares, markov logic networks"
 )
