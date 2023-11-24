@@ -20,7 +20,11 @@ setup(
     ],
     install_requires=[
         "numpy>=1.23.4",
-        "pandas>=1.5.3"
+        "pandas>=1.0.0",
+        "pgmpy",
+        "importlib-resources",
+        "rdflib",
+        "matplotlib"
     ],
     python_requires=">=3.8",
     license="AGPL-3.0",
