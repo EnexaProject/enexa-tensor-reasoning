@@ -55,7 +55,7 @@ def calculate_weight(expression, atomDict, filterCore=None, regFactor=1, verbose
         print("World satisfaction rate: {}".format(satRate))
         print("Data satifcation rate: {}".format(empRate))
         print("Calculated weight: {}".format(weight))
-    return weight
+    return empRate, satRate, weight
 
 
 def partition_function(satRate, w):

@@ -18,7 +18,7 @@ savePath = "./examples/learning/synthetic_test_data/synthetic_accounting/"
 regenerate = True
 if regenerate:
     sampleDf = gtd.generate_sampleDf(example_expression_dict, sampleNum=dataNum, chainSize=10)
-    sampleDf.to_csv(savePath + "generated_sampleDf.csv")
+    #sampleDf.to_csv(savePath + "generated_sampleDf.csv")
 else:
     sampleDf = pd.read_csv(savePath + "generated_sampleDf.csv", index_col=0).astype("int64")
 
@@ -30,12 +30,12 @@ candidatesDict = {
     "P1": ["versandterBeleg(y,x)", "hatBelegzeile(x,z)"],
     "P2": ["hatLeistungserbringer(x,y)", "Bautischlerei(y)"],
 }
-learner.learn_implication("Ausgangsrechnung(x)",skeletonExpression,candidatesDict)
+learner.learn_implication("Ausgangsrechnung(x)",skeletonExpression,candidatesDict,acceptanceCriterion="weight>0.1,empRate>0.9")
 
 skeletonExpression2 = ["not",[["not","P2"],"and","P1"]]
 candidatesDict2 = {
-    "P1": ["versandterBeleg(y,x)", "hatBelegzeile(x,z)", "Unterschrank(z)"],
-    "P2": ["hatLeistungserbringer(x,y)", "Bautischlerei(y)","Moebel(z)"],
+    "P1": ["versandterBeleg(y,x)", "Unterschrank(z)"],
+    "P2": ["Bautischlerei(y)","Moebel(z)"],
 }
 learner.learn_tautology(skeletonExpression2,candidatesDict2)
 
