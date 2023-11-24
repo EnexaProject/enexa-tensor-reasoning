@@ -1,4 +1,4 @@
-from tnreason.logic import satisfaction_counter as sc
+from optimization import satisfaction_counter as sc
 from tnreason.logic import expression_calculus as ec
 
 from tnreason.model import markov_logic_network as mln

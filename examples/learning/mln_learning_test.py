@@ -13,7 +13,7 @@ example_rule_dict = {
 }
 example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), value[2]] for (key,value) in example_rule_dict.items()}
 
-dataNum = 1000
+dataNum = 100
 savePath = "./examples/learning/synthetic_test_data/synthetic_accounting/"
 regenerate = True
 if regenerate:
@@ -36,8 +36,10 @@ skeletonExpression2 = ["not",[["not","P2"],"and","P1"]]
 candidatesDict2 = {
     "P1": ["versandterBeleg(y,x)", "Unterschrank(z)"],
     "P2": ["Bautischlerei(y)","Moebel(z)"],
+    "P3": ["Moebel(z)"],
+    "P4": ["ja"]
 }
-learner.learn_tautology(skeletonExpression2,candidatesDict2)
+learner.learn_tautology(skeletonExpression2,candidatesDict2,acceptanceCriterion="weight>0.5",refinement_left=2)
 
 model = learner.generate_mln()
 #model.visualize()
