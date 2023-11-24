@@ -8,8 +8,6 @@ import tnreason.representation.pairdf_to_cores as ptoc
 
 import tnreason.optimization.generalized_als as gals
 
-from tnreason.model import markov_logic_network
-
 import numpy as np
 
 
@@ -42,10 +40,6 @@ class LearnerBase:
             maxPos = np.argmax([abs(val) for val in self.variablesCoresDict[legKey].values])
             self.solutionDict[legKey] = self.candidatesDict[legKey][maxPos]
         self.solutionExpression = eg.replace_atoms(self.skeleton, self.solutionDict)
-
-    @property
-    def factor_core(self):
-        return markov_logic_network.calculate_dangling_basis(self.solutionExpression).calculate_truth()
 
 
 class AtomicLearner(LearnerBase):
@@ -167,7 +161,7 @@ def variable_find_var(fixedCore):
 if __name__ == "__main__":
     import pandas as pd
 
-    samDf = pd.read_csv("./examples/generation/synthetic_test_data/generated_sampleDf.csv")
+    samDf = pd.read_csv("./examples/generation/synthetic_test_data/generated_sampleDf.csv").astype("int64")
 
     skeleton = ["P0", "and", "P1"]
     candidatesDict = {
