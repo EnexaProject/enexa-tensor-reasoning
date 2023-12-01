@@ -1,3 +1,5 @@
+from tnreason.logic import coordinate_calculus as cc
+
 import numpy as np
 
 alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
@@ -100,6 +102,11 @@ class BasisCore:
 
     def count_satisfaction(self):
         return np.sum(self.values)/2**len(self.values.shape)
+
+    def to_coordinate(self):
+        if self.headcolor is not "TruthEvaluated":
+            print("Warning: Basis Core to Coordinate Core before Truth Evaluation!")
+        return cc.CoordinateCore(self.values, self.colors, self.name)
 
 def create_negation_tensor():
     negation_tensor = np.zeros((2, 2))

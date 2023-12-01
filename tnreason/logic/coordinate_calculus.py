@@ -167,6 +167,19 @@ class CoordinateCore:
         else:
             return CoordinateCore(np.ones(constantShape), constantColors, "Constant")
 
+    def reduce_color(self, conColor):
+        ## To be implemented for efficiency increase: Alternative using np.sum
+        if conColor not in self.colors:
+            raise ValueError("Color {} not found in core {} for reduction.".format(conColor, self.name))
+        colorDict = {col:alphabet[i] for i, col in enumerate(self.colors)}
+        contractionstring = "".join([colorDict[col] for col in self.colors]) + "," + colorDict[conColor] + "->" + "".join(([colorDict[col] for col in self.colors if col != conColor]))
+        onesValues = np.ones(self.values.shape[self.colors.index(conColor)])
+        newValues = np.einsum(contractionstring, self.values, onesValues)
+        return CoordinateCore(newValues, [col for col in self.colors if col!=conColor])
+
+    def weighted_exponentiation(self, weight):
+        return CoordinateCore(np.exp(weight*self.values), self.colors)
+
 ## Small Test Skript
 if __name__ == "__main__":
     core0_values = np.random.normal(size=(100, 10, 5))
