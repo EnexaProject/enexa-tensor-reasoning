@@ -1,3 +1,6 @@
+from matplotlib import pyplot as plt
+
+
 class CoreContractor:
     """
     coreDict: list of CoordinateCores
@@ -36,6 +39,37 @@ class CoreContractor:
             self.instructionList.append(["add", key])
             for color in reduceDict[key]:
                 self.instructionList.append(["reduce", color])
+
+    def evaluate_sizes_instructionList(self, show=True):
+        shapeList = [[]]
+        colorList = [[]]
+        for instruction in self.instructionList:
+            shapes = shapeList[-1].copy()
+            colors = colorList[-1].copy()
+            if instruction[0] == "add":
+                for i, color in enumerate(self.coreDict[instruction[1]].colors):
+                    if color not in colors:
+                        colors.append(color)
+                        shapes.append(self.coreDict[instruction[1]].values.shape[i])
+            elif instruction[0] == "reduce":
+                popindex = colors.index(instruction[1])
+                shapes.pop(popindex)
+                colors.pop(popindex)
+            shapeList.append(shapes)
+            colorList.append(colors)
+        sizeList = []
+        for shapes in shapeList:
+            sizeList.append(np.prod(shapes))
+
+        if show:
+            plt.title("Tensor Sizes During the Contraction", fontsize=15)
+            plt.scatter(range(1, len(sizeList)), sizeList[1:], marker="+")
+            plt.xticks(range(1, len(sizeList)), [str(ins) for ins in self.instructionList])
+            plt.xlabel("Instructions")
+            plt.ylabel("Number of Coordinates of the contracted")
+            plt.show()
+
+        return sizeList, shapeList, colorList
 
     def contract(self, verbose=False):
         if self.instructionList is None:
@@ -113,5 +147,10 @@ if __name__ == "__main__":
     contractor = CoreContractor(coordinateDict,
                                 [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"], ["reduce", "q"]])
     contractor.create_instructionList_from_coreList()
+
+    siList, shList, coList = contractor.evaluate_sizes_instructionList()
+
+    #   print(siList)
+
     contractor.exponentiate_with_weight(weightDict)
     print(contractor.contract().values)
