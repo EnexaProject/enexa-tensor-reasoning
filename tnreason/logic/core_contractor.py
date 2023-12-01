@@ -1,11 +1,11 @@
-
 class CoreContractor:
     """
     coreDict: list of CoordinateCores
     contractionList: list of colors
     instructionList: list of contraction instructions: either and with additional core or reduce a color. First entry must be add to start with
     """
-    def __init__(self, coreDict={}, instructionList=[]):
+
+    def __init__(self, coreDict={}, instructionList=None):
         self.coreDict = coreDict
         self.instructionList = instructionList
 
@@ -37,7 +37,9 @@ class CoreContractor:
             for color in reduceDict[key]:
                 self.instructionList.append(["reduce", color])
 
-    def contract(self,verbose=False):
+    def contract(self, verbose=False):
+        if self.instructionList is None:
+            self.create_instructionList_from_coreList()
         contracted = self.coreDict[self.instructionList[0][1]]
         for instruction in self.instructionList[1:]:
             if verbose:
@@ -48,10 +50,9 @@ class CoreContractor:
                 contracted = contracted.reduce_color(instruction[1])
             else:
                 raise ValueError("Instruction {} not understood.".format(instruction))
-        if verbose and len(contracted.values.shape)>0:
+        if verbose and len(contracted.values.shape) > 0:
             print("Missing contraction colors are {}.".format(contracted.colors))
         return contracted
-
 
     def contract_color(self, color):
         affectedCores, affectedKeys = find_affected(self.coreDict, color)
@@ -63,9 +64,10 @@ class CoreContractor:
         contracted.count_on_color(color)
 
         self.coreDict = {key: self.coreDict[key] for key in self.coreDict if key not in affectedKeys}
-        self.coreDict["contracted_"+color] = contracted
+        self.coreDict["contracted_" + color] = contracted
 
         return contracted
+
 
 def find_affected(coreDict, color):
     affectedCores = []
@@ -90,6 +92,7 @@ if __name__ == "__main__":
             vector[1] = 1
         return vector
 
+
     def calculate_random_basis_core(shape):
         shapeProduct = np.prod(shape)
         core = np.zeros([2, shapeProduct])
@@ -107,7 +110,8 @@ if __name__ == "__main__":
         "a": 2.134,
         "b": 1.72345
     }
-    contractor = CoreContractor(coordinateDict, [["add","a"],["add","b"],["reduce","x"],["reduce","y"],["reduce","q"]])
+    contractor = CoreContractor(coordinateDict,
+                                [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"], ["reduce", "q"]])
     contractor.create_instructionList_from_coreList()
     contractor.exponentiate_with_weight(weightDict)
     print(contractor.contract().values)
