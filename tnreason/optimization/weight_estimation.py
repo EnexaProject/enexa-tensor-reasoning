@@ -11,7 +11,7 @@ import numpy as np
 class WeightEstimator:
     def __init__(self, formulaList):
         self.formulaDict = {"f" + str(i): [formula, 0, 0, 0] for i, formula in enumerate(formulaList)}
-        self.coreDict = {}  ## CoordinateCores of each formula
+        self.coreDict = {}  ## CoordinateCores of each formula -> Calculated in self.calculate_independent_satRates, to initialize the alternating optimization
 
     def calculate_independent_satRates(self):
         for formulaKey in self.formulaDict:
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     estimator.independent_estimation(atomDict)
     weightTracker = estimator.alternating_optimization(atomDict, 10)
 
-    plt.imshow(weightTracker, cmap = "coolwarm")
+    plt.imshow(weightTracker, cmap="coolwarm")
     plt.colorbar()
     plt.show()
 
@@ -154,4 +154,3 @@ if __name__ == "__main__":
     checkEmpRate = calculate_empRate(expression, atomDict, filterCore)
     checkSatRate = calculate_satRate(expression)
     result = calculate_weight(expression, atomDict, filterCore)
-

@@ -34,6 +34,12 @@ class AtomicMLNLearner:
     def learn_independent_weight(self, expression, verbose=False):
         return wees.calculate_weight(expression, self.atomDict, verbose=verbose)
 
+    def alternating_weight_optimization(self, sweepNum):
+        estimator = wees.WeightEstimator([weightedFormula[0] for weightedFormula in self.weightedFormulas])
+        estimator.alternating_optimization(self.atomDict, sweepNum)
+        self.weightedFormulas = [[estimator.formulaDict[formulaKey][0], estimator.formulaDict[formulaKey][3]] for
+                                 formulaKey in estimator.formulaDict]
+
     def add_independent_formula(self, expression, criterion=""):
         empRate, satRate, weight = self.learn_independent_weight(expression)
         if criterion_satisfied(empRate, satRate, weight, criterion):

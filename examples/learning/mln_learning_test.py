@@ -13,7 +13,7 @@ example_rule_dict = {
 }
 example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), value[2]] for (key,value) in example_rule_dict.items()}
 
-dataNum = 100
+dataNum = 10
 savePath = "./examples/learning/synthetic_test_data/synthetic_accounting/"
 regenerate = True
 if regenerate:
@@ -41,5 +41,7 @@ candidatesDict2 = {
 }
 learner.learn_tautology(skeletonExpression2,candidatesDict2,acceptanceCriterion="weight>0.5",refinement_left=2)
 
+learner.alternating_weight_optimization(10)
+print(learner.weightedFormulas)
 model = learner.generate_mln()
 #model.visualize()
