@@ -20,9 +20,11 @@ class ContractionOptimizer:
         self.coreList = np.array(list(self.coreColorDict.keys()))
         np.random.shuffle(self.coreList)
 
-    def fine_openColors_at(self, pos):  # Contraction Size of coreList up to position pos
-        contractedCores = self.coreList[:pos]
-        uncontractedCores = self.coreList[pos:]
+    def fine_openColors_at(self, pos, coreList=None):  # Contraction Size of coreList up to position pos
+        if coreList is None:
+            coreList = self.coreList
+        contractedCores = coreList[:pos]
+        uncontractedCores = coreList[pos:]
 
         contractedColors = compute_colors_in_cores(contractedCores, self.coreColorDict)
         restColors = compute_colors_in_cores(uncontractedCores, self.coreColorDict)
@@ -37,15 +39,18 @@ class ContractionOptimizer:
 
         return openColors, openShape, openSize
 
-    def evaluate_coreList(self):
+    def evaluate_coreList(self, coreList=None):
+        if coreList is None:
+            coreList = self.coreList
         self.openColors = []
         self.openShapes = []
         self.openSizes = []
-        for pos in range(len(self.coreList) + 1):
-            colors, shape, size = self.fine_openColors_at(pos)
+        for pos in range(len(coreList) + 1):
+            colors, shape, size = self.fine_openColors_at(pos, coreList)
             self.openColors.append(colors)
             self.openShapes.append(shape)
             self.openSizes.append(size)
+        return self.openShapes
 
     def compute_heuristic_at(self, pos, newColorPenalty=1, colorCloseScore=1):
         openColors, _, _ = self.fine_openColors_at(pos)
@@ -67,18 +72,58 @@ class ContractionOptimizer:
 
     def optimize_using_heuristic(self, newColorPenalty=1, colorCloseScore=1, verbose=False):
         if verbose:
-            self.evaluate_coreList()
+            openSizes = self.evaluate_coreList()
             print(
-                "Before optimization have a footprint {} using order {}.".format(np.sum(self.openSizes), self.coreList))
+                "Before optimization have a footprint {} using order {}.".format(np.sum(openSizes), self.coreList))
         for pos in range(len(self.coreList)):
             maxPos = np.argmax(
                 self.compute_heuristic_at(pos, newColorPenalty=newColorPenalty, colorCloseScore=colorCloseScore))
             self.coreList[pos], self.coreList[pos + maxPos] = self.coreList[pos + maxPos], self.coreList[pos]
 
         if verbose:
-            self.evaluate_coreList()
+            openSizes = self.evaluate_coreList()
             print(
-                "After optimization have a footprint {} using order {}.".format(np.sum(self.openSizes), self.coreList))
+                "After optimization have a footprint {} using order {}.".format(np.sum(openSizes), self.coreList))
+
+    def random_modification(self, temp=1, criterion="memory"):
+        modCoreList = self.coreList.copy()
+
+        previousShapes = self.evaluate_coreList(modCoreList)
+        previousScore = np.sum([np.prod(shape) for shape in previousShapes])
+
+        modPos1 = np.random.randint(0, len(self.coreList))
+        modPos2 = np.random.randint(0, len(self.coreList))
+
+        modCoreList[modPos1], modCoreList[modPos2] = modCoreList[modPos2], modCoreList[modPos1]
+
+        if criterion == "memory":
+            newShapes = self.evaluate_coreList(modCoreList)
+            newScore = np.sum([np.prod(shape) for shape in newShapes])
+
+            acceptanceProb = 1 / (1 + np.exp(temp * (newScore - previousScore)))
+        else:
+            raise ValueError("Criterion {} not understood in randomized coreList optimization.".format(criterion))
+
+        accept = np.random.choice([0, 1], p=[1 - acceptanceProb, acceptanceProb])
+        if accept:
+            self.coreList = modCoreList
+        return accept and modPos1 != modPos2
+
+    def metropolis(self, repetitions=10, temp=1, criterion="memory", verbose=True):
+        if verbose:
+            firstShapes = self.evaluate_coreList()
+            firstScore = np.sum([np.prod(shape) for shape in firstShapes])
+            modCounter = 0
+        for repetition in range(repetitions):
+            modified = self.random_modification(temp=temp, criterion=criterion)
+            if modified and verbose:
+                modCounter += 1
+                print("## Random modification to {} accepted".format(self.coreList))
+        if verbose:
+            print("Of {} modifications {} have been accepted.".format(repetitions, modCounter))
+            newShapes = self.evaluate_coreList()
+            newScore = np.sum([np.prod(shape) for shape in newShapes])
+            print("The criterion {} changed from {} to {}.".format(criterion, firstScore, newScore))
 
 
 def compute_colors_in_cores(cores, coreColorDict):
@@ -111,3 +156,6 @@ if __name__ == "__main__":
     print(optim.coreList)
     optim.optimize_using_heuristic(colorCloseScore=10)
     print(optim.coreList)
+
+    optim.metropolis(repetitions=int(1e4))
+    optim.random_modification()
