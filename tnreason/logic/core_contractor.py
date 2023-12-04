@@ -3,6 +3,7 @@ import numpy as np
 
 from tnreason.optimization import contraction_optimization as co
 
+
 class CoreContractor:
     """
     coreDict: list of CoordinateCores
@@ -10,7 +11,7 @@ class CoreContractor:
     instructionList: list of contraction instructions: either and with additional core or reduce a color. First entry must be add to start with
     """
 
-    def __init__(self, coreDict={}, coreList = None, instructionList=None):
+    def __init__(self, coreDict={}, coreList=None, instructionList=None):
         self.coreDict = coreDict
         self.coreList = coreList
         self.instructionList = instructionList
@@ -20,6 +21,7 @@ class CoreContractor:
             self.coreDict[coreKey] = self.coreDict[coreKey].weighted_exponentiation(weightDict[coreKey])
 
     def optimize_coreList(self):
+        # Generate the coreColorDict and colorDimDict for ContractionOptimizer
         coreColorDict = {}
         colorDimDict = {}
         for coreKey in self.coreDict:
@@ -27,15 +29,12 @@ class CoreContractor:
             for i, color in enumerate(self.coreDict[coreKey].colors):
                 if color not in colorDimDict:
                     colorDimDict[color] = self.coreDict[coreKey].values.shape[i]
-
-        print(coreColorDict)
-        print(colorDimDict)
-
         optimizer = co.ContractionOptimizer(coreColorDict, colorDimDict)
+        # Optimize coreList i.e. order of contraction
         optimizer.optimize_using_heuristic()
         self.coreList = optimizer.coreList
 
-    def create_instructionList_from_coreList(self, verbose=True):
+    def create_instructionList_from_coreList(self, verbose=False):
         if self.coreList is None:
             self.coreList = list(self.coreDict.keys())
         # Find all colors
@@ -44,25 +43,26 @@ class CoreContractor:
             for color in self.coreDict[key].colors:
                 if color not in colorList:
                     colorList.append(color)
-        # Find core after which color can be reduced
-        self.coreList = list(self.coreList) ## Turn it back into a list to reverse it
+        # Find cores after which color can be reduced
+        self.coreList = list(self.coreList)
         self.coreList.reverse()
-
         reduceDict = {key: [] for key in self.coreDict}
         for color in colorList:
             for key in self.coreList:
                 if color in self.coreDict[key].colors:
                     reduceDict[key].append(color)
                     break
+        self.coreList.reverse()
         # Create the instructionList
         self.instructionList = []
-        for key in reduceDict:
+        for key in self.coreList:
             self.instructionList.append(["add", key])
             for color in reduceDict[key]:
                 self.instructionList.append(["reduce", color])
-
         if verbose:
-            print("The instructionList is {} and colorList {}.".format(self.instructionList, {key:self.coreDict[key].colors for key in self.coreDict}))
+            print("The instructionList is {} and colorList {}.".format(self.instructionList,
+                                                                       {key: self.coreDict[key].colors for key in
+                                                                        self.coreDict}))
 
     def evaluate_sizes_instructionList(self, show=True):
         shapeList = [[]]
@@ -176,9 +176,7 @@ if __name__ == "__main__":
     contractor.create_instructionList_from_coreList()
     print(contractor.instructionList)
 
-
     exit()
     contractor.create_instructionList_from_coreList()
     siList, shList, coList = contractor.evaluate_sizes_instructionList()
     contractor.exponentiate_with_weight(weightDict)
-

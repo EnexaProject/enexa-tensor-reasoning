@@ -51,11 +51,13 @@ class WeightEstimator:
         posCoreDict[tboFormulaKey] = self.coreDict[tboFormulaKey].clone()
         negCoreDict[tboFormulaKey] = self.coreDict[tboFormulaKey].negate()
         posContractor = coc.CoreContractor(posCoreDict)
+        posContractor.optimize_coreList()
         positiveExpWeight = posContractor.contract().values
 
         assert len(positiveExpWeight.shape) == 0
 
         negContractor = coc.CoreContractor(negCoreDict)
+        negContractor.optimize_coreList()
         negativeExpWeight = negContractor.contract().values
 
         assert len(negativeExpWeight.shape) == 0
