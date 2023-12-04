@@ -1,5 +1,7 @@
 from matplotlib import pyplot as plt
+import numpy as np
 
+from tnreason.optimization import contraction_optimization as co
 
 class CoreContractor:
     """
@@ -8,17 +10,34 @@ class CoreContractor:
     instructionList: list of contraction instructions: either and with additional core or reduce a color. First entry must be add to start with
     """
 
-    def __init__(self, coreDict={}, instructionList=None):
+    def __init__(self, coreDict={}, coreList = None, instructionList=None):
         self.coreDict = coreDict
+        self.coreList = coreList
         self.instructionList = instructionList
 
     def exponentiate_with_weight(self, weightDict, exeptionKeys=[]):
         for coreKey in self.coreDict:
             self.coreDict[coreKey] = self.coreDict[coreKey].weighted_exponentiation(weightDict[coreKey])
 
-    def create_instructionList_from_coreList(self, coreList=None):
-        if coreList is None:
-            coreList = list(self.coreDict.keys())
+    def optimize_coreList(self):
+        coreColorDict = {}
+        colorDimDict = {}
+        for coreKey in self.coreDict:
+            coreColorDict[coreKey] = self.coreDict[coreKey].colors.copy()
+            for i, color in enumerate(self.coreDict[coreKey].colors):
+                if color not in colorDimDict:
+                    colorDimDict[color] = self.coreDict[coreKey].values.shape[i]
+
+        print(coreColorDict)
+        print(colorDimDict)
+
+        optimizer = co.ContractionOptimizer(coreColorDict, colorDimDict)
+        optimizer.optimize_using_heuristic()
+        self.coreList = optimizer.coreList
+
+    def create_instructionList_from_coreList(self, verbose=True):
+        if self.coreList is None:
+            self.coreList = list(self.coreDict.keys())
         # Find all colors
         colorList = []
         for key in self.coreDict:
@@ -26,10 +45,12 @@ class CoreContractor:
                 if color not in colorList:
                     colorList.append(color)
         # Find core after which color can be reduced
-        coreList.reverse()
+        self.coreList = list(self.coreList) ## Turn it back into a list to reverse it
+        self.coreList.reverse()
+
         reduceDict = {key: [] for key in self.coreDict}
         for color in colorList:
-            for key in coreList:
+            for key in self.coreList:
                 if color in self.coreDict[key].colors:
                     reduceDict[key].append(color)
                     break
@@ -39,6 +60,9 @@ class CoreContractor:
             self.instructionList.append(["add", key])
             for color in reduceDict[key]:
                 self.instructionList.append(["reduce", color])
+
+        if verbose:
+            print("The instructionList is {} and colorList {}.".format(self.instructionList, {key:self.coreDict[key].colors for key in self.coreDict}))
 
     def evaluate_sizes_instructionList(self, show=True):
         shapeList = [[]]
@@ -145,12 +169,16 @@ if __name__ == "__main__":
         "b": 1.72345
     }
     contractor = CoreContractor(coordinateDict,
+                                None,
                                 [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"], ["reduce", "q"]])
+
+    contractor.optimize_coreList()
     contractor.create_instructionList_from_coreList()
+    print(contractor.instructionList)
 
+
+    exit()
+    contractor.create_instructionList_from_coreList()
     siList, shList, coList = contractor.evaluate_sizes_instructionList()
-
-    #   print(siList)
-
     contractor.exponentiate_with_weight(weightDict)
-    print(contractor.contract().values)
+
