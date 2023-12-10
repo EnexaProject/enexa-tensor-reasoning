@@ -11,10 +11,11 @@ class CoreContractor:
     instructionList: list of contraction instructions: either and with additional core or reduce a color. First entry must be add to start with
     """
 
-    def __init__(self, coreDict={}, coreList=None, instructionList=None):
+    def __init__(self, coreDict={}, coreList=None, instructionList=None, openColors=[]):
         self.coreDict = coreDict
         self.coreList = coreList
         self.instructionList = instructionList
+        self.openColors = openColors
 
     def exponentiate_with_weight(self, weightDict, exeptionKeys=[]):
         for coreKey in self.coreDict:
@@ -48,10 +49,11 @@ class CoreContractor:
         self.coreList.reverse()
         reduceDict = {key: [] for key in self.coreDict}
         for color in colorList:
-            for key in self.coreList:
-                if color in self.coreDict[key].colors:
-                    reduceDict[key].append(color)
-                    break
+            if color not in self.openColors:
+                for key in self.coreList:
+                    if color in self.coreDict[key].colors:
+                        reduceDict[key].append(color)
+                        break
         self.coreList.reverse()
         # Create the instructionList
         self.instructionList = []
@@ -91,6 +93,7 @@ class CoreContractor:
             plt.xticks(range(1, len(sizeList)), [str(ins) for ins in self.instructionList])
             plt.xlabel("Instructions")
             plt.ylabel("Number of Coordinates of the contracted")
+            plt.ylim([0, 1.1 * max(sizeList)])
             plt.show()
 
         return sizeList, shapeList, colorList
@@ -174,9 +177,9 @@ if __name__ == "__main__":
 
     contractor.optimize_coreList()
     contractor.create_instructionList_from_coreList()
-    print(contractor.instructionList)
+    print(contractor.instructionList)  ## Hast to reduce colors only after last usage.
 
-    exit()
-    contractor.create_instructionList_from_coreList()
-    siList, shList, coList = contractor.evaluate_sizes_instructionList()
-    contractor.exponentiate_with_weight(weightDict)
+    contractorWithOpen = CoreContractor(coordinateDict, instructionList=None, coreList=None, openColors=["x"])
+    contractorWithOpen.create_instructionList_from_coreList()
+    print(contractorWithOpen.instructionList)  ## Has to be without openColor Reduction, i.e. "x".
+    contractorWithOpen.evaluate_sizes_instructionList(show=True)

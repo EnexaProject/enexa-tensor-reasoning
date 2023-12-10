@@ -3,9 +3,10 @@ from queue import PriorityQueue
 
 
 class ContractionOptimizerBase:
-    def __init__(self, coreColorDict, colorDimDict, coreList=None):
+    def __init__(self, coreColorDict, colorDimDict, coreList=None, globallyOpenColors=[]):
         self.coreColorDict = coreColorDict  ## Colors of each core
         self.colorDimDict = colorDimDict  ## Dimension of each color
+        self.globallyOpenColors = globallyOpenColors
 
         if coreList is None:
             self.set_random_coreList()
@@ -36,7 +37,7 @@ class ContractionOptimizerBase:
 
         openColors = []
         for color in contractedColors:
-            if color in restColors:
+            if color in restColors or color in self.globallyOpenColors:
                 openColors.append(color)
 
         openShape = [self.colorDimDict[color] for color in openColors]
@@ -63,11 +64,11 @@ class GreedyHeuristicOptimizer(ContractionOptimizerBase):
         openColors, _, _ = self.find_openColors_at(pos)
         heuristic = np.ones(len(self.coreList[pos:]))
 
-        ## Compute color close score
+        ## Compute color close score: Globally open colors are excluded
         for color in openColors:
             colorCount = len([core for core in self.coreList[pos:] if color in self.coreColorDict[core]])
             for i, core in enumerate(self.coreList[pos:]):
-                if color in self.coreColorDict[core]:
+                if color in self.coreColorDict[core] and color not in self.globallyOpenColors:
                     heuristic[i] = heuristic[i] * ((colorCloseScore * self.colorDimDict[color]) / colorCount)
 
         ## Compute new color penalty
@@ -200,11 +201,11 @@ if __name__ == "__main__":
         "r": 30
     }
 
-    optim = GreedyHeuristicOptimizer(cCDict, cDDict)
+    optim = GreedyHeuristicOptimizer(cCDict, cDDict, globallyOpenColors=["x"])
     optim.optimize(colorCloseScore=10)
 
-    optim2 = SimulatedAnnealingOptimizer(cCDict, cDDict)
+    optim2 = SimulatedAnnealingOptimizer(cCDict, cDDict, globallyOpenColors=["x"])
     optim2.metropolis(repetitions=int(10))
 
-    optim3 = DijkstraOptimizer(cCDict, cDDict)
+    optim3 = DijkstraOptimizer(cCDict, cDDict, globallyOpenColors=["x"])
     optim3.optimize()
