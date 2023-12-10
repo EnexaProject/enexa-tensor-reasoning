@@ -29,9 +29,9 @@ class CoreContractor:
             for i, color in enumerate(self.coreDict[coreKey].colors):
                 if color not in colorDimDict:
                     colorDimDict[color] = self.coreDict[coreKey].values.shape[i]
-        optimizer = co.ContractionOptimizer(coreColorDict, colorDimDict)
+        optimizer = co.GreedyHeuristicOptimizer(coreColorDict, colorDimDict)
         # Optimize coreList i.e. order of contraction
-        optimizer.optimize_using_heuristic()
+        optimizer.optimize()
         self.coreList = optimizer.coreList
 
     def create_instructionList_from_coreList(self, verbose=False):

@@ -1,7 +1,8 @@
 import numpy as np
+from queue import PriorityQueue
 
 
-class ContractionOptimizer:
+class ContractionOptimizerBase:
     def __init__(self, coreColorDict, colorDimDict, coreList=None):
         self.coreColorDict = coreColorDict  ## Colors of each core
         self.colorDimDict = colorDimDict  ## Dimension of each color
@@ -20,11 +21,15 @@ class ContractionOptimizer:
         self.coreList = np.array(list(self.coreColorDict.keys()))
         np.random.shuffle(self.coreList)
 
-    def fine_openColors_at(self, pos, coreList=None):  # Contraction Size of coreList up to position pos
+    def find_openColors_at(self, pos=None, coreList=None):  # Contraction Size of coreList up to position pos
         if coreList is None:
             coreList = self.coreList
-        contractedCores = coreList[:pos]
-        uncontractedCores = coreList[pos:]
+        if pos is not None:
+            contractedCores = coreList[:pos]
+            uncontractedCores = coreList[pos:]
+        else:
+            contractedCores = coreList
+            uncontractedCores = [coreKey for coreKey in self.coreColorDict if coreKey not in coreList]
 
         contractedColors = compute_colors_in_cores(contractedCores, self.coreColorDict)
         restColors = compute_colors_in_cores(uncontractedCores, self.coreColorDict)
@@ -46,14 +51,16 @@ class ContractionOptimizer:
         self.openShapes = []
         self.openSizes = []
         for pos in range(len(coreList) + 1):
-            colors, shape, size = self.fine_openColors_at(pos, coreList)
+            colors, shape, size = self.find_openColors_at(pos, coreList)
             self.openColors.append(colors)
             self.openShapes.append(shape)
             self.openSizes.append(size)
         return self.openShapes
 
+
+class GreedyHeuristicOptimizer(ContractionOptimizerBase):
     def compute_heuristic_at(self, pos, newColorPenalty=1, colorCloseScore=1):
-        openColors, _, _ = self.fine_openColors_at(pos)
+        openColors, _, _ = self.find_openColors_at(pos)
         heuristic = np.ones(len(self.coreList[pos:]))
 
         ## Compute color close score
@@ -70,7 +77,7 @@ class ContractionOptimizer:
                     heuristic[i] = heuristic[i] / (newColorPenalty * self.colorDimDict[color])
         return heuristic
 
-    def optimize_using_heuristic(self, newColorPenalty=1, colorCloseScore=1, verbose=False):
+    def optimize(self, newColorPenalty=1, colorCloseScore=1, verbose=False):
         if verbose:
             openSizes = self.evaluate_coreList()
             print(
@@ -82,8 +89,13 @@ class ContractionOptimizer:
 
         if verbose:
             openSizes = self.evaluate_coreList()
+            print("### Summary of the Greedy Heuristic Optimization ###")
+            print("The solution is {}.".format(self.coreList))
             print(
                 "After optimization have a footprint {} using order {}.".format(np.sum(openSizes), self.coreList))
+
+
+class SimulatedAnnealingOptimizer(ContractionOptimizerBase):
 
     def random_modification(self, temp=1, criterion="memory"):
         modCoreList = self.coreList.copy()
@@ -100,7 +112,7 @@ class ContractionOptimizer:
             newShapes = self.evaluate_coreList(modCoreList)
             newScore = np.sum([np.prod(shape) for shape in newShapes])
 
-            acceptanceProb = 1 / (1 + np.exp(temp * (newScore - previousScore)))
+            acceptanceProb = 1 / (1 + np.exp((newScore - previousScore) / temp))
         else:
             raise ValueError("Criterion {} not understood in randomized coreList optimization.".format(criterion))
 
@@ -118,12 +130,48 @@ class ContractionOptimizer:
             modified = self.random_modification(temp=temp, criterion=criterion)
             if modified and verbose:
                 modCounter += 1
-                print("## Random modification to {} accepted".format(self.coreList))
         if verbose:
-            print("Of {} modifications {} have been accepted.".format(repetitions, modCounter))
+            print("### Summary of the Metropolis Optimization ###")
+            print("The solution is {}.".format(self.coreList))
+            print("Of {} modifications {} have been accepted at temperature {}.".format(repetitions, modCounter, temp))
             newShapes = self.evaluate_coreList()
             newScore = np.sum([np.prod(shape) for shape in newShapes])
             print("The criterion {} changed from {} to {}.".format(criterion, firstScore, newScore))
+
+    def optimize(self, coolingPattern=[[10, 10], [1, 10], [0.1, 10]], verbose=True):
+        for coolingEntry in coolingPattern:
+            self.metropolis(repetitions=coolingEntry[1], temp=coolingEntry[0], verbose=verbose)
+
+
+class DijkstraOptimizer(ContractionOptimizerBase):
+
+    def step(self, queueEntry):
+        entryCost, entryList = queueEntry
+        for coreKey in self.coreColorDict:
+            if coreKey not in entryList:
+                addList = entryList.copy()
+                addList.append(coreKey)
+
+                if len(addList) == len(self.coreColorDict):
+                    self.coreList = addList
+                    return False
+                else:
+                    openColors, openShape, openSize = self.find_openColors_at(coreList=entryList)
+                    self.frontier.put((entryCost + openSize, addList))
+        return True
+
+    def optimize(self, verbose=True):
+        self.frontier = PriorityQueue()
+        self.frontier.put((0, []))
+
+        counter = 0
+        searching = True
+        while searching:
+            searching = self.step(self.frontier.get())
+            counter += 1
+        if verbose:
+            print("### Summary of the Dijsktra Optimization ###")
+            print("The solution is {} and has been found after {} Dijkstra steps.".format(self.coreList, counter))
 
 
 def compute_colors_in_cores(cores, coreColorDict):
@@ -152,10 +200,11 @@ if __name__ == "__main__":
         "r": 30
     }
 
-    optim = ContractionOptimizer(cCDict, cDDict)
-    print(optim.coreList)
-    optim.optimize_using_heuristic(colorCloseScore=10)
-    print(optim.coreList)
+    optim = GreedyHeuristicOptimizer(cCDict, cDDict)
+    optim.optimize(colorCloseScore=10)
 
-    optim.metropolis(repetitions=int(1e4))
-    optim.random_modification()
+    optim2 = SimulatedAnnealingOptimizer(cCDict, cDDict)
+    optim2.metropolis(repetitions=int(10))
+
+    optim3 = DijkstraOptimizer(cCDict, cDDict)
+    optim3.optimize()
