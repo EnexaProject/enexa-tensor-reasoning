@@ -5,12 +5,38 @@ from pgmpy.sampling import GibbsSampling
 
 from tnreason.logic import basis_calculus as bc
 from tnreason.logic import expression_calculus as ec
+from tnreason.logic import expression_generation as eg
+
+from tnreason.model import infer_mln as imln
 
 import numpy as np
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 
+
+class TensorMLN:
+    def __init__(self, expressionsDict={}):
+        self.expressionsDict = expressionsDict
+
+    def infer_on_evidenceDict(self, evidenceDict={}):
+        inferedExpressionsDict = {}
+        for key in self.expressionsDict:
+            inferedFormula = imln.infer_expression(self.expressionsDict[key][0], evidenceDict)
+            if inferedFormula not in ["Thing","Nothing"]:
+                inferedFormula = eg.remove_double_not(inferedFormula)
+                inferedExpressionsDict[key] = [inferedFormula, self.expressionsDict[key][1]]
+
+        return TensorMLN(inferedExpressionsDict)
+
+    ## To be implemented: Here we need Tensor Network contractions
+    def independent_sample(self):
+        ## Sample from marginal distributions
+        pass
+
+    def gibbs_step(self, variable):
+        ##
+        pass
 
 class MarkovLogicNetwork:
     def __init__(self, expressionsDict=None):
@@ -119,16 +145,20 @@ if __name__ == "__main__":
         "e1": [["not", "Ausgangsrechnung(x)"], 12],
         "e2": [[["not", "Ausgangsrechnung(x)"], "and", ["not", "Rechnung(x)"]], 14]
     }
-    test_mln = MarkovLogicNetwork(example_expression_dict)
-
     ## 1 = True, 0 = False
     example_evidence_dict = {
         "Unterschrank(z)": 1,
         "Ausgangsrechnung(x)": 1
     }
-    # print(test_mln.map_query_given_evidenceDict(example_evidence_dict,["Moebel(z)"])["Moebel(z)"])
+
+    tn_mln = TensorMLN(example_expression_dict)
+    infered_mln = tn_mln.infer_on_evidenceDict(example_evidence_dict)
+    print(infered_mln.expressionsDict)
+
+    test_mln = MarkovLogicNetwork(example_expression_dict)
     cond_query_result = test_mln.cond_query_given_evidenceDict(example_evidence_dict, ["Moebel(z)"])
     cond_query_result.normalize()
     # print(cond_query_result.values)
 
-    test_mln.visualize(truthDict={"Unterschrank(z)": True, "Ausgangsrechnung(x)": False})
+    #test_mln.visualize(truthDict={"Unterschrank(z)": True, "Ausgangsrechnung(x)": False})
+
