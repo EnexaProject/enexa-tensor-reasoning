@@ -22,7 +22,7 @@ if regenerate:
 else:
     sampleDf = pd.read_csv(savePath + "generated_sampleDf.csv", index_col=0).astype("int64")
 
-learner = mlnl.AtomicMLNLearner(sampleDf)
+learner = mlnl.SampleBasedMLNLearner(sampleDf)
 
 skeletonExpression = ["P1", "and", "P2"]  # ,"and","R2(x,z)"]
 candidatesDict = {

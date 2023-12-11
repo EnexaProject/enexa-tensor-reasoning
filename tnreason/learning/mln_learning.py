@@ -16,7 +16,7 @@ from tnreason.model import markov_logic_network as mln
 import numpy as np
 
 
-class AtomicMLNLearner:
+class SampleBasedMLNLearner:
     def __init__(self, sampleDf=None):
         self.weightedFormulas = []
         if sampleDf is not None:
@@ -100,8 +100,8 @@ class AtomicMLNLearner:
     def refine(self, skeletonExpression, candidatesDict, positiveCore, negativeCore,
                refinementLeft=0, acceptance_criterion="weight>0.5",
                balance=True):
-        solutionExpression = self.learn_formula(skeletonExpression, candidatesDict, positiveCore, negativeCore,
-                                                balance=balance)
+        solutionExpression = self.optimize_formula(skeletonExpression, candidatesDict, positiveCore, negativeCore,
+                                                   balance=balance)
         empRate, satRate, weight = self.learn_independent_weight(solutionExpression)
         if refinementLeft > 0 and not criterion_satisfied(empRate, satRate, weight, acceptance_criterion):
             print("# Refining since criterion not satisfied, {} tries left #".format(refinementLeft))
@@ -113,8 +113,8 @@ class AtomicMLNLearner:
             print("# Solution is {} #".format(solutionExpression))
             return solutionExpression
 
-    def learn_formula(self, skeletonExpression, candidatesDict, positiveCore, negativeCore, balance=True):
-        exLearner = el.AtomicLearner(skeletonExpression, candidatesDict)
+    def optimize_formula(self, skeletonExpression, candidatesDict, positiveCore, negativeCore, balance=True):
+        exLearner = el.SampleBasedOptimizer(skeletonExpression, candidatesDict)
 
         exLearner.generate_fixedCores_sampleDf(self.sampleDf)
         exLearner.generate_target_and_filterCore_from_exampleCores(positiveCore, negativeCore)

@@ -11,7 +11,7 @@ import tnreason.optimization.generalized_als as gals
 import numpy as np
 
 
-class LearnerBase:
+class OptimizerBase:
     def __init__(self, skeletonExpression, candidatesDict=None):
         self.skeleton = skeletonExpression
         self.skeletonAtoms = ec.get_variables(skeletonExpression)
@@ -25,6 +25,39 @@ class LearnerBase:
             negativeCore = positiveCore.create_constant([], zero=True)
         self.targetCore = positiveCore.clone()
         self.filterCore = positiveCore.compute_or(negativeCore)
+
+    def set_importance(self, importanceValues=None, importanceCore=None):
+        if importanceCore is not None:
+            self.filterCore = importanceCore
+        elif importanceValues is not None:
+            assert self.targetCore is not None, "Attempting to set ImportanceCore via values, but TargetCore has not yet been initialized."
+            assert self.targetCore.values.shape == importanceValues.shape, "Shape of ImportanceCore does not match the TargetCore"
+            self.filterCore = self.targetCore.clone()
+            self.filterCore.values = importanceValues
+        else:
+            raise "FilterCore has not been initialized!"
+
+    def balance_importance(self, positiveCore=None, negativeCore=None, strategy="pn-equality"):
+        ## Compute number of positive and negative examples
+        if positiveCore is None:
+            positiveCore = self.targetCore.compute_and(self.filterCore)
+        if negativeCore is None:
+            negativeCore = self.targetCore.negate().compute_and(self.filterCore)
+        posExNum = np.count_nonzero(positiveCore.values)
+        negExNum = np.count_nonzero(negativeCore.values)
+
+        ## Balance contributions to risk by positive and negative examples
+        if strategy == "pn-equality":
+            if posExNum == 0:
+                posFactor = 1
+                print("WARNING: No positive examples have been provided and loss is not balanced!")
+            elif negExNum == 0:
+                posFactor = 1
+                print("WARNING: No negative examples have been provided and loss is not balanced!")
+            else:
+                posFactor = np.sqrt(negExNum / posExNum)
+        impValues = posFactor * positiveCore.values + negativeCore.values
+        self.set_importance(importanceValues=impValues)
 
     def als(self, sweepnum):
         self.optimizer = gals.GeneralizedALS(self.variablesCoresDict, self.fixedCoresDict)
@@ -42,7 +75,27 @@ class LearnerBase:
         self.solutionExpression = eg.replace_atoms(self.skeleton, self.solutionDict)
 
 
-class AtomicLearner(LearnerBase):
+class SampleBasedOptimizer(OptimizerBase):
+    ## Initializes the fixedCoresDict using the sampleDf
+    def generate_fixedCores_sampleDf(self, sampleDf):
+        self.fixedCoresDict = {
+            atomKey: cc.CoordinateCore(stoc.sampleDf_to_universal_core(sampleDf, self.candidatesDict[atomKey]),
+                                       ["j", atomKey]) for atomKey in self.skeletonAtoms
+        }
+
+    ## Initializes all VariableCores (shapes follow from fixedCoresDict) with independent coordinates drawn uniformly from [0,1)
+    def random_initialize_variableCoresDict(self):
+        self.variablesCoresDict = {}
+        for legKey in self.fixedCoresDict:
+            varColors = [c for c in self.fixedCoresDict[legKey].colors if c != "j"]
+            varDims = [self.fixedCoresDict[legKey].values.shape[i] for i, c in
+                       enumerate(self.fixedCoresDict[legKey].colors) if c != "j"]
+            self.variablesCoresDict[legKey] = cc.CoordinateCore(np.random.random(varDims), varColors)
+
+
+## NOT MAINTAINED FROM HERE ! ##
+## TO BE IMPLEMENTED: VariableBasedOptimizer(OptimizerBase)
+class AtomicLearner(OptimizerBase):
 
     def generate_fixedCores_sampleDf(self, sampleDf, candidatesDict=None):
         if candidatesDict is not None:
@@ -70,41 +123,18 @@ class AtomicLearner(LearnerBase):
         if targetIsFilter:
             self.filterCore = self.targetCore.clone()
 
-    def set_importance(self, importanceValues=None, importanceCore=None):
-        if importanceCore is not None:
-            self.filterCore = importanceCore
-        elif importanceValues is not None:
-            assert self.targetCore is not None, "Attempting to set ImportanceCore via values, but TargetCore has not yet been initialized."
-            assert self.targetCore.values.shape == importanceValues.shape, "Shape of ImportanceCore does not match the TargetCore"
-            self.filterCore = self.targetCore.clone()
-            self.filterCore.values = importanceValues
-        else:
-            raise "FilterCore has not been initialized!"
 
-    def balance_importance(self, positiveCore = None, negativeCore = None, strategy="pn-equality"):
-        ## Compute number of positive and negative examples
-        if positiveCore is None:
-            positiveCore = self.targetCore.compute_and(self.filterCore)
-        if negativeCore is None:
-            negativeCore = self.targetCore.negate().compute_and(self.filterCore)
-        posExNum = np.count_nonzero(positiveCore.values)
-        negExNum = np.count_nonzero(negativeCore.values)
-
-        ## Balance contributions to risk by positive and negative examples
-        if strategy == "pn-equality":
-            if posExNum == 0:
-                posFactor = 1
-                print("WARNING: No positive examples have been provided and loss is not balanced!")
-            elif negExNum == 0:
-                posFactor = 1
-                print("WARNING: No negative examples have been provided and loss is not balanced!")
-            else:
-                posFactor = np.sqrt(negExNum / posExNum)
-        impValues = posFactor * positiveCore.values + negativeCore.values
-        self.set_importance(importanceValues=impValues)
+def atomic_find_var(fixedCore):
+    varColors = []
+    varDims = []
+    for i, color in enumerate(fixedCore.colors):
+        if color != "j":
+            varColors.append(color)
+            varDims.append(fixedCore.values.shape[i])
+    return varColors, varDims
 
 
-class VariableLearner(LearnerBase):
+class VariableLearner(OptimizerBase):
 
     def generate_fixedCores_sampledf(self, sampleDf):
         self.candidatesDict = {}
@@ -172,16 +202,6 @@ class VariableLearner(LearnerBase):
             self.variablesCoresDict[legKey] = cc.CoordinateCore(np.random.random(varDim), [varColor])
 
 
-def atomic_find_var(fixedCore):
-    varColors = []
-    varDims = []
-    for i, color in enumerate(fixedCore.colors):
-        if color != "j":
-            varColors.append(color)
-            varDims.append(fixedCore.values.shape[i])
-    return varColors, varDims
-
-
 def variable_find_var(fixedCore):
     varColors = []
     for color in fixedCore.colors:
@@ -215,4 +235,4 @@ if __name__ == "__main__":
     learner.als(2)
 
     learner.get_solution()
-    #print(learner.solutionExpression)
+    # print(learner.solutionExpression)
