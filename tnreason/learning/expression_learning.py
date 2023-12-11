@@ -94,10 +94,10 @@ class AtomicLearner(LearnerBase):
         if strategy == "pn-equality":
             if posExNum == 0:
                 posFactor = 1
-                print("WARNING: No positive examples have been provided!")
+                print("WARNING: No positive examples have been provided and loss is not balanced!")
             elif negExNum == 0:
                 posFactor = 1
-                print("WARNING: No negative examples have been provided!")
+                print("WARNING: No negative examples have been provided and loss is not balanced!")
             else:
                 posFactor = np.sqrt(negExNum / posExNum)
         impValues = posFactor * positiveCore.values + negativeCore.values

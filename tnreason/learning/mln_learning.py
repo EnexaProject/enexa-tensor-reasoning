@@ -81,11 +81,13 @@ class AtomicMLNLearner:
 
         self.add_independent_formula(solutionExpression, criterion=acceptanceCriterion)
 
-    def learn_formula(self, skeletonExpression, candidatesDict, positiveCore, negativeCore):
+    def learn_formula(self, skeletonExpression, candidatesDict, positiveCore, negativeCore, balance=True):
         exLearner = el.AtomicLearner(skeletonExpression, candidatesDict)
 
         exLearner.generate_fixedCores_sampleDf(self.sampleDf)
         exLearner.generate_target_and_filterCore_from_exampleCores(positiveCore, negativeCore)
+        if balance:
+            exLearner.balance_importance(positiveCore=positiveCore, negativeCore=negativeCore)
         exLearner.random_initialize_variableCoresDict()
         exLearner.als(10)
         exLearner.get_solution()
