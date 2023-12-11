@@ -66,8 +66,42 @@ class AtomicLearner(LearnerBase):
         else:
             self.targetCore = targetCore
 
+        ## If targetIsFilter, only positive examples are considered in training, negative are ignored
         if targetIsFilter:
             self.filterCore = self.targetCore.clone()
+
+    def set_importance(self, importanceValues=None, importanceCore=None):
+        if importanceCore is not None:
+            self.filterCore = importanceCore
+        elif importanceValues is not None:
+            assert self.targetCore is not None, "Attempting to set ImportanceCore via values, but TargetCore has not yet been initialized."
+            assert self.targetCore.values.shape == importanceValues.shape, "Shape of ImportanceCore does not match the TargetCore"
+            self.filterCore = self.targetCore.clone()
+            self.filterCore.values = importanceValues
+        else:
+            raise "FilterCore has not been initialized!"
+
+    def balance_importance(self, positiveCore = None, negativeCore = None, strategy="pn-equality"):
+        ## Compute number of positive and negative examples
+        if positiveCore is None:
+            positiveCore = self.targetCore.compute_and(self.filterCore)
+        if negativeCore is None:
+            negativeCore = self.targetCore.negate().compute_and(self.filterCore)
+        posExNum = np.count_nonzero(positiveCore.values)
+        negExNum = np.count_nonzero(negativeCore.values)
+
+        ## Balance contributions to risk by positive and negative examples
+        if strategy == "pn-equality":
+            if posExNum == 0:
+                posFactor = 1
+                print("WARNING: No positive examples have been provided!")
+            elif negExNum == 0:
+                posFactor = 1
+                print("WARNING: No negative examples have been provided!")
+            else:
+                posFactor = np.sqrt(negExNum / posExNum)
+        impValues = posFactor * positiveCore.values + negativeCore.values
+        self.set_importance(importanceValues=impValues)
 
 
 class VariableLearner(LearnerBase):
@@ -124,7 +158,7 @@ class VariableLearner(LearnerBase):
                                                                   prefix=prefix)
                 self.fixedCoresDict[atomKey] = cc.CoordinateCore(coreValues, [indKey, classKey])
 
-    def generate_targetCore_pairDf(self, pairDf, individualsDict,targetIsFilter=True):
+    def generate_targetCore_pairDf(self, pairDf, individualsDict, targetIsFilter=True):
         skeletonIndividuals = ec.get_individuals(self.skeleton)
         coreValues, latency = ptoc.pairDf_to_target_values(pairDf, individualsDict, skeletonIndividuals)
         self.targetCore = cc.CoordinateCore(coreValues, skeletonIndividuals)
@@ -174,7 +208,11 @@ if __name__ == "__main__":
     learner.random_initialize_variableCoresDict()
 
     learner.set_targetCore(length=samDf.values.shape[0])
+    learner.set_importance(importanceCore=cc.CoordinateCore(learner.targetCore.values * 10, learner.targetCore.colors))
+    learner.balance_importance()
+    print(learner.filterCore.values)
+    print(learner.targetCore.values)
     learner.als(2)
 
     learner.get_solution()
-    print(learner.solutionExpression)
+    #print(learner.solutionExpression)
