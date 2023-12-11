@@ -97,6 +97,8 @@ def evaluate_expression_on_sampleDf(sampleDf, expression):
     for variable in variables:
         if variable == "Thing":
             values = np.ones(sampleDf.shape[0])
+        elif variable == "Nothing":
+            values = np.zeros(sampleDf.shape[0])
         else:
             values = sampleDf[variable].astype("int64").values
         atomDict[variable] = cc.CoordinateCore(values,["j"],variable)

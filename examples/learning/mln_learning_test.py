@@ -22,15 +22,20 @@ if regenerate:
 else:
     sampleDf = pd.read_csv(savePath + "generated_sampleDf.csv", index_col=0).astype("int64")
 
-learner = mlnl.AtomicMLNLearner()
-learner.load_sampleDf(sampleDf)
+learner = mlnl.AtomicMLNLearner(sampleDf)
 
 skeletonExpression = ["P1", "and", "P2"]  # ,"and","R2(x,z)"]
 candidatesDict = {
     "P1": ["versandterBeleg(y,x)", "hatBelegzeile(x,z)"],
     "P2": ["hatLeistungserbringer(x,y)", "Bautischlerei(y)"],
 }
+
+learner.learn(saveMod="imp",skeletonExpression=skeletonExpression,positiveExpression="Ausgangsrechnung(x)",candidatesDict=candidatesDict,
+              boostNum=2, refinementCriterion="weight>0.6", acceptanceCriterion="weight>0.6", refinementNum=2)
+
+
 learner.learn_implication("Ausgangsrechnung(x)",skeletonExpression,candidatesDict,acceptanceCriterion="weight>0.1,empRate>0.9")
+learner.learn_equivalence("Ausgangsrechnung(x)",skeletonExpression,candidatesDict,acceptanceCriterion="weight>0.1,empRate>0.9")
 
 skeletonExpression2 = ["not",[["not","P2"],"and","P1"]]
 candidatesDict2 = {
@@ -39,7 +44,8 @@ candidatesDict2 = {
     "P3": ["Moebel(z)"],
     "P4": ["ja"]
 }
-learner.learn_tautology(skeletonExpression2,candidatesDict2,acceptanceCriterion="weight>0.5",refinement_left=2)
+#learner.learn_tautology(skeletonExpression2,candidatesDict2,acceptanceCriterion="weight>0.5",refinement_left=2)
+
 
 learner.alternating_weight_optimization(10)
 print(learner.weightedFormulas)
