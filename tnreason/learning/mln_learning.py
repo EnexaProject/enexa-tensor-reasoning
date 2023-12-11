@@ -34,25 +34,33 @@ class AtomicMLNLearner:
         }
 
     def learn_implication(self, positiveExpression, skeletonExpression, candidatesDict,
-                          acceptanceCriterion="weight>0.5", refinement_left=0):
+                          refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0.5"):
         self.learn(positiveExpression, skeletonExpression, candidatesDict, boostNum=1, saveMod="imp",
-                   refinementNum=refinement_left, acceptanceCriterion=acceptanceCriterion,
-                   refinementCriterion=acceptanceCriterion)
+                   refinementNum=refinementNum,
+                   refinementCriterion=refinementCriterion,
+                   acceptanceCriterion=acceptanceCriterion
+                   )
 
     def learn_equivalence(self, positiveExpression, skeletonExpression, candidatesDict,
-                          acceptanceCriterion="weight>0.5", refinement_left=0):
+                          refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0.5"):
         self.learn(positiveExpression, skeletonExpression, candidatesDict, boostNum=1, saveMod="eq",
-                   refinementNum=refinement_left, acceptanceCriterion=acceptanceCriterion,
-                   refinementCriterion=acceptanceCriterion)
+                   refinementNum=refinementNum,
+                   refinementCriterion=refinementCriterion,
+                   acceptanceCriterion=acceptanceCriterion
+                   )
 
-    def learn_tautology(self, skeletonExpression, candidatesDict, acceptanceCriterion="weight>0.5", refinement_left=0):
+    def learn_tautology(self, skeletonExpression, candidatesDict,
+                        refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0.5"):
         self.learn("Thing", skeletonExpression, candidatesDict, boostNum=1, saveMod="direct",
-                   refinementNum=refinement_left, acceptanceCriterion=acceptanceCriterion,
-                   refinementCriterion=acceptanceCriterion)
+                   refinementNum=refinementNum,
+                   refinementCriterion=refinementCriterion,
+                   acceptanceCriterion=acceptanceCriterion
+                   )
 
     def learn(self, positiveExpression, skeletonExpression, candidatesDict,
               boostNum=1, saveMod="eq",
-              refinementCriterion="weight>1.5", refinementNum=0,
+              refinementNum=0, refinementCriterion="weight>1",
+              balance=True,
               acceptanceCriterion="weight>0.5"):
         if saveMod == "eq" or saveMod == "imp":
             positiveCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, positiveExpression)
@@ -60,7 +68,8 @@ class AtomicMLNLearner:
             positiveCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, "Thing")
 
         solutionExpressions = self.boost(skeletonExpression, candidatesDict, positiveCore, boostNum=boostNum,
-                                         refinement_left=refinementNum, acceptance_criterion=refinementCriterion)
+                                         refinementNum=refinementNum, refinementCriterion=refinementCriterion,
+                                         balance=balance)
         ## Adding the formulas to the model
         for learnedPremise in solutionExpressions:
             if saveMod == "eq" or saveMod == "imp":
@@ -69,26 +78,30 @@ class AtomicMLNLearner:
             else:
                 self.add_independent_formula(learnedPremise, criterion=acceptanceCriterion)
 
-    def boost(self, skeletonExpression, candidatesDict, positiveCore, boostNum=1, refinement_left=0,
-              acceptance_criterion="weight>0.5"):
+    def boost(self, skeletonExpression, candidatesDict, positiveCore, boostNum=1, refinementNum=0,
+              refinementCriterion="weight>1",
+              balance=True):
         solutionExpressions = []
         for boostPos in range(boostNum):
             print("## Boost number {} ##".format(boostPos))
             refiningExpression = "Thing"
             for solutionExpression in solutionExpressions:
                 refiningExpression = [refiningExpression, "and", ["not", solutionExpression]]
-            print(refiningExpression)
             refiningCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, refiningExpression)
             positiveCore = positiveCore.compute_and(refiningCore)
             negativeCore = positiveCore.negate()
 
-            solutionExpressions.append(self.refine(skeletonExpression, candidatesDict, positiveCore, negativeCore))
+            solutionExpressions.append(self.refine(skeletonExpression, candidatesDict, positiveCore, negativeCore,
+                                                   refinementLeft=refinementNum,
+                                                   acceptance_criterion=refinementCriterion,
+                                                   balance=balance))
         return solutionExpressions
 
     def refine(self, skeletonExpression, candidatesDict, positiveCore, negativeCore,
-               refinementLeft=0, acceptance_criterion="weight>0.5"):
-        solutionExpression = self.learn_formula(skeletonExpression, candidatesDict, positiveCore, negativeCore)
-
+               refinementLeft=0, acceptance_criterion="weight>0.5",
+               balance=True):
+        solutionExpression = self.learn_formula(skeletonExpression, candidatesDict, positiveCore, negativeCore,
+                                                balance=balance)
         empRate, satRate, weight = self.learn_independent_weight(solutionExpression)
         if refinementLeft > 0 and not criterion_satisfied(empRate, satRate, weight, acceptance_criterion):
             print("# Refining since criterion not satisfied, {} tries left #".format(refinementLeft))
