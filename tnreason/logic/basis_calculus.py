@@ -100,8 +100,7 @@ class BasisCore:
 
         return BasisCore(np.einsum(contraction_string, self.values, delta_values), newColors)
 
-    def count_satisfaction(self):
-        return np.sum(self.values)/2**len(self.values.shape)
+
 
     def to_coordinate(self):
         if self.headcolor is not "TruthEvaluated":

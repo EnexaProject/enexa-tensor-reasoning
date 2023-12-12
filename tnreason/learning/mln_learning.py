@@ -11,7 +11,7 @@ import tnreason.optimization.expression_refinement as er
 
 import tnreason.learning.expression_learning as el
 
-from tnreason.model import markov_logic_network as mln
+from tnreason.model import tensor_network_mln as mln
 
 import numpy as np
 
@@ -146,9 +146,9 @@ class SampleBasedMLNLearner:
                                  formulaKey in estimator.formulaDict]
 
     def generate_mln(self):
-        return mln.MarkovLogicNetwork(expressionsDict=
-                                      {str(i): [self.weightedFormulas[i][0], self.weightedFormulas[i][1]]
-                                       for i in range(len(self.weightedFormulas))})
+        return mln.TensorMLN(expressionsDict=
+                             {str(i): [self.weightedFormulas[i][0], self.weightedFormulas[i][1]]
+                              for i in range(len(self.weightedFormulas))})
 
 
 def criterion_satisfied(empRate, satRate, weight, criterion):

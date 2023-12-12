@@ -1,5 +1,5 @@
 from tnreason.model import generate_test_data as gtd
-from tnreason.model import markov_logic_network as mln
+from tnreason.model import tensor_network_mln as mln
 from tnreason.representation import csv_to_ttl as ctt
 from tnreason.logic import expression_generation as eg
 
@@ -45,10 +45,10 @@ example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), v
 dataNum = 1000
 factDf, pairDf = gtd.generate_factDf_and_pairDf(example_expression_dict, sampleNum=dataNum, prefix="tev:")
 
-generator = mln.MarkovLogicNetwork(example_expression_dict)
+generator = mln.TensorMLN(example_expression_dict)
 sampleDf = generator.generate_sampleDf(sampleNum = dataNum, chainSize = 10)
 
-savePath = "./examples/generation/internal_real_data/"
+savePath = "./demonstration/generation/internal_real_data/"
 factDf.to_csv(savePath+"generated_factDf.csv")
 sampleDf.to_csv(savePath+"generated_sampleDf.csv")
 

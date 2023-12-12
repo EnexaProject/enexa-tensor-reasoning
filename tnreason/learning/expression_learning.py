@@ -38,7 +38,7 @@ class OptimizerBase:
             raise "FilterCore has not been initialized!"
 
     def balance_importance(self, positiveCore=None, negativeCore=None, strategy="pn-equality"):
-        ## Compute number of positive and negative examples
+        ## Compute number of positive and negative demonstration
         if positiveCore is None:
             positiveCore = self.targetCore.compute_and(self.filterCore)
         if negativeCore is None:
@@ -46,14 +46,14 @@ class OptimizerBase:
         posExNum = np.count_nonzero(positiveCore.values)
         negExNum = np.count_nonzero(negativeCore.values)
 
-        ## Balance contributions to risk by positive and negative examples
+        ## Balance contributions to risk by positive and negative demonstration
         if strategy == "pn-equality":
             if posExNum == 0:
                 posFactor = 1
-                print("WARNING: No positive examples have been provided and loss is not balanced!")
+                print("WARNING: No positive demonstration have been provided and loss is not balanced!")
             elif negExNum == 0:
                 posFactor = 1
-                print("WARNING: No negative examples have been provided and loss is not balanced!")
+                print("WARNING: No negative demonstration have been provided and loss is not balanced!")
             else:
                 posFactor = np.sqrt(negExNum / posExNum)
         impValues = posFactor * positiveCore.values + negativeCore.values
@@ -119,7 +119,7 @@ class AtomicLearner(OptimizerBase):
         else:
             self.targetCore = targetCore
 
-        ## If targetIsFilter, only positive examples are considered in training, negative are ignored
+        ## If targetIsFilter, only positive demonstration are considered in training, negative are ignored
         if targetIsFilter:
             self.filterCore = self.targetCore.clone()
 
@@ -215,7 +215,7 @@ def variable_find_var(fixedCore):
 if __name__ == "__main__":
     import pandas as pd
 
-    samDf = pd.read_csv("./examples/generation/synthetic_test_data/generated_sampleDf.csv").astype("int64")
+    samDf = pd.read_csv("./demonstration/generation/synthetic_test_data/generated_sampleDf.csv").astype("int64")
 
     skeleton = ["P0", "and", "P1"]
     candidatesDict = {

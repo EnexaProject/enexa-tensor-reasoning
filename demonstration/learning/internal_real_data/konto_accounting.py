@@ -10,7 +10,7 @@ path = "S:/_MariaSF/extractedDataFrame/extracted_20231120_150937.csv" # Okt
 
 sampleDf = pd.read_csv(path, index_col=0)
 print(sampleDf.var())
-sampleDf.var().to_csv("examples/learning/internal_real_data/variance/"+path.split("/")[-1])
+sampleDf.var().to_csv("demonstration/learning/internal_real_data/variance/"+path.split("/")[-1])
 
 ## EXPRESSION LEARNING ##
 

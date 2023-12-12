@@ -64,7 +64,7 @@ class SparseCoreGenerator:
 
 if __name__ == "__main__":
     loader = SparseCoreGenerator()
-    sampleDf = pd.read_csv("./examples/generation/synthetic_test_data/generated_sampleDf.csv")
+    sampleDf = pd.read_csv("./demonstration/generation/synthetic_test_data/generated_sampleDf.csv")
     loader.load_sampleDf(sampleDf)
 
     sparsecore = loader.generate_sparseAxiomCore(["Moebel(z)","Bautischlerei(y)"])

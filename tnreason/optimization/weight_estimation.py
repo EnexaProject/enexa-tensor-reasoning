@@ -3,8 +3,6 @@ from tnreason.optimization import satisfaction_counter as sc
 from tnreason.logic import expression_calculus as ec
 from tnreason.logic import core_contractor as coc
 
-from tnreason.model import markov_logic_network as mln
-
 import numpy as np
 
 
@@ -15,9 +13,9 @@ class WeightEstimator:
 
     def calculate_independent_satRates(self):
         for formulaKey in self.formulaDict:
-            basis_core = mln.calculate_dangling_basis(self.formulaDict[formulaKey][0])
+            basis_core = ec.calculate_expressionCore(self.formulaDict[formulaKey][0])
             self.formulaDict[formulaKey][1] = basis_core.count_satisfaction()
-            self.coreDict[formulaKey] = basis_core.to_coordinate()
+            self.coreDict[formulaKey] = basis_core
 
     def calculate_empRates(self, atomDict):
         for formulaKey in self.formulaDict:
@@ -68,7 +66,7 @@ class WeightEstimator:
 
 
 def calculate_satRate_bc(expression):
-    return mln.calculate_dangling_basis(expression).count_satisfaction()
+    return ec.calculate_expressionCore(expression).count_satisfaction()
 
 
 def solve_rate_equation(satRate, empRate):

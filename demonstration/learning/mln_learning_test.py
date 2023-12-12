@@ -14,10 +14,10 @@ example_rule_dict = {
 example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), value[2]] for (key,value) in example_rule_dict.items()}
 
 dataNum = 10
-savePath = "./examples/learning/synthetic_test_data/synthetic_accounting/"
+savePath = "./demonstration/learning/synthetic_test_data/synthetic_accounting/"
 regenerate = True
 if regenerate:
-    sampleDf = gtd.generate_sampleDf(example_expression_dict, sampleNum=dataNum, chainSize=10)
+    sampleDf = gtd.generate_sampleDf(example_expression_dict, sampleNum=dataNum, method="Gibbs10")
     #sampleDf.to_csv(savePath + "generated_sampleDf.csv")
 else:
     sampleDf = pd.read_csv(savePath + "generated_sampleDf.csv", index_col=0).astype("int64")

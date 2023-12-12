@@ -8,7 +8,7 @@ path = "S:/_MariaSF/extractedDataFrame/extracted_20231027_102609.csv" # Okt
 
 sampleDf = pd.read_csv(path, index_col=0)
 print(sampleDf.var())
-sampleDf.var().to_csv("./examples/learning/variance/"+path.split("/")[-1])
+sampleDf.var().to_csv("./demonstration/learning/variance/"+path.split("/")[-1])
 ## EXPRESSION LEARNING ##
 
 skeletonExpression = [["b1(beleg)","and", "C1(branche)"],

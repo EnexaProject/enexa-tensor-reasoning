@@ -177,8 +177,12 @@ class CoordinateCore:
         newValues = np.einsum(contractionstring, self.values, onesValues)
         return CoordinateCore(newValues, [col for col in self.colors if col!=conColor])
 
+    ## For usage in model (former BasisCalculus methods)
     def weighted_exponentiation(self, weight):
         return CoordinateCore(np.exp(weight*self.values), self.colors)
+
+    def count_satisfaction(self):
+        return np.sum(self.values)/2**len(self.values.shape)
 
     def normalize(self, sum=1):
         return CoordinateCore(self.values*(sum/np.sum(self.values)), self.colors, self.name)

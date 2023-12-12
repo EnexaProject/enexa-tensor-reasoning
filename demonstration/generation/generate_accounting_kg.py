@@ -17,7 +17,7 @@ dataNum = 1000
 factDf, pairDf = gtd.generate_factDf_and_pairDf(example_expression_dict, sampleNum=dataNum, prefix="tev:")
 sampleDf = gtd.generate_sampleDf(example_expression_dict, sampleNum=dataNum, chainSize=10)
 
-savePath = "./examples/generation/synthetic_test_data/"
+savePath = "./demonstration/generation/synthetic_test_data/"
 factDf.to_csv(savePath+"generated_factDf.csv")
 sampleDf.to_csv(savePath+"generated_sampleDf.csv")
 

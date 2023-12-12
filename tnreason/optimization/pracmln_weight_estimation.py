@@ -45,7 +45,7 @@ class  WeightEstimator:
 if __name__ == "__main__":
     import pandas as pd
 
-    factDf = pd.read_csv("./examples/generation/synthetic_test_data/generated_factDf.csv")
+    factDf = pd.read_csv("./demonstration/generation/synthetic_test_data/generated_factDf.csv")
 
     #solutionList = ["bearbeitet(y,x)", "and", "enthaelt(x,z)"]
     #westimator = WeightEstimator(solutionList)

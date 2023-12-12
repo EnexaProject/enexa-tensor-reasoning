@@ -1,5 +1,7 @@
 import numpy as np
 import tnreason.logic.coordinate_calculus as cc
+import tnreason.logic.basis_calculus as bc
+
 
 def calculate_core(atom_dict, expression):
     if type(expression) == str:
@@ -38,6 +40,7 @@ def get_variables(expression):
     else:
         raise ValueError("Expression {} not understood.".format(expression))
 
+
 def get_individuals(expression):
     if type(expression) == str:
         arguments = expression.split("(")[1][:-1]
@@ -48,22 +51,25 @@ def get_individuals(expression):
     elif expression[0] == "not":
         return get_individuals(expression[1])
     elif expression[1] == "and":
-        return list(np.unique(np.concatenate((get_individuals(expression[0]),get_individuals(expression[2])))))
+        return list(np.unique(np.concatenate((get_individuals(expression[0]), get_individuals(expression[2])))))
+
 
 ###
 
 def evaluate_expression_on_factDf(factDf, individualsDict, expression):
     variables = get_variables(expression)
-    atomDict = generate_atomDict(factDf,individualsDict,variables)
-    return calculate_core(atomDict,expression)
+    atomDict = generate_atomDict(factDf, individualsDict, variables)
+    return calculate_core(atomDict, expression)
 
-def generate_atomDict(factDf,individualsDict,atoms):
+
+def generate_atomDict(factDf, individualsDict, atoms):
     atomDict = {}
     for atomKey in atoms:
         if "," in atomKey:
             relationKey = atomKey.split("(")[0]
             indKey1, indKey2 = atomKey.split("(")[1][:-1].split(",")
-            relValues = generate_relation_values(factDf,individualsDict[indKey1],individualsDict[indKey2],relationKey)
+            relValues = generate_relation_values(factDf, individualsDict[indKey1], individualsDict[indKey2],
+                                                 relationKey)
             atomDict[atomKey] = cc.CoordinateCore(relValues, [indKey1, indKey2], atomKey)
         else:
             classKey = atomKey.split("(")[0]
@@ -72,22 +78,24 @@ def generate_atomDict(factDf,individualsDict,atoms):
             atomDict[atomKey] = cc.CoordinateCore(classValues, [indKey], atomKey)
     return atomDict
 
-def generate_class_values(factDf,individuals,classKey):
+
+def generate_class_values(factDf, individuals, classKey):
     relevantInds = factDf[factDf["predicate"].isin(["http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "rdf:type"])]
-    relevantInds = relevantInds[relevantInds["object"]==classKey]
+    relevantInds = relevantInds[relevantInds["object"] == classKey]
     outvalues = np.zeros((len(individuals)))
     for i, row in relevantInds.iterrows():
         subPos = np.argwhere(individuals == row["subject"])
         outvalues[subPos] = 1
     return outvalues
 
-def generate_relation_values(factDf,individuals1,individuals2,relationKey):
-    relevantPairs = factDf[factDf["predicate"]==relationKey]
-    outValues = np.zeros((len(individuals1),len(individuals2)))
+
+def generate_relation_values(factDf, individuals1, individuals2, relationKey):
+    relevantPairs = factDf[factDf["predicate"] == relationKey]
+    outValues = np.zeros((len(individuals1), len(individuals2)))
     for i, row in relevantPairs.iterrows():
         subPos = np.argwhere(individuals1 == row["subject"])
         obPos = np.argwhere(individuals2 == row["object"])
-        outValues[subPos,obPos] = 1
+        outValues[subPos, obPos] = 1
     return outValues
 
 
@@ -101,8 +109,17 @@ def evaluate_expression_on_sampleDf(sampleDf, expression):
             values = np.zeros(sampleDf.shape[0])
         else:
             values = sampleDf[variable].astype("int64").values
-        atomDict[variable] = cc.CoordinateCore(values,["j"],variable)
-    return calculate_core(atomDict,expression)
+        atomDict[variable] = cc.CoordinateCore(values, ["j"], variable)
+    return calculate_core(atomDict, expression)
+
+
+def calculate_expressionCore(expression):
+    variables = np.unique(get_variables(expression))
+    atom_dict = {}
+    for variable in variables:
+        atom_dict[variable] = bc.BasisCore(np.eye(2), [variable, "head"], headcolor="head", name=variable)
+    return calculate_core(atom_dict, expression).calculate_truth().reduce_identical_colors().to_coordinate()
+
 
 if __name__ == "__main__":
     from tnreason.logic import basis_calculus as bc, coordinate_calculus as cc
@@ -125,7 +142,6 @@ if __name__ == "__main__":
     print(core.name)
     print(core.values.shape)
     # example_expression = [["a", "and", "b"], "and", ["not", "c"]]
-
 
     core0 = bc.BasisCore(np.ones(2), ["Sledz"])
     core1 = bc.BasisCore(np.ones(2), ["Jaszczur"])
