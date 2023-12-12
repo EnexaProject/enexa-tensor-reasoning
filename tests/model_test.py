@@ -1,6 +1,6 @@
 from tnreason.learning import mln_learning as lmln
 
-from tnreason.model import markov_logic_network as mln
+from tnreason.model import tensor_network_mln as mln
 
 from tnreason.optimization import weight_estimation as wees
 

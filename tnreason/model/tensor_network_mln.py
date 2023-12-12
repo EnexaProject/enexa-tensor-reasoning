@@ -103,6 +103,9 @@ def create_formulaCoreDict(expressionsDict):
         for formulaKey in expressionsDict}
 
 
+
+
+
 if __name__ == "__main__":
     example_expression_dict = {
         "e0": [["not", ["Unterschrank(z)", "and", ["not", "Moebel(z)"]]], 20],

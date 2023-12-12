@@ -1,7 +1,6 @@
 from matplotlib import pyplot as plt
-import numpy as np
 
-from tnreason.optimization import contraction_optimization as co
+from logic import contraction_optimization as co
 
 
 class CoreContractor:
