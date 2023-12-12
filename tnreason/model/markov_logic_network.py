@@ -26,8 +26,24 @@ class TensorMLN:
             if inferedFormula not in ["Thing","Nothing"]:
                 inferedFormula = eg.remove_double_not(inferedFormula)
                 inferedExpressionsDict[key] = [inferedFormula, self.expressionsDict[key][1]]
-
         return TensorMLN(inferedExpressionsDict)
+
+    def reduce_double_formulas(self):
+        checkedKeys = []
+        reducedExpressionDict = {}
+        for key in self.expressionsDict:
+            if key not in checkedKeys:
+                checkedKeys.append(key)
+                keyFormula, keyWeight = self.expressionsDict[key]
+                for otherKey in self.expressionsDict:
+                    if otherKey not in checkedKeys and eg.equality_check(keyFormula, self.expressionsDict[otherKey][0]):
+                        checkedKeys.append(otherKey)
+                        keyWeight = keyWeight + self.expressionsDict[otherKey][1]
+                reducedExpressionDict[key] = [keyFormula, keyWeight]
+        self.expressionsDict = reducedExpressionDict
+
+
+
 
     ## To be implemented: Here we need Tensor Network contractions
     def independent_sample(self):
@@ -153,6 +169,8 @@ if __name__ == "__main__":
 
     tn_mln = TensorMLN(example_expression_dict)
     infered_mln = tn_mln.infer_on_evidenceDict(example_evidence_dict)
+    print(infered_mln.expressionsDict)
+    infered_mln.reduce_double_formulas()
     print(infered_mln.expressionsDict)
 
     test_mln = MarkovLogicNetwork(example_expression_dict)

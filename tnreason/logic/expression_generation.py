@@ -70,6 +70,25 @@ def replace_atoms(expression, atomDict):
             return [replace_atoms(expression[0], atomDict), "and", replace_atoms(expression[2], atomDict)]
 
 
+def equality_check(expression1, expression2):
+    if type(expression1) == str:
+        if type(expression2) == str:
+            return expression1 == expression2
+        else:
+            return False
+    elif expression1[0] == "not":
+        if expression2[0] == "not":
+            return equality_check(expression1[1], expression2[1])
+        else:
+            return False
+    elif expression1[1] == "and":
+        if expression2[1] == "and":
+            return (equality_check(expression1[0], expression2[0]) and equality_check(expression1[2],
+                                                                                      expression2[2])) or (
+                        equality_check(expression1[0], expression2[2]) and equality_check(expression1[2],
+                                                                                          expression2[0]))
+
+
 def generate_pracmln_string(expression, weight):
     return str(weight) + " " + generate_pracmln_formulastring(expression)
 
