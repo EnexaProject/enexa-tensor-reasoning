@@ -6,6 +6,8 @@ from pgmpy.sampling import GibbsSampling
 from tnreason.logic import basis_calculus as bc
 from tnreason.logic import expression_calculus as ec
 from tnreason.logic import expression_generation as eg
+from tnreason.logic import coordinate_calculus as cc
+from tnreason.logic import core_contractor as ccon
 
 from tnreason.model import infer_mln as imln
 
@@ -16,14 +18,17 @@ import matplotlib.pyplot as plt
 
 
 class TensorMLN:
-    def __init__(self, expressionsDict={}):
+    def __init__(self, expressionsDict, formulaCoreDict=None):
         self.expressionsDict = expressionsDict
+        self.atomKeys = np.unique(
+            ec.get_all_variables([self.expressionsDict[formulaKey][0] for formulaKey in self.expressionsDict]))
+        self.formulaCoreDict = formulaCoreDict
 
     def infer_on_evidenceDict(self, evidenceDict={}):
         inferedExpressionsDict = {}
         for key in self.expressionsDict:
             inferedFormula = imln.infer_expression(self.expressionsDict[key][0], evidenceDict)
-            if inferedFormula not in ["Thing","Nothing"]:
+            if inferedFormula not in ["Thing", "Nothing"]:
                 inferedFormula = eg.remove_double_not(inferedFormula)
                 inferedExpressionsDict[key] = [inferedFormula, self.expressionsDict[key][1]]
         return TensorMLN(inferedExpressionsDict)
@@ -42,17 +47,57 @@ class TensorMLN:
                 reducedExpressionDict[key] = [keyFormula, keyWeight]
         self.expressionsDict = reducedExpressionDict
 
+    def initialize_formulaCoreDict(self):
+        self.formulaCoreDict = create_formulaCoreDict(self.expressionsDict)
 
-
+    def compute_marginalized(self, marginalKeys, optimizationMethod="GreedyHeuristic"):
+        if self.formulaCoreDict is None:
+            self.initialize_formulaCoreDict()
+        contractionDict = self.formulaCoreDict.copy()
+        for atomKey in self.atomKeys:
+            if atomKey not in marginalKeys:
+                contractionDict[atomKey] = cc.CoordinateCore(np.ones(2), [atomKey], atomKey)
+        contractor = ccon.CoreContractor(contractionDict, openColors=marginalKeys)
+        if optimizationMethod == "GreedyHeuristic":
+            contractor.optimize_coreList()  ## Using Greedy, Alternative
+        else:
+            raise ValueError("Optimization Method {} not supported!".format(optimizationMethod))
+        return contractor.contract().normalize()
 
     ## To be implemented: Here we need Tensor Network contractions
-    def independent_sample(self):
-        ## Sample from marginal distributions
-        pass
+    def create_independent_atom_sample(self, atomSampleKey):
+        marginalProbCore = self.compute_marginalized([atomSampleKey])
+        return np.random.multinomial(1, marginalProbCore.values)[0] == 0
 
-    def gibbs_step(self, variable):
-        ##
-        pass
+    def create_independent_sample(self):
+        return {atomKey: self.create_independent_atom_sample(atomKey) for atomKey in self.atomKeys}
+
+    def gibbs(self, repetitionNum=10, verbose=True):
+        sampleDict = self.create_independent_sample()
+        for repetitionPos in range(repetitionNum):
+            if verbose:
+                print("## Gibbs Iteration {} ##".format(repetitionPos))
+            for refinementAtomKey in sampleDict:
+                samplerMLN = self.infer_on_evidenceDict(
+                    {key: sampleDict[key] for key in sampleDict if key != refinementAtomKey})
+                samplerMLN.reduce_double_formulas()
+                if refinementAtomKey not in samplerMLN.atomKeys:
+                    print("Warning: Infered MLN is empty on key {}".format(refinementAtomKey))
+                    samplerMLN = TensorMLN({refinementAtomKey: [str(refinementAtomKey), 0]})
+                sampleDict[refinementAtomKey] = samplerMLN.create_independent_atom_sample(refinementAtomKey)
+            if verbose:
+                print("SampleDict is {}".format(sampleDict))
+        return sampleDict
+
+    def generate_sampleDf(self, sampleNum, method="Gibbs10"):
+        df = pd.DataFrame(columns=self.atomKeys)
+        for ind in range(sampleNum):
+            if method.startswith("Gibbs"):
+                repetitionNum = int(method.split("Gibbs")[1])
+                row_df = pd.DataFrame(self.gibbs(repetitionNum=repetitionNum, verbose=False), index=[ind])
+                df = pd.concat([df, row_df])
+        return df.astype("int64")
+
 
 class MarkovLogicNetwork:
     def __init__(self, expressionsDict=None):
@@ -153,10 +198,19 @@ def calculate_dangling_basis(expression):
     return ec.calculate_core(atom_dict, expression).calculate_truth().reduce_identical_colors()
 
 
+def create_formulaCoreDict(expressionsDict):
+    return {formulaKey: calculate_dangling_basis(
+        expressionsDict[formulaKey][0]).to_coordinate().weighted_exponentiation(
+        expressionsDict[formulaKey][1])
+        for formulaKey in expressionsDict}
+
+
 if __name__ == "__main__":
     example_expression_dict = {
         "e0": [["not", ["Unterschrank(z)", "and", ["not", "Moebel(z)"]]], 20],
-        "e0.5": ["Moebel(z)", -2],
+        "e0.5": ["Moebel(z)", 10],
+        "e0.625": ["Sledz", 10],
+        "e0.626": [["not", ["Moebel(z)", "and", "Sledz"]], 4],
         "e0.75": [["not", [["Unterschrank(z)", "and", "Sledz"], "and", ["not", "Ausgangsrechnung(x)"]]], 2],
         "e1": [["not", "Ausgangsrechnung(x)"], 12],
         "e2": [[["not", "Ausgangsrechnung(x)"], "and", ["not", "Rechnung(x)"]], 14]
@@ -167,16 +221,22 @@ if __name__ == "__main__":
         "Ausgangsrechnung(x)": 1
     }
 
+    # print(create_formulaCoreDict(example_expression_dict))
+
     tn_mln = TensorMLN(example_expression_dict)
+    # tn_mln.independent_atom_sample("Unterschrank(z)")
+    # print(tn_mln.gibbs(10))
+    print(tn_mln.generate_sampleDf(int(1e4)))
+    exit()
+
     infered_mln = tn_mln.infer_on_evidenceDict(example_evidence_dict)
-    print(infered_mln.expressionsDict)
-    infered_mln.reduce_double_formulas()
-    print(infered_mln.expressionsDict)
+    #    print(infered_mln.expressionsDict)
+    #    infered_mln.reduce_double_formulas()
+    #    print(infered_mln.expressionsDict)
 
     test_mln = MarkovLogicNetwork(example_expression_dict)
     cond_query_result = test_mln.cond_query_given_evidenceDict(example_evidence_dict, ["Moebel(z)"])
     cond_query_result.normalize()
     # print(cond_query_result.values)
 
-    #test_mln.visualize(truthDict={"Unterschrank(z)": True, "Ausgangsrechnung(x)": False})
-
+    # test_mln.visualize(truthDict={"Unterschrank(z)": True, "Ausgangsrechnung(x)": False})

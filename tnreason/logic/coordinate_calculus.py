@@ -180,6 +180,9 @@ class CoordinateCore:
     def weighted_exponentiation(self, weight):
         return CoordinateCore(np.exp(weight*self.values), self.colors)
 
+    def normalize(self, sum=1):
+        return CoordinateCore(self.values*(sum/np.sum(self.values)), self.colors, self.name)
+
 ## Small Test Skript
 if __name__ == "__main__":
     core0_values = np.random.normal(size=(100, 10, 5))
