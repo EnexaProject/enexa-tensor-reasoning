@@ -1,32 +1,40 @@
 import numpy as np
-import tnreason.logic.coordinate_calculus as cc
-import tnreason.logic.basis_calculus as bc
+# import tnreason.logic.coordinate_calculus as cc
+# import tnreason.logic.basis_calculus as bc
+
+## SHIFTED TO THESE MODULES
 import tnreason.logic.expression_utils as eu
+import tnreason.contraction.expression_evaluation as ee
 
 
+## Replaced by tnreason.contraction.expression_evaluation -> ExpressionEvaluator(expression, atomDict).evaluate()
 def calculate_core(atom_dict, expression):
-    if type(expression) == str:
-        return atom_dict[expression]
-    elif expression[0] == "not":
-        return calculate_core(atom_dict, expression[1]).negate()
-    elif expression[1] == "and":
-        return calculate_core(atom_dict, expression[0]).compute_and(
-            calculate_core(atom_dict, expression[2]))
-    else:
-        raise ValueError("Expression {} not understood.".format(expression))
+    return ee.ExpressionEvaluator(expression, atomDict=atom_dict).evaluate()
+    # if type(expression) == str:
+    #     return atom_dict[expression]
+    # elif expression[0] == "not":
+    #     return calculate_core(atom_dict, expression[1]).negate()
+    # elif expression[1] == "and":
+    #     return calculate_core(atom_dict, expression[0]).compute_and(
+    #         calculate_core(atom_dict, expression[2]))
+    # else:
+    #     raise ValueError("Expression {} not understood.".format(expression))
 
 
-def get_individuals(expression):
-    if type(expression) == str:
-        arguments = expression.split("(")[1][:-1]
-        if "," in arguments:
-            return arguments.split(",")
-        else:
-            return [arguments]
-    elif expression[0] == "not":
-        return get_individuals(expression[1])
-    elif expression[1] == "and":
-        return list(np.unique(np.concatenate((get_individuals(expression[0]), get_individuals(expression[2])))))
+## To be replaced by tnreason.contraction.expression_evaluation -> ExpressionEvaluator(expression).evaluate_on_sampleDf()
+def evaluate_expression_on_sampleDf(sampleDf, expression):
+    return ee.ExpressionEvaluator(expression).evaluate_on_sampleDf(sampleDf)
+    # variables = eu.get_variables(expression)
+    # atomDict = {}
+    # for variable in variables:
+    #     if variable == "Thing":
+    #         values = np.ones(sampleDf.shape[0])
+    #     elif variable == "Nothing":
+    #         values = np.zeros(sampleDf.shape[0])
+    #     else:
+    #         values = sampleDf[variable].astype("int64").values
+    #     atomDict[variable] = cc.CoordinateCore(values, ["j"], variable)
+    # return calculate_core(atomDict, expression)
 
 
 ###
@@ -72,20 +80,6 @@ def generate_relation_values(factDf, individuals1, individuals2, relationKey):
         obPos = np.argwhere(individuals2 == row["object"])
         outValues[subPos, obPos] = 1
     return outValues
-
-
-def evaluate_expression_on_sampleDf(sampleDf, expression):
-    variables = eu.get_variables(expression)
-    atomDict = {}
-    for variable in variables:
-        if variable == "Thing":
-            values = np.ones(sampleDf.shape[0])
-        elif variable == "Nothing":
-            values = np.zeros(sampleDf.shape[0])
-        else:
-            values = sampleDf[variable].astype("int64").values
-        atomDict[variable] = cc.CoordinateCore(values, ["j"], variable)
-    return calculate_core(atomDict, expression)
 
 
 def calculate_expressionCore(expression):

@@ -1,4 +1,3 @@
-import tnreason.logic.expression_calculus as ec
 import tnreason.logic.coordinate_calculus as cc
 import tnreason.logic.expression_generation as eg
 import tnreason.logic.expression_utils as eu
@@ -190,7 +189,7 @@ class VariableLearner(OptimizerBase):
                 self.fixedCoresDict[atomKey] = cc.CoordinateCore(coreValues, [indKey, classKey])
 
     def generate_targetCore_pairDf(self, pairDf, individualsDict, targetIsFilter=True):
-        skeletonIndividuals = ec.get_individuals(self.skeleton)
+        skeletonIndividuals = eu.get_individuals(self.skeleton)
         coreValues, latency = ptoc.pairDf_to_target_values(pairDf, individualsDict, skeletonIndividuals)
         self.targetCore = cc.CoordinateCore(coreValues, skeletonIndividuals)
         if targetIsFilter:

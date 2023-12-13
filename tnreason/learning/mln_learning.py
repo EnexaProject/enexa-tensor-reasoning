@@ -1,4 +1,4 @@
-import tnreason.logic.expression_calculus as ec
+# import tnreason.logic.expression_calculus as ec
 import tnreason.logic.coordinate_calculus as cc
 import tnreason.logic.expression_generation as eg
 
@@ -8,6 +8,8 @@ import tnreason.representation.pairdf_to_cores as ptoc
 
 import tnreason.optimization.weight_estimation as wees
 import tnreason.optimization.expression_refinement as er
+
+import tnreason.contraction.expression_evaluation as ee
 
 import tnreason.learning.expression_learning as el
 
@@ -63,9 +65,11 @@ class SampleBasedMLNLearner:
               balance=True,
               acceptanceCriterion="weight>0.5"):
         if saveMod == "eq" or saveMod == "imp":
-            positiveCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, positiveExpression)
+            # positiveCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, positiveExpression)
+            positiveCore = ee.ExpressionEvaluator(positiveExpression, sampleDf=self.sampleDf).evaluate()
         else:
-            positiveCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, "Thing")
+            # positiveCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, "Thing")
+            positiveCore = ee.ExpressionEvaluator("Thing", sampleDf=self.sampleDf).evaluate()
 
         solutionExpressions = self.boost(skeletonExpression, candidatesDict, positiveCore, boostNum=boostNum,
                                          refinementNum=refinementNum, refinementCriterion=refinementCriterion,
@@ -87,7 +91,8 @@ class SampleBasedMLNLearner:
             refiningExpression = "Thing"
             for solutionExpression in solutionExpressions:
                 refiningExpression = [refiningExpression, "and", ["not", solutionExpression]]
-            refiningCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, refiningExpression)
+            # refiningCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, refiningExpression)
+            refiningCore = ee.ExpressionEvaluator(refiningExpression, sampleDf=self.sampleDf).evaluate()
             positiveCore = positiveCore.compute_and(refiningCore)
             negativeCore = positiveCore.negate()
 

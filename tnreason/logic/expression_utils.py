@@ -22,3 +22,15 @@ def get_variables(expression):
         return left_variables + right_variables
     else:
         raise ValueError("Expression {} not understood.".format(expression))
+
+def get_individuals(expression):
+    if type(expression) == str:
+        arguments = expression.split("(")[1][:-1]
+        if "," in arguments:
+            return arguments.split(",")
+        else:
+            return [arguments]
+    elif expression[0] == "not":
+        return get_individuals(expression[1])
+    elif expression[1] == "and":
+        return list(np.unique(np.concatenate((get_individuals(expression[0]), get_individuals(expression[2])))))

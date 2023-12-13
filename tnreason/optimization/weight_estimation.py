@@ -1,8 +1,10 @@
 from tnreason.optimization import satisfaction_counter as sc
 
-from tnreason.logic import expression_calculus as ec
+#from tnreason.logic import expression_calculus as ec
 from tnreason.logic import expression_utils as eu
-from contraction import core_contractor as coc
+
+from tnreason.contraction import core_contractor as coc
+from tnreason.contraction import expression_evaluation as ee
 
 import numpy as np
 
@@ -14,7 +16,9 @@ class WeightEstimator:
 
     def calculate_independent_satRates(self):
         for formulaKey in self.formulaDict:
-            basis_core = ec.calculate_expressionCore(self.formulaDict[formulaKey][0])
+            # basis_core = ec.calculate_expressionCore(self.formulaDict[formulaKey][0])
+            basis_core = ee.ExpressionEvaluator(self.formulaDict[formulaKey][0],
+                                                initializeBasisCores=True).create_formula_factor()
             self.formulaDict[formulaKey][1] = basis_core.count_satisfaction()
             self.coreDict[formulaKey] = basis_core
 
@@ -67,7 +71,8 @@ class WeightEstimator:
 
 
 def calculate_satRate_bc(expression):
-    return ec.calculate_expressionCore(expression).count_satisfaction()
+    # return ec.calculate_expressionCore(expression).count_satisfaction()
+    return ee.ExpressionEvaluator(expression, initializeBasisCores=True).create_formula_factor().count_satisfaction()
 
 
 def solve_rate_equation(satRate, empRate):
@@ -86,7 +91,8 @@ def cutoff_weight(weight, cutoff):
 
 
 def calculate_empRate(expression, atomDict, filterCore=None):
-    expressionCore = ec.calculate_core(atomDict, expression)
+    # expressionCore = ec.calculate_core(atomDict, expression)
+    expressionCore = ee.ExpressionEvaluator(expression, atomDict=atomDict).evaluate()
     if filterCore is None:
         expressionResults = expressionCore.values.flatten()
         empSatNum = np.sum(expressionResults)

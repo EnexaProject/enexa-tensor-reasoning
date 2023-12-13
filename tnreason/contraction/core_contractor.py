@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 
-from contraction import contraction_optimization as co
+from tnreason.contraction import contraction_optimization as co
 
 
 class CoreContractor:
@@ -16,9 +16,10 @@ class CoreContractor:
         self.instructionList = instructionList
         self.openColors = openColors
 
-    def exponentiate_with_weight(self, weightDict, exeptionKeys=[]):
-        for coreKey in self.coreDict:
-            self.coreDict[coreKey] = self.coreDict[coreKey].weighted_exponentiation(weightDict[coreKey])
+    #def exponentiate_with_weight(self, weightDict, exeptionKeys=[]):
+    #    for coreKey in self.coreDict:
+    #       if not (coreKey in exeptionKeys):
+    #        self.coreDict[coreKey] = self.coreDict[coreKey].weighted_exponentiation(weightDict[coreKey])
 
     def optimize_coreList(self, method="GreedyHeuristic"):
         # Generate the coreColorDict and colorDimDict for ContractionOptimizer
@@ -34,7 +35,8 @@ class CoreContractor:
             # Optimize coreList i.e. order of contraction
             optimizer.optimize()
         elif method == "Dijkstra":
-            optimizer
+            optimizer = co.DijkstraOptimizer(coreColorDict, colorDimDict)
+            optimizer.optimize()
         self.coreList = optimizer.coreList
 
     def create_instructionList_from_coreList(self, verbose=False):

@@ -3,7 +3,10 @@ from pgmpy.factors.discrete import DiscreteFactor
 from pgmpy.inference import VariableElimination
 from pgmpy.sampling import GibbsSampling
 
-from tnreason.logic import expression_calculus as ec
+# from tnreason.logic import expression_calculus as ec
+from tnreason.logic import expression_utils as eu
+
+from tnreason.contraction import expression_evaluation as ee
 
 import numpy as np
 import pandas as pd
@@ -24,7 +27,7 @@ class PgmpyMLN:
         for exKey in expressionsDict:
             expression = expressionsDict[exKey][0]
             weight = expressionsDict[exKey][1]
-            ex_variables = np.unique(ec.get_variables(expression))
+            ex_variables = np.unique(eu.get_variables(expression))
 
             self.model.add_nodes_from(ex_variables)
 
@@ -34,7 +37,7 @@ class PgmpyMLN:
                         if startnode != endnode:
                             edges.append((startnode, endnode))
 
-            core = ec.calculate_expressionCore(expression)
+            core = ee.ExpressionEvaluator(expression, initializeBasisCores=True).create_formula_factor()
             variables = core.colors
 
             factors.append(DiscreteFactor(variables, [2 for node in variables], np.exp(weight * core.values)))

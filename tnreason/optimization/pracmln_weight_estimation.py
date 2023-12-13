@@ -1,5 +1,5 @@
 from tnreason.logic import expression_generation as eg
-from tnreason.logic import expression_calculus as ec
+# from tnreason.logic import expression_calculus as ec
 from tnreason.logic import expression_utils as eu
 
 from pracmln import MLN, Database
@@ -9,21 +9,22 @@ from pracmln.utils.project import PRACMLNConfig
 from pracmln.utils.config import global_config_filename
 import os
 
-class  WeightEstimator:
-    def __init__(self,solutionList=None):
+
+class WeightEstimator:
+    def __init__(self, solutionList=None):
         self.create_mln(solutionList)
         self.db = Database(self.mln)
 
-    def create_mln(self,solutionList):
-        self.mln = MLN(grammar = "StandardGrammar",
-                       logic = "FirstOrderLogic")
+    def create_mln(self, solutionList):
+        self.mln = MLN(grammar="StandardGrammar",
+                       logic="FirstOrderLogic")
         variablesList = eu.get_all_variables(solutionList)
         for variable in variablesList:
             self.mln << variable
         for expression in solutionList:
             self.mln << "0 " + eg.generate_pracmln_formulastring(expression)
 
-    def extend_db(self,factDf):
+    def extend_db(self, factDf):
 
         for i, row in factDf.iterrows():
             if row["predicate"] == "rdf:type":
@@ -43,10 +44,11 @@ class  WeightEstimator:
         learner = MLNLearn(conf, mln=self.mln, db=self.db)
         result = learn.run()
 
+
 if __name__ == "__main__":
     import pandas as pd
 
     factDf = pd.read_csv("./demonstration/generation/synthetic_test_data/generated_factDf.csv")
 
-    #solutionList = ["bearbeitet(y,x)", "and", "enthaelt(x,z)"]
-    #westimator = WeightEstimator(solutionList)
+    # solutionList = ["bearbeitet(y,x)", "and", "enthaelt(x,z)"]
+    # westimator = WeightEstimator(solutionList)

@@ -1,8 +1,11 @@
-from tnreason.logic import expression_calculus as ec
+#from tnreason.logic import expression_calculus as ec
+
 from tnreason.logic import expression_utils as eu
 from tnreason.logic import expression_generation as eg
 from tnreason.logic import coordinate_calculus as cc
-from contraction import core_contractor as coc
+
+from tnreason.contraction import core_contractor as coc
+from tnreason.contraction import expression_evaluation as ee
 
 from tnreason.model import infer_mln as imln
 
@@ -41,11 +44,15 @@ class TensorMLN:
         self.expressionsDict = reducedExpressionDict
 
     def initialize_formulaCoreDict(self):
+        #self.formulaCoreDict = {
+        #    formulaKey: ec.calculate_expressionCore(self.expressionsDict[formulaKey][0]).weighted_exponentiation(
+        #        self.expressionsDict[formulaKey][1])
+        #    for formulaKey in self.expressionsDict}
         self.formulaCoreDict = {
-            formulaKey: ec.calculate_expressionCore(self.expressionsDict[formulaKey][0]).weighted_exponentiation(
+            formulaKey: ee.ExpressionEvaluator(self.expressionsDict[formulaKey][0],
+                                                initializeBasisCores=True).create_formula_factor().weighted_exponentiation(
                 self.expressionsDict[formulaKey][1])
             for formulaKey in self.expressionsDict}
-
     def compute_marginalized(self, marginalKeys, optimizationMethod="GreedyHeuristic"):
         if self.formulaCoreDict is None:
             self.initialize_formulaCoreDict()
