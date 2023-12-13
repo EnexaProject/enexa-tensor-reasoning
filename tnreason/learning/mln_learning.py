@@ -93,17 +93,17 @@ class SampleBasedMLNLearner:
 
             solutionExpressions.append(self.refine(skeletonExpression, candidatesDict, positiveCore, negativeCore,
                                                    refinementLeft=refinementNum,
-                                                   acceptance_criterion=refinementCriterion,
+                                                   acceptanceCriterion=refinementCriterion,
                                                    balance=balance))
         return solutionExpressions
 
     def refine(self, skeletonExpression, candidatesDict, positiveCore, negativeCore,
-               refinementLeft=0, acceptance_criterion="weight>0.5",
+               refinementLeft=0, acceptanceCriterion="weight>0.5",
                balance=True):
         solutionExpression = self.optimize_formula(skeletonExpression, candidatesDict, positiveCore, negativeCore,
                                                    balance=balance)
         empRate, satRate, weight = self.learn_independent_weight(solutionExpression)
-        if refinementLeft > 0 and not criterion_satisfied(empRate, satRate, weight, acceptance_criterion):
+        if refinementLeft > 0 and not criterion_satisfied(empRate, satRate, weight, acceptanceCriterion):
             print("# Refining since criterion not satisfied, {} tries left #".format(refinementLeft))
             newSkeleton = er.add_leaf_atom(skeletonExpression)
             refinementLeft -= 1

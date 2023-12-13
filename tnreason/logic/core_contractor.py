@@ -1,6 +1,10 @@
 from matplotlib import pyplot as plt
 
 from logic import contraction_optimization as co
+from logic import coordinate_calculus as cc
+
+import numpy as np
+import time
 
 
 class CoreContractor:
@@ -20,7 +24,7 @@ class CoreContractor:
         for coreKey in self.coreDict:
             self.coreDict[coreKey] = self.coreDict[coreKey].weighted_exponentiation(weightDict[coreKey])
 
-    def optimize_coreList(self):
+    def optimize_coreList(self, method="GreedyHeuristic"):
         # Generate the coreColorDict and colorDimDict for ContractionOptimizer
         coreColorDict = {}
         colorDimDict = {}
@@ -29,9 +33,12 @@ class CoreContractor:
             for i, color in enumerate(self.coreDict[coreKey].colors):
                 if color not in colorDimDict:
                     colorDimDict[color] = self.coreDict[coreKey].values.shape[i]
-        optimizer = co.GreedyHeuristicOptimizer(coreColorDict, colorDimDict)
-        # Optimize coreList i.e. order of contraction
-        optimizer.optimize()
+        if method == "GreedyHeuristic":
+            optimizer = co.GreedyHeuristicOptimizer(coreColorDict, colorDimDict)
+            # Optimize coreList i.e. order of contraction
+            optimizer.optimize()
+        elif method == "Dijkstra":
+            optimizer
         self.coreList = optimizer.coreList
 
     def create_instructionList_from_coreList(self, verbose=False):
@@ -128,6 +135,33 @@ class CoreContractor:
 
         return contracted
 
+    def numpy_einsum_contract(self):
+        subscripts = self.create_contraction_subscripts()
+
+        contractedValues = np.einsum(subscripts, *[self.coreDict[coreKey].values for coreKey in self.coreList])
+        return cc.CoordinateCore(contractedValues, self.openColors)
+
+    def create_contraction_subscripts(self):
+        alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                    'u', 'v', 'w', 'x', 'y', 'z']
+
+        colorDict = {}
+        i = 0
+        for coreKey in self.coreDict:
+            for color in self.coreDict[coreKey].colors:
+                if color not in colorDict:
+                    colorDict[color] = alphabet[i]
+                    i += 1
+
+        colorList = []
+        for coreKey in self.coreList:
+            colorList.append("".join([colorDict[color] for color in self.coreDict[coreKey].colors]))
+
+        lhs = ",".join(colorList)
+        rhs = "".join([colorDict[color] for color in self.openColors])
+
+        return lhs + "->" + rhs
+
 
 def find_affected(coreDict, color):
     affectedCores = []
@@ -172,7 +206,9 @@ if __name__ == "__main__":
     }
     contractor = CoreContractor(coordinateDict,
                                 None,
-                                [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"], ["reduce", "q"]])
+                                [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"]],
+                                ["q"]
+                                )
 
     contractor.optimize_coreList()
     contractor.create_instructionList_from_coreList()
@@ -181,4 +217,7 @@ if __name__ == "__main__":
     contractorWithOpen = CoreContractor(coordinateDict, instructionList=None, coreList=None, openColors=["x"])
     contractorWithOpen.create_instructionList_from_coreList()
     print(contractorWithOpen.instructionList)  ## Has to be without openColor Reduction, i.e. "x".
-    contractorWithOpen.evaluate_sizes_instructionList(show=True)
+    # contractorWithOpen.evaluate_sizes_instructionList(show=True)
+
+    print(contractor.create_contraction_subscripts())
+    print(contractor.numpy_einsum_contract().values)
