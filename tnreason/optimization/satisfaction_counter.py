@@ -1,4 +1,4 @@
-from tnreason.logic import expression_calculus as ec
+from tnreason.logic import expression_utils as eu
 
 def count_satisfaction(expression):
     conjunctionList = compute_conjunctionList(expression)
@@ -11,7 +11,7 @@ def compute_conjunctionList(expression):
     if type(expression) == str:
         return [[[],[expression],1]]
     if expression[0] == "not":
-        variables = combine_unique(ec.get_variables(expression),[])
+        variables = combine_unique(eu.get_variables(expression),[])
         conjunctionList1 = compute_conjunctionList(expression[1])
         conjunctionList = [[variables,[],1]]
         for entry in conjunctionList1:

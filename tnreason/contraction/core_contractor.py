@@ -1,10 +1,6 @@
 from matplotlib import pyplot as plt
 
-from logic import contraction_optimization as co
-from logic import coordinate_calculus as cc
-
-import numpy as np
-import time
+from contraction import contraction_optimization as co
 
 
 class CoreContractor:
@@ -121,6 +117,7 @@ class CoreContractor:
             print("Missing contraction colors are {}.".format(contracted.colors))
         return contracted
 
+    ## Unused!
     def contract_color(self, color):
         affectedCores, affectedKeys = find_affected(self.coreDict, color)
 
@@ -172,6 +169,72 @@ def find_affected(coreDict, color):
             affectedKeys.append(key)
     return affectedCores, affectedKeys
 
+class NegationTolerantCoreContractor:
+    ## In CoreDict
+    def __init__(self, coreDict={}, coreList=None, instructionList=None, openColors=[]):
+        self.coreDict = coreDict ## Now each key gives a list of list [core, ignorecolors]
+        self.coreList = coreList
+        self.instructionList = instructionList
+        self.openColors = openColors
+
+
+    def contract(self):
+
+        contractedList = self.coreDict[self.instructionList[0][1]]
+        print(len(contractedList))
+        for instruction in self.instructionList[1:]:
+            if instruction[0] == "add":
+                contractedList = compute_list_and(contractedList, self.coreDict[instruction[1]])
+#            elif instruction[0] == "reduce":
+#                contracted = contracted.reduce_color(instruction[1])
+                print(instruction, len(contractedList))
+        return contractedList
+def compute_list_and(leftList, rightList):
+    preResultList = []
+
+    ## Add the non Constants
+    for leftCore, leftIgnoreColors in leftList:
+        for rightCore, rightIgnoreColors in rightList:
+            if (not is_constant(leftIgnoreColors,rightCore.colors)) and (not is_constant(leftIgnoreColors,rightCore.colors)):
+                preResultList.append([leftCore.compute_and(rightCore), leftIgnoreColors+rightIgnoreColors])
+
+    ## Add the constants from both sides
+    for leftCore, leftIgnoreColors in leftList:
+        firstRightCore, firstRightIgnoreColors = rightList[0]
+        if is_constant(leftIgnoreColors, firstRightCore.colors):
+            preResultList.append([leftCore, leftIgnoreColors])
+    for rightCore, rightIgnoreColors in rightList:
+        firstLeftCore, firstLeftIgnoreColors = leftList[0]
+        if is_constant(rightIgnoreColors, firstLeftCore.colors):
+            preResultList.append([rightCore, rightIgnoreColors])
+
+
+    ## Sum the cores with same colors
+    resultList = []
+    while len(preResultList)>0:
+        core1, ignoreColors1 = preResultList.pop()
+        for core2, ignoreColors2 in preResultList.copy():
+            if color_equivalence(core1, core2):
+                core1 = core1.sum_with(core2)
+                preResultList.pop(preResultList.index([core2, ignoreColors2]))
+        resultList.append([core1, ignoreColors1])
+    return resultList
+
+def is_constant(ignoreColors, testColors):
+    for color in ignoreColors:
+        if color in testColors:
+            return True
+    return False
+
+def color_equivalence(core1, core2):
+    for color in core1.colors:
+        if color not in core2.colors:
+            return False
+    for color in core2.colors:
+        if color not in core1.colors:
+            return False
+    return True
+
 
 if __name__ == "__main__":
     import tnreason.logic.coordinate_calculus as cc
@@ -204,6 +267,29 @@ if __name__ == "__main__":
         "a": 2.134,
         "b": 1.72345
     }
+
+
+    contractor = NegationTolerantCoreContractor(
+        coreDict={
+            "a" : [[cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "y", "z"], name="a"),["y"]],
+                   [cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "r", "z"], name="a"),["y2"]]
+                   ],
+            "b" : [[cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "y2", "z"], name="a2"), ["y2"]],
+                   [cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "r", "z"], name="a"), ["y2"]]
+                   ],
+    },
+        instructionList = [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"]],
+    )
+    result =  contractor.contract()
+    print(result)
+
+
+
+
+    exit()
+
+
+
     contractor = CoreContractor(coordinateDict,
                                 None,
                                 [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"]],

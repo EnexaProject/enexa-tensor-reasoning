@@ -1,6 +1,7 @@
 import tnreason.logic.expression_calculus as ec
 import tnreason.logic.coordinate_calculus as cc
 import tnreason.logic.expression_generation as eg
+import tnreason.logic.expression_utils as eu
 
 import tnreason.representation.factdf_to_cores as ftoc
 import tnreason.representation.sampledf_to_cores as stoc
@@ -14,7 +15,7 @@ import numpy as np
 class OptimizerBase:
     def __init__(self, skeletonExpression, candidatesDict=None):
         self.skeleton = skeletonExpression
-        self.skeletonAtoms = ec.get_variables(skeletonExpression)
+        self.skeletonAtoms = eu.get_variables(skeletonExpression)
         self.candidatesDict = candidatesDict
 
         self.targetCore = None

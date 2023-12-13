@@ -1,6 +1,7 @@
 import numpy as np
 import tnreason.logic.coordinate_calculus as cc
 import tnreason.logic.basis_calculus as bc
+import tnreason.logic.expression_utils as eu
 
 
 def calculate_core(atom_dict, expression):
@@ -11,32 +12,6 @@ def calculate_core(atom_dict, expression):
     elif expression[1] == "and":
         return calculate_core(atom_dict, expression[0]).compute_and(
             calculate_core(atom_dict, expression[2]))
-    else:
-        raise ValueError("Expression {} not understood.".format(expression))
-
-
-def get_all_variables(expressionList):
-    variables = []
-    for expression in expressionList:
-        variables = variables + get_variables(expression)
-    return variables
-
-
-def get_variables(expression):
-    if type(expression) == str:
-        return [expression]
-    elif expression[0] == "not":
-        return get_variables(expression[1])
-    elif expression[1] == "and":
-        if type(expression[0]) == str:
-            left_variables = [expression[0]]
-        else:
-            left_variables = get_variables(expression[0])
-        if type(expression[2]) == str:
-            right_variables = [expression[2]]
-        else:
-            right_variables = get_variables(expression[2])
-        return left_variables + right_variables
     else:
         raise ValueError("Expression {} not understood.".format(expression))
 
@@ -57,7 +32,7 @@ def get_individuals(expression):
 ###
 
 def evaluate_expression_on_factDf(factDf, individualsDict, expression):
-    variables = get_variables(expression)
+    variables = eu.get_variables(expression)
     atomDict = generate_atomDict(factDf, individualsDict, variables)
     return calculate_core(atomDict, expression)
 
@@ -100,7 +75,7 @@ def generate_relation_values(factDf, individuals1, individuals2, relationKey):
 
 
 def evaluate_expression_on_sampleDf(sampleDf, expression):
-    variables = get_variables(expression)
+    variables = eu.get_variables(expression)
     atomDict = {}
     for variable in variables:
         if variable == "Thing":
@@ -114,7 +89,7 @@ def evaluate_expression_on_sampleDf(sampleDf, expression):
 
 
 def calculate_expressionCore(expression):
-    variables = np.unique(get_variables(expression))
+    variables = np.unique(eu.get_variables(expression))
     atom_dict = {}
     for variable in variables:
         atom_dict[variable] = bc.BasisCore(np.eye(2), [variable, "head"], headcolor="head", name=variable)

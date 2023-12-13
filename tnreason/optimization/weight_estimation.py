@@ -1,7 +1,8 @@
 from tnreason.optimization import satisfaction_counter as sc
 
 from tnreason.logic import expression_calculus as ec
-from tnreason.logic import core_contractor as coc
+from tnreason.logic import expression_utils as eu
+from contraction import core_contractor as coc
 
 import numpy as np
 
@@ -98,7 +99,7 @@ def calculate_empRate(expression, atomDict, filterCore=None):
 
 
 def calculate_satRate(expression):
-    variables = np.unique(ec.get_variables(expression))
+    variables = np.unique(eu.get_variables(expression))
     modelNum = 2 ** len(variables)
     satNum = sc.count_satisfaction(expression)
     return satNum / modelNum

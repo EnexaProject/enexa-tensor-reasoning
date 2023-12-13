@@ -1,22 +1,20 @@
-from tnreason.logic import basis_calculus as bc
 from tnreason.logic import expression_calculus as ec
+from tnreason.logic import expression_utils as eu
 from tnreason.logic import expression_generation as eg
 from tnreason.logic import coordinate_calculus as cc
-from tnreason.logic import core_contractor as ccon
+from contraction import core_contractor as coc
 
 from tnreason.model import infer_mln as imln
 
 import numpy as np
 import pandas as pd
-import networkx as nx
-import matplotlib.pyplot as plt
 
 
 class TensorMLN:
     def __init__(self, expressionsDict, formulaCoreDict=None):
         self.expressionsDict = expressionsDict
         self.atomKeys = np.unique(
-            ec.get_all_variables([self.expressionsDict[formulaKey][0] for formulaKey in self.expressionsDict]))
+            eu.get_all_variables([self.expressionsDict[formulaKey][0] for formulaKey in self.expressionsDict]))
         self.formulaCoreDict = formulaCoreDict
 
     def infer_on_evidenceDict(self, evidenceDict={}):
@@ -55,7 +53,7 @@ class TensorMLN:
         for atomKey in self.atomKeys:
             if atomKey not in marginalKeys:
                 contractionDict[atomKey] = cc.CoordinateCore(np.ones(2), [atomKey], atomKey)
-        contractor = ccon.CoreContractor(contractionDict, openColors=marginalKeys)
+        contractor = coc.CoreContractor(contractionDict, openColors=marginalKeys)
         if optimizationMethod == "GreedyHeuristic":
             contractor.optimize_coreList()  ## Using Greedy, Alternative
         else:
@@ -97,10 +95,10 @@ class TensorMLN:
         return df.astype("int64")
 
 
-def create_formulaCoreDict(expressionsDict):
-    return {formulaKey: ec.calculate_expressionCore(expressionsDict[formulaKey][0]).weighted_exponentiation(
-        expressionsDict[formulaKey][1])
-        for formulaKey in expressionsDict}
+#def create_formulaCoreDict(expressionsDict):
+#    return {formulaKey: ec.calculate_expressionCore(expressionsDict[formulaKey][0]).weighted_exponentiation(
+#        expressionsDict[formulaKey][1])
+#        for formulaKey in expressionsDict}
 
 
 

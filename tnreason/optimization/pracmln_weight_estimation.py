@@ -1,5 +1,6 @@
 from tnreason.logic import expression_generation as eg
 from tnreason.logic import expression_calculus as ec
+from tnreason.logic import expression_utils as eu
 
 from pracmln import MLN, Database
 from pracmln.mlnlearn import MLNLearn
@@ -16,7 +17,7 @@ class  WeightEstimator:
     def create_mln(self,solutionList):
         self.mln = MLN(grammar = "StandardGrammar",
                        logic = "FirstOrderLogic")
-        variablesList = ec.get_all_variables(solutionList)
+        variablesList = eu.get_all_variables(solutionList)
         for variable in variablesList:
             self.mln << variable
         for expression in solutionList:

@@ -1,4 +1,4 @@
-from tnreason.logic import expression_calculus as ec
+from tnreason.logic import expression_utils as eu
 
 import numpy as np
 
@@ -11,7 +11,7 @@ def refine_expression(expression, mode, newAtom):
 
 
 def add_leaf_atom(expression):
-    atoms = ec.get_variables(expression)
+    atoms = eu.get_variables(expression)
     new_atom = "P" + str(len(atoms) + 1)
     return random_modification(expression, new_atom)
 
