@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 
 from tnreason.contraction import contraction_optimization as co
-
+from tnreason.contraction import contraction_generation as cg
 
 class CoreContractor:
     """
@@ -16,6 +16,9 @@ class CoreContractor:
         self.instructionList = instructionList
         self.openColors = openColors
 
+    def generate_coreDict_from_formulaList(self, formulaList):
+        for formula in formulaList:
+            self.coreDict = {**self.coreDict,**cg.create_formulaProcedure()}
     #def exponentiate_with_weight(self, weightDict, exeptionKeys=[]):
     #    for coreKey in self.coreDict:
     #       if not (coreKey in exeptionKeys):
@@ -171,6 +174,7 @@ def find_affected(coreDict, color):
             affectedKeys.append(key)
     return affectedCores, affectedKeys
 
+## To replace Optimization Calculus
 class NegationTolerantCoreContractor:
     ## In CoreDict
     def __init__(self, coreDict={}, coreList=None, instructionList=None, openColors=[]):

@@ -5,7 +5,7 @@ from tnreason.logic import expression_calculus as ec
 
 
 def generate_data(formulaDict, sampleNum):
-    return gtd.generate_sampleDf(formulaDict, sampleNum=sampleNum, chainSize=10)
+    return gtd.generate_sampleDf(formulaDict, sampleNum=sampleNum, method="Gibbs10")
 
 
 def sampleDf_experiment(formulaDict, sampleNum, skeletonExpression, candidatesDict, positiveExpression,
@@ -36,7 +36,7 @@ def sampleDf_experiment(formulaDict, sampleNum, skeletonExpression, candidatesDi
 
 def weight_recovery(expressionDict, trueFormula, weight, sampleNum, skeletonExpression, candidatesDict,
                     positiveExpression=None, testMod="imp"):
-    learner = mlnl.AtomicMLNLearner()
+    learner = mlnl.SampleBasedMLNLearner()
     learner.load_sampleDf(generate_data(expressionDict, sampleNum))
 
     if testMod == "imp":

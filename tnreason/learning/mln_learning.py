@@ -36,7 +36,7 @@ class SampleBasedMLNLearner:
         }
 
     def learn_implication(self, positiveExpression, skeletonExpression, candidatesDict,
-                          refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0.5"):
+                          refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0"):
         self.learn(positiveExpression, skeletonExpression, candidatesDict, boostNum=1, saveMod="imp",
                    refinementNum=refinementNum,
                    refinementCriterion=refinementCriterion,
@@ -44,7 +44,7 @@ class SampleBasedMLNLearner:
                    )
 
     def learn_equivalence(self, positiveExpression, skeletonExpression, candidatesDict,
-                          refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0.5"):
+                          refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0"):
         self.learn(positiveExpression, skeletonExpression, candidatesDict, boostNum=1, saveMod="eq",
                    refinementNum=refinementNum,
                    refinementCriterion=refinementCriterion,
@@ -52,7 +52,7 @@ class SampleBasedMLNLearner:
                    )
 
     def learn_tautology(self, skeletonExpression, candidatesDict,
-                        refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0.5"):
+                        refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0"):
         self.learn("Thing", skeletonExpression, candidatesDict, boostNum=1, saveMod="direct",
                    refinementNum=refinementNum,
                    refinementCriterion=refinementCriterion,
@@ -63,7 +63,7 @@ class SampleBasedMLNLearner:
               boostNum=1, saveMod="eq",
               refinementNum=0, refinementCriterion="weight>1",
               balance=True,
-              acceptanceCriterion="weight>0.5"):
+              acceptanceCriterion="weight>0"):
         if saveMod == "eq" or saveMod == "imp":
             # positiveCore = ec.evaluate_expression_on_sampleDf(self.sampleDf, positiveExpression)
             positiveCore = ee.ExpressionEvaluator(positiveExpression, sampleDf=self.sampleDf).evaluate()
@@ -118,7 +118,7 @@ class SampleBasedMLNLearner:
             print("# Solution is {} #".format(solutionExpression))
             return solutionExpression
 
-    def optimize_formula(self, skeletonExpression, candidatesDict, positiveCore, negativeCore, balance=True):
+    def optimize_formula(self, skeletonExpression, candidatesDict, positiveCore, negativeCore, optimizationInstructions = ["als2","project","als2","project","als2","project"], balance=True):
         exLearner = el.SampleBasedOptimizer(skeletonExpression, candidatesDict)
 
         exLearner.generate_fixedCores_sampleDf(self.sampleDf)
@@ -126,7 +126,11 @@ class SampleBasedMLNLearner:
         if balance:
             exLearner.balance_importance(positiveCore=positiveCore, negativeCore=negativeCore)
         exLearner.random_initialize_variableCoresDict()
-        exLearner.als(10)
+        for optInstruction in optimizationInstructions:
+            if optInstruction.startswith("als"):
+                exLearner.als(int(optInstruction[3:]))
+            if optInstruction == "project":
+                exLearner.get_solution(adjustVariablesCoresDict=True)
         exLearner.get_solution()
 
         return exLearner.solutionExpression
@@ -155,6 +159,8 @@ class SampleBasedMLNLearner:
                              {str(i): [self.weightedFormulas[i][0], self.weightedFormulas[i][1]]
                               for i in range(len(self.weightedFormulas))})
 
+## Older name of the class
+AtomicMLNLearner = SampleBasedMLNLearner
 
 def criterion_satisfied(empRate, satRate, weight, criterion):
     criteria = criterion.split(",")

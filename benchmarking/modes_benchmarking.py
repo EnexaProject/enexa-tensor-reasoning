@@ -12,7 +12,7 @@ example_rule_dict = {
 }
 
 ## We transform the rules into propositional formulas containing negations and conjunctions only
-example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), value[2]] for (key,value) in example_rule_dict.items()}d
+example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), value[2]] for (key,value) in example_rule_dict.items()}
 
 positiveExpression = ['not', ['Ausgangsrechnung(x)', 'and', [['not', 'versandterBeleg(y,x)'], 'and', ['not', 'hatLeistungserbringer(x,y)']]]]
 skeletonExpression = ['not', ['H', 'and', [['not', 'P1'], 'and', ['not', 'P2']]]]

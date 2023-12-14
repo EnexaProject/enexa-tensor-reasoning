@@ -3,7 +3,7 @@ from tnreason.logic import basis_calculus as bc
 
 import numpy as np
 
-
+## For the generation of Basis Calculus Instructions
 def create_formulaProcedure(expression, formulaKey):
     addCoreKey = formulaKey + "_" + str(expression) + "_"
     if type(expression) == str:

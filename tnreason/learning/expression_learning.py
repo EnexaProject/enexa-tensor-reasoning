@@ -59,19 +59,24 @@ class OptimizerBase:
         impValues = posFactor * positiveCore.values + negativeCore.values
         self.set_importance(importanceValues=impValues)
 
-    def als(self, sweepnum):
+    def als(self, sweepnum, verbose=True):
         self.optimizer = gals.GeneralizedALS(self.variablesCoresDict, self.fixedCoresDict)
         self.optimizer.set_targetCore(self.targetCore)
         self.optimizer.set_filterCore(self.filterCore)
 
-        self.optimizer.sweep(sweepnum=sweepnum, contractionScheme=self.skeleton)
+        self.optimizer.sweep(sweepnum=sweepnum, contractionScheme=self.skeleton, verbose=verbose)
         self.variablesCoresDict = self.optimizer.variableCoresDict
 
-    def get_solution(self):
+    def get_solution(self, adjustVariablesCoresDict=True):
         self.solutionDict = {}
         for legKey in self.variablesCoresDict:
             maxPos = np.argmax([abs(val) for val in self.variablesCoresDict[legKey].values])
             self.solutionDict[legKey] = self.candidatesDict[legKey][maxPos]
+            if adjustVariablesCoresDict:
+                self.variablesCoresDict[legKey].values = np.zeros(shape=self.variablesCoresDict[legKey].values.shape)
+                self.variablesCoresDict[legKey].values[maxPos] = 1
+                print(self.variablesCoresDict[legKey].values)
+
         self.solutionExpression = eg.replace_atoms(self.skeleton, self.solutionDict)
 
 

@@ -24,7 +24,7 @@ candidatesDict = {
 }
 
 weights = range(2, 7, 1)
-sampleNums = range(20, 320, 20)
+sampleNums = range(20, 40, 20)
 successes = np.empty(shape=(len(weights), len(sampleNums)))
 precisions = np.empty(shape=(len(weights), len(sampleNums)))
 for i, weight in enumerate(weights):

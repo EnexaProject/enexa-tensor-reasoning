@@ -25,6 +25,10 @@ class GeneralizedALS:
         if contractionScheme is None:
             contractionScheme = eg.generate_conjunctions([key for key in self.variableCoresDict.keys()])
 
+        #if verbose:
+        #    for key in self.variableCoresDict:
+        #        print("Before Sweeping")
+        #        print(key, self.variableCoresDict[key].values)
         #res_remember = None
         for i in range(sweepnum):
             if verbose:
@@ -40,6 +44,11 @@ class GeneralizedALS:
 
             ## STABILIZE LEGS MAKES PROBLEMS WHEN HAVING NOTS (AFFINE LINEARITIES)!
             # self.stabilize_legs()
+
+        if verbose:
+            print("After Sweeping")
+            for key in self.variableCoresDict:
+                print(key,self.variableCoresDict[key].values)
         self.residua = residua
 
     def stabilize_legs(self):

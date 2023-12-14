@@ -182,7 +182,7 @@ class CoordinateCore:
         return CoordinateCore(np.exp(weight*self.values), self.colors)
 
     def count_satisfaction(self):
-        return np.sum(self.values)/2**len(self.values.shape)
+        return np.sum(self.values)/np.prod(self.values.shape)
 
     def normalize(self, sum=1):
         return CoordinateCore(self.values*(sum/np.sum(self.values)), self.colors, self.name)
