@@ -51,7 +51,7 @@ def boost_experiment(formulaweight=2, formulaNum=3, sampleNum=100, evaluate_trut
 
     learner.learn(positiveExpression, skeletonExpression, candidatesDict,
                   boostNum=formulaNum, saveMod="imp", refinementNum=0,
-                  acceptanceCriterion="weight>" + str(formulaweight / 2))
+                  acceptanceCriterion="weight>" + str(formulaweight *  (2/3)))
 
     learned_formulas = [learner.weightedFormulas[i][0] for i in range(len(learner.weightedFormulas))]
     learned_pairs = [[formula[1][0][0].split(firstAtom)[1], formula[1][0][2].split(secondAtom)[1]] for formula in
@@ -72,7 +72,7 @@ def boost_experiment(formulaweight=2, formulaNum=3, sampleNum=100, evaluate_trut
 if __name__ == "__main__":
     formulaNum = 3
     formulaWeight = 2
-    sampleNums = range(10, 310, 10)
+    sampleNums = range(50, 1000, 50)
 
     learnshape = len(sampleNums)
     learnedCounts = np.empty(shape=learnshape)
@@ -96,8 +96,14 @@ if __name__ == "__main__":
 
     plt.legend()
     plt.xticks(range(learnshape), [str(num) for num in sampleNums])
+    plt.yticks(range(formulaNum+1), [str(num) for num in range(formulaNum+1)])
+    plt.ylim([0, formulaNum+1])
 
-    plt.ylim([0, formulaNum])
+    plt.ylabel("Number of Formulas")
+    plt.xlabel("Number of Samples")
+    plt.title("Recovery Rate when having 3 Rules with Same Head")
+    plt.savefig("./benchmarking/diagrams/boosting_recoveries_weight{}.png".format(formulaWeight))
+
     plt.show()
 
 
