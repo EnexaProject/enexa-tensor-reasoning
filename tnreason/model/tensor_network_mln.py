@@ -44,28 +44,18 @@ class TensorMLN:
         self.expressionsDict = reducedExpressionDict
 
     def initialize_formulaCoreDict(self):
-        #self.formulaCoreDict = {
-        #    formulaKey: ec.calculate_expressionCore(self.expressionsDict[formulaKey][0]).weighted_exponentiation(
-        #        self.expressionsDict[formulaKey][1])
-        #    for formulaKey in self.expressionsDict}
         self.formulaCoreDict = {
             formulaKey: ee.ExpressionEvaluator(self.expressionsDict[formulaKey][0],
                                                 initializeBasisCores=True).create_formula_factor().weighted_exponentiation(
                 self.expressionsDict[formulaKey][1])
             for formulaKey in self.expressionsDict}
+        
     def compute_marginalized(self, marginalKeys, optimizationMethod="GreedyHeuristic"):
         if self.formulaCoreDict is None:
             self.initialize_formulaCoreDict()
         contractionDict = self.formulaCoreDict.copy()
-        for atomKey in self.atomKeys:
-            if atomKey not in marginalKeys:
-                contractionDict[atomKey] = cc.CoordinateCore(np.ones(2), [atomKey], atomKey)
         contractor = coc.CoreContractor(contractionDict, openColors=marginalKeys)
-        if optimizationMethod == "GreedyHeuristic":
-            contractor.optimize_coreList()  ## Using Greedy, Alternative
-        else:
-            raise ValueError("Optimization Method {} not supported!".format(optimizationMethod))
-        return contractor.contract().normalize()
+        return contractor.contract(optimizationMethod=optimizationMethod).normalize()
 
     ## To be implemented: Here we need Tensor Network contractions
     def create_independent_atom_sample(self, atomSampleKey):

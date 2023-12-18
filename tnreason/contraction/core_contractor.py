@@ -105,9 +105,14 @@ class CoreContractor:
 
         return sizeList, shapeList, colorList
 
-    def contract(self, verbose=False):
-        if self.instructionList is None:
+    def contract(self, optimizationMethod=None, verbose=False):
+        if self.instructionList is None and optimizationMethod is None:
             self.create_instructionList_from_coreList()
+        elif optimizationMethod == "GreedyHeuristic":
+            self.optimize_coreList()
+            self.create_instructionList_from_coreList()
+        else:
+            raise ValueError("Optimization Method {} not supported!".format(optimizationMethod))
         contracted = self.coreDict[self.instructionList[0][1]]
         for instruction in self.instructionList[1:]:
             if verbose:
