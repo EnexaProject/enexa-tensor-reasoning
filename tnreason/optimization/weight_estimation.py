@@ -39,6 +39,8 @@ class WeightEstimator:
                 solve_rate_equation(self.formulaDict[formulaKey][1], self.formulaDict[formulaKey][2]), cut)
 
     def alternating_optimization(self, atomDict, sweepNum):
+        if self.rawCoreDict is None:
+            self.generate_rawCoreDict()
         weightTracker = np.empty((sweepNum + 1, len(self.formulaDict)))
         self.independent_estimation(atomDict)
         weightTracker[0] = [self.formulaDict[formulaKey][3] for formulaKey in self.formulaDict]
@@ -49,17 +51,14 @@ class WeightEstimator:
         return weightTracker
 
     def generate_rawCoreDict(self):
-        self.rawCoreDict = {}
-        for formulaKey in self.formulaDict:
-            self.rawCoreDict = {**self.rawCoreDict, **bcg.generate_factor_dict(self.formulaDict[formulaKey][0],
-                                                                               formulaKey=formulaKey,
-                                                                               weight=self.formulaDict[formulaKey][3],
-                                                                               headType="empty")}
+        self.rawCoreDict = bcg.generate_rawCoreDict(
+            {formulaKey: self.formulaDict[formulaKey][0] for formulaKey in self.formulaDict})
 
     def contract_restCore(self, tboFormulaKey):
         if self.rawCoreDict is None:
             raise ValueError("RawCoreDict not initialized!")
         coreDict = self.rawCoreDict.copy()
+        ## Add head cores containing weights of all but the tbo formula to coreDict
         for formulaKey in self.formulaDict:
             if formulaKey != tboFormulaKey:
                 coreDict[formulaKey + "_" + str(
@@ -152,7 +151,11 @@ if __name__ == "__main__":
     }
 
     expressionList = [["b", "and", ["a", "and", ["not", "c"]]],
-                      "a"]
+                      "a",
+                      ["not", ["b", "and", "c"]]]
+
+    # expressionList = ["a", "b", "c"] # Needs to be constant in that case
+
     estimator = WeightEstimator(expressionList)
     estimator.independent_estimation(atomDict)
     weightTracker = estimator.alternating_optimization(atomDict, 10)
