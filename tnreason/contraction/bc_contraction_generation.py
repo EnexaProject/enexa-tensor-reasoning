@@ -13,18 +13,18 @@ def generate_exponentiationHeadValues(weight, differentiated=False):
     return values
 
 
-def generate_factor_dict(expression, formulaKey="f0", weight=0, headType= "truthEvaluation"):
+def generate_factor_dict(expression, formulaKey="f0", weight=0, headType="truthEvaluation"):
     factorDict = create_formulaProcedure(expression, formulaKey)
     headColors = [formulaKey + "_" + str(expression)]
     if headType == "truthEvaluation":
-        factorDict[str(expression) + "_truthEvaluation"] = cc.CoordinateCore(
-        bc.create_truth_vec(), headColors)
+        factorDict[formulaKey + "_" + str(expression) + "_" + headType] = cc.CoordinateCore(
+            bc.create_truth_vec(), headColors)
     elif headType == "expFactor":
-        factorDict[str(expression) + "_truthEvaluation"] = cc.CoordinateCore(
-        generate_exponentiationHeadValues(weight, differentiated=False), headColors)
+        factorDict[formulaKey + "_" + str(expression) + "_" + headType] = cc.CoordinateCore(
+            generate_exponentiationHeadValues(weight, differentiated=False), headColors)
     elif headType == "diffExpFactor":
-        factorDict[str(expression) + "_truthEvaluation"] = cc.CoordinateCore(
-        generate_exponentiationHeadValues(weight, differentiated=True), headColors)
+        factorDict[formulaKey + "_" + str(expression) + "_" + headType] = cc.CoordinateCore(
+            generate_exponentiationHeadValues(weight, differentiated=True), headColors)
     else:
         raise ValueError("Head Type {} not understood!".format(headType))
     return factorDict
@@ -37,12 +37,14 @@ def create_formulaProcedure(expression, formulaKey):
         return {addCoreKey: cc.CoordinateCore(np.eye(2), [expression, formulaKey + "_" + expression], expression)}
     elif expression[0] == "not":
         if type(expression[1]) == str:
-            return {addCoreKey: cc.CoordinateCore(bc.create_negation_tensor(), [expression[1], formulaKey + "_" + str(expression)],
+            return {addCoreKey: cc.CoordinateCore(bc.create_negation_tensor(),
+                                                  [expression[1], formulaKey + "_" + str(expression)],
                                                   expression)}
         else:
             partsDict = create_formulaProcedure(expression[1], formulaKey)
             partsDict[addCoreKey] = cc.CoordinateCore(bc.create_negation_tensor(),
-                                                      [formulaKey + "_" + str(expression[1]), formulaKey + "_" + str(expression)], expression)
+                                                      [formulaKey + "_" + str(expression[1]),
+                                                       formulaKey + "_" + str(expression)], expression)
             return partsDict
     elif expression[1] == "and":
         if type(expression[0]) == str:
@@ -78,7 +80,8 @@ def create_formulaProcedure(expression, formulaKey):
 
         partsDict = {**partsDict0, **partsDict2}
         partsDict[addCoreKey] = cc.CoordinateCore(bc.create_and_tensor(),
-                                                  [leftColor, rightColor, formulaKey + "_" + str(expression)], str(expression))
+                                                  [leftColor, rightColor, formulaKey + "_" + str(expression)],
+                                                  str(expression))
         return partsDict
 
 

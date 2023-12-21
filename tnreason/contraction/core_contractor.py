@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 
 from tnreason.contraction import contraction_optimization as co
-from tnreason.contraction import contraction_generation as cg
+from tnreason.contraction import bc_contraction_generation as cg
 
 class CoreContractor:
     """

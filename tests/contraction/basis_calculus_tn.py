@@ -1,13 +1,7 @@
-from tnreason.contraction import contraction_generation as cg
+from tnreason.contraction import bc_contraction_generation as bcg
 from tnreason.contraction import core_contractor as coc
 
-from tnreason.logic import basis_calculus as bc
-
-test_expression = [["not","P1"],"and",["not","P2"]]
-#test_expression = ["P1","and","P2"]
-
-print([str(test_expression)+str(test_expression)])
-formulaDict = cg.generate_factor_dict(test_expression,headType="truthEvaluation")
+import numpy as np
 
 
 def inspect_formulaDict(insFormulaDict):
@@ -17,15 +11,73 @@ def inspect_formulaDict(insFormulaDict):
         print(insFormulaDict[key].colors)
         print(insFormulaDict[key].values)
 
-#inspect_formulaDict(formulaDict)
 
-contractor = coc.CoreContractor(formulaDict, openColors=["P1","P2"])
-contractor.optimize_coreList()
-contractor.create_instructionList_from_coreList()
-print(contractor.instructionList)
+# inspect_formulaDict(formulaDict)
 
-fullcore = contractor.contract()
-print(fullcore.colors)
-print(fullcore.values.shape)
+testDict = {
+    "t1": [["P1", "and", "P2"], ["P1", "P2"], np.array([[0, 0], [0, 1]])],
+    "t2": [[["not", "P1"], "and", ["not", "P2"]], ["P1", "P2"], np.array([[1, 0], [0, 0]])],
+    "t3": [["not", ["P1", "and", "P2"]], ["P1", "P2"], np.array([[1, 1], [1, 0]])],
+}
 
-print(fullcore.values)
+for testKey in testDict:
+    print("## Test {} ###".format(testKey))
+    expression, colors, values = testDict[testKey]
+    print("Contraction of {} as basis calculus core.".format(expression))
+    testFormulaDict = bcg.generate_factor_dict(expression, weight=1, headType="truthEvaluation")
+
+    contractor = coc.CoreContractor(testFormulaDict, openColors=colors)
+    contractor.optimize_coreList()
+    contractor.create_instructionList_from_coreList()
+
+    resultCore = contractor.contract()
+
+    assert len(resultCore.colors) == 2
+    assert np.linalg.norm(resultCore.values - values) == 0
+
+for testKey in testDict:
+    print("## Test {} ###".format(testKey))
+    expression, colors, values = testDict[testKey]
+    print("Contraction of {} as exponential factor.".format(expression))
+    testFormulaDict = bcg.generate_factor_dict(expression, weight=1, headType="expFactor")
+
+    contractor = coc.CoreContractor(testFormulaDict, openColors=colors)
+    contractor.optimize_coreList()
+    contractor.create_instructionList_from_coreList()
+
+    resultCore = contractor.contract()
+
+    assert len(resultCore.colors) == len(colors)
+    assert np.linalg.norm(resultCore.values - np.exp(values)) == 0
+
+for testKey in testDict:
+    print("## Test {} ###".format(testKey))
+    expression, colors, values = testDict[testKey]
+    print("Contraction of {} as exponential factor.".format(expression))
+    testFormulaDict = bcg.generate_factor_dict(expression, weight=1, headType="diffExpFactor")
+
+    contractor = coc.CoreContractor(testFormulaDict, openColors=colors)
+    contractor.optimize_coreList()
+    contractor.create_instructionList_from_coreList()
+
+    resultCore = contractor.contract()
+
+    assert len(resultCore.colors) == len(colors)
+
+    if len(values.shape) == 2:
+        if values[0, 0] == 0:
+            assert resultCore.values[0, 0] == 0
+        else:
+            assert np.linalg.norm(resultCore.values[0, 0] - np.exp(values[0, 0])) == 0
+        if values[0, 1] == 0:
+            assert resultCore.values[0, 1] == 0
+        else:
+            assert np.linalg.norm(resultCore.values[0, 1] - np.exp(values[0, 1])) == 0
+        if values[1, 0] == 0:
+            assert resultCore.values[1, 0] == 0
+        else:
+            assert np.linalg.norm(resultCore.values[1, 0] - np.exp(values[1, 0])) == 0
+        if values[1, 1] == 0:
+            assert resultCore.values[1, 1] == 0
+        else:
+            assert np.linalg.norm(resultCore.values[1, 1] - np.exp(values[1, 1])) == 0
