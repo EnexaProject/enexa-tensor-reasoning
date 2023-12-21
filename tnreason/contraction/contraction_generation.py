@@ -3,19 +3,46 @@ from tnreason.logic import basis_calculus as bc
 
 import numpy as np
 
+
+def generate_exponentiationHeadValues(weight, differentiated=False):
+    if differentiated:
+        values = np.zeros(shape=2)
+    else:
+        values = np.ones(shape=2)
+    values[1] = np.exp(weight)
+    return values
+
+
+def generate_factor_dict(expression, formulaKey="f0", weight=0, headType= "truthEvaluation"):
+    factorDict = create_formulaProcedure(expression, formulaKey)
+    headColors = [formulaKey + "_" + str(expression)]
+    if headType == "truthEvaluation":
+        factorDict[str(expression) + "_truthEvaluation"] = cc.CoordinateCore(
+        bc.create_truth_vec(), headColors)
+    elif headType == "expFactor":
+        factorDict[str(expression) + "_truthEvaluation"] = cc.CoordinateCore(
+        generate_exponentiationHeadValues(weight, differentiated=False), headColors)
+    elif headType == "diffExpFactor":
+        factorDict[str(expression) + "_truthEvaluation"] = cc.CoordinateCore(
+        generate_exponentiationHeadValues(weight, differentiated=True), headColors)
+    else:
+        raise ValueError("Head Type {} not understood!".format(headType))
+    return factorDict
+
+
 ## For the generation of Basis Calculus Instructions
 def create_formulaProcedure(expression, formulaKey):
-    addCoreKey = formulaKey + "_" + str(expression) + "_"
+    addCoreKey = str(formulaKey) + "_" + str(expression) + "_"
     if type(expression) == str:
-        return {addCoreKey: cc.CoordinateCore(np.eye(2), [expression, expression + "_h"], expression)}
+        return {addCoreKey: cc.CoordinateCore(np.eye(2), [expression, formulaKey + "_" + expression], expression)}
     elif expression[0] == "not":
         if type(expression[1]) == str:
-            return {addCoreKey: cc.CoordinateCore(bc.create_negation_tensor(), [expression[1], str(expression) + "_h"],
+            return {addCoreKey: cc.CoordinateCore(bc.create_negation_tensor(), [expression[1], formulaKey + "_" + str(expression)],
                                                   expression)}
         else:
             partsDict = create_formulaProcedure(expression[1], formulaKey)
             partsDict[addCoreKey] = cc.CoordinateCore(bc.create_negation_tensor(),
-                                                      [expression[1], str(expression) + "_h"], expression)
+                                                      [formulaKey + "_" + str(expression[1]), formulaKey + "_" + str(expression)], expression)
             return partsDict
     elif expression[1] == "and":
         if type(expression[0]) == str:
@@ -23,19 +50,21 @@ def create_formulaProcedure(expression, formulaKey):
             leftColor = expression[0]
         else:
             partsDict0 = create_formulaProcedure(expression[0], formulaKey)
-            leftColor = str(expression[0]) + "_h"
+            leftColor = formulaKey + "_" + str(expression[0])
 
         if type(expression[2]) == str:
             prePartsDict2 = {}
             rightColor = expression[2]
         else:
             prePartsDict2 = create_formulaProcedure(expression[2], formulaKey)
-            rightColor = str(expression[2]) + "_h"
+            rightColor = formulaKey + "_" + str(expression[2])
 
         ## Renaming cores of the right hand side to avoid key collision
         partsDict2 = {}
         for key in prePartsDict2:
             if key in partsDict0:
+                partsDict2[key + "0"] = prePartsDict2[key]
+            else:
                 partsDict2[key + "0"] = prePartsDict2[key]
 
         ## Renaming colors of the right hand side to avoid duplicates (except for atoms)
@@ -49,7 +78,7 @@ def create_formulaProcedure(expression, formulaKey):
 
         partsDict = {**partsDict0, **partsDict2}
         partsDict[addCoreKey] = cc.CoordinateCore(bc.create_and_tensor(),
-                                                  [leftColor, rightColor, str(expression) + "_h"], str(expression))
+                                                  [leftColor, rightColor, formulaKey + "_" + str(expression)], str(expression))
         return partsDict
 
 

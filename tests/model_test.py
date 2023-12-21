@@ -1,6 +1,6 @@
 from tnreason.learning import mln_learning as lmln
 
-from tnreason.model import tensor_network_mln as mln
+from tnreason.model import tensor_network_mln as tmln
 
 from tnreason.optimization import weight_estimation as wees
 
@@ -26,7 +26,7 @@ example_expression_dict = {key:[eg.generate_list_from_rule(value[0],value[1]), v
 print(example_expression_dict)
 
 sampleNum = 100
-generator = mln.MarkovLogicNetwork(example_expression_dict)
+generator = tmln.TensorMLN(example_expression_dict)
 sampleDf = generator.generate_sampleDf(sampleNum)
 
 learner = lmln.AtomicMLNLearner()

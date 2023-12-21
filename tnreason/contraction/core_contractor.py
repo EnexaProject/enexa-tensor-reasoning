@@ -5,9 +5,9 @@ from tnreason.contraction import contraction_generation as cg
 
 class CoreContractor:
     """
-    coreDict: list of CoordinateCores
-    contractionList: list of colors
-    instructionList: list of contraction instructions: either and with additional core or reduce a color. First entry must be add to start with
+    coreDict: Dictionary of CoordinateCores
+    coreList: Order of coreDict keys for contraction
+    instructionList: list of contraction instructions: either "and" with additional core or "reduce" with a color. First entry must be add to start with.
     """
 
     def __init__(self, coreDict={}, coreList=None, instructionList=None, openColors=[]):
@@ -18,11 +18,7 @@ class CoreContractor:
 
     def generate_coreDict_from_formulaList(self, formulaList):
         for formula in formulaList:
-            self.coreDict = {**self.coreDict,**cg.create_formulaProcedure()}
-    #def exponentiate_with_weight(self, weightDict, exeptionKeys=[]):
-    #    for coreKey in self.coreDict:
-    #       if not (coreKey in exeptionKeys):
-    #        self.coreDict[coreKey] = self.coreDict[coreKey].weighted_exponentiation(weightDict[coreKey])
+            self.coreDict = {**self.coreDict,**cg.generate_factor_dict(formula)}
 
     def optimize_coreList(self, method="GreedyHeuristic"):
         # Generate the coreColorDict and colorDimDict for ContractionOptimizer
@@ -106,8 +102,9 @@ class CoreContractor:
         return sizeList, shapeList, colorList
 
     def contract(self, optimizationMethod=None, verbose=False):
-        if self.instructionList is None and optimizationMethod is None:
-            self.create_instructionList_from_coreList()
+        if optimizationMethod is None:
+            if self.instructionList is None:
+                self.create_instructionList_from_coreList()
         elif optimizationMethod == "GreedyHeuristic":
             self.optimize_coreList()
             self.create_instructionList_from_coreList()

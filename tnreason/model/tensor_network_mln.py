@@ -2,10 +2,10 @@
 
 from tnreason.logic import expression_utils as eu
 from tnreason.logic import expression_generation as eg
-from tnreason.logic import coordinate_calculus as cc
 
 from tnreason.contraction import core_contractor as coc
 from tnreason.contraction import expression_evaluation as ee
+#from tnreason.contraction import contraction_generation as cg
 
 from tnreason.model import infer_mln as imln
 
@@ -49,11 +49,18 @@ class TensorMLN:
                                                 initializeBasisCores=True).create_formula_factor().weighted_exponentiation(
                 self.expressionsDict[formulaKey][1])
             for formulaKey in self.expressionsDict}
-        
-    def compute_marginalized(self, marginalKeys, optimizationMethod="GreedyHeuristic"):
-        if self.formulaCoreDict is None:
-            self.initialize_formulaCoreDict()
-        contractionDict = self.formulaCoreDict.copy()
+
+    def compute_marginalized(self, marginalKeys, contractionMethod="formulaDict", optimizationMethod="GreedyHeuristic"):
+        if contractionMethod == "formulaDict":
+            if self.formulaCoreDict is None:
+                self.initialize_formulaCoreDict()
+            contractionDict = self.formulaCoreDict.copy()
+        elif contractionMethod == "basisCalculus":
+            contractionDict = {}
+            for expression in self.expressionsDict:
+                pass
+        else:
+            raise ValueError("Contraction Method {} not understood!".format(contractionMethod))
         contractor = coc.CoreContractor(contractionDict, openColors=marginalKeys)
         return contractor.contract(optimizationMethod=optimizationMethod).normalize()
 
