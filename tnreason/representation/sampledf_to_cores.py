@@ -1,6 +1,8 @@
 import numpy as np
 import time
 
+import tnreason.logic.coordinate_calculus as cc
+
 def identify_relevant_columns(columns,argument):
     relcolumns = []
     for column in columns:
@@ -43,3 +45,5 @@ def sampleDf_to_universal_core(sampleDf,candidates):
     return sampleDf[candidates].values
 
 
+def create_fixedCore(sampleDf, candidates, coreColors, coreName):
+    return cc.CoordinateCore(sampleDf_to_universal_core(sampleDf, candidates), coreColors, coreName)
