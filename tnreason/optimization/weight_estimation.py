@@ -1,10 +1,11 @@
 from tnreason.optimization import satisfaction_counter as sc
 
-#from tnreason.logic import expression_calculus as ec
+# from tnreason.logic import expression_calculus as ec
 from tnreason.logic import expression_utils as eu
 
 from tnreason.contraction import core_contractor as coc
 from tnreason.contraction import expression_evaluation as ee
+from tnreason.contraction import bc_contraction_generation as bcg
 
 import numpy as np
 
@@ -13,10 +14,11 @@ class WeightEstimator:
     def __init__(self, formulaList):
         self.formulaDict = {"f" + str(i): [formula, 0, 0, 0] for i, formula in enumerate(formulaList)}
         self.coreDict = {}  ## CoordinateCores of each formula -> Calculated in self.calculate_independent_satRates, to initialize the alternating optimization
+        self.rawCoreDict = None
 
+    ## OLD and not used
     def calculate_independent_satRates(self):
         for formulaKey in self.formulaDict:
-            # basis_core = ec.calculate_expressionCore(self.formulaDict[formulaKey][0])
             basis_core = ee.ExpressionEvaluator(self.formulaDict[formulaKey][0],
                                                 initializeBasisCores=True).create_formula_factor()
             self.formulaDict[formulaKey][1] = basis_core.count_satisfaction()
@@ -46,25 +48,33 @@ class WeightEstimator:
                 weightTracker[sweepPos + 1, i] = self.formulaDict[formulaKey][3]
         return weightTracker
 
+    def generate_rawCoreDict(self):
+        self.rawCoreDict = {}
+        for formulaKey in self.formulaDict:
+            self.rawCoreDict = {**self.rawCoreDict, **bcg.generate_factor_dict(self.formulaDict[formulaKey][0],
+                                                                               formulaKey=formulaKey,
+                                                                               weight=self.formulaDict[formulaKey][3],
+                                                                               headType="empty")}
+
+    def contract_restCore(self, tboFormulaKey):
+        if self.rawCoreDict is None:
+            raise ValueError("RawCoreDict not initialized!")
+        coreDict = self.rawCoreDict.copy()
+        for formulaKey in self.formulaDict:
+            if formulaKey != tboFormulaKey:
+                coreDict[formulaKey + "_" + str(
+                    self.formulaDict[formulaKey][0]) + "_expFactor"] = bcg.generate_exponentiationHeadValues(
+                    self.formulaDict[formulaKey][3], [formulaKey + "_" + str(self.formulaDict[formulaKey][0])],
+                    differentiated=False)
+
+        contractor = coc.CoreContractor(coreDict,
+                                        openColors=[tboFormulaKey + "_" + str(self.formulaDict[tboFormulaKey][0])])
+        contractor.optimize_coreList()
+        contractor.create_instructionList_from_coreList()
+        return contractor.contract()
+
     def formula_optimization(self, tboFormulaKey):
-
-        posCoreDict = {formulaKey: self.coreDict[formulaKey].weighted_exponentiation(self.formulaDict[formulaKey][3])
-                       for formulaKey in self.formulaDict if formulaKey != tboFormulaKey}
-        negCoreDict = posCoreDict.copy()
-        posCoreDict[tboFormulaKey] = self.coreDict[tboFormulaKey].clone()
-        negCoreDict[tboFormulaKey] = self.coreDict[tboFormulaKey].negate()
-        posContractor = coc.CoreContractor(posCoreDict)
-        posContractor.optimize_coreList()
-        positiveExpWeight = posContractor.contract().values
-
-        assert len(positiveExpWeight.shape) == 0
-
-        negContractor = coc.CoreContractor(negCoreDict)
-        negContractor.optimize_coreList()
-        negativeExpWeight = negContractor.contract().values
-
-        assert len(negativeExpWeight.shape) == 0
-
+        negativeExpWeight, positiveExpWeight = self.contract_restCore(tboFormulaKey).values
         negPosQuotient = negativeExpWeight / positiveExpWeight
         empRate = self.formulaDict[tboFormulaKey][2]
         self.formulaDict[tboFormulaKey][3] = np.log(negPosQuotient * (empRate / (1 - empRate)))
@@ -91,7 +101,6 @@ def cutoff_weight(weight, cutoff):
 
 
 def calculate_empRate(expression, atomDict, filterCore=None):
-    # expressionCore = ec.calculate_core(atomDict, expression)
     expressionCore = ee.ExpressionEvaluator(expression, atomDict=atomDict).evaluate()
     if filterCore is None:
         expressionResults = expressionCore.values.flatten()

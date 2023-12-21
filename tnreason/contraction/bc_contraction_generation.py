@@ -4,13 +4,13 @@ from tnreason.logic import basis_calculus as bc
 import numpy as np
 
 
-def generate_exponentiationHeadValues(weight, differentiated=False):
+def generate_exponentiationHeadValues(weight, headcolors, differentiated=False):
     if differentiated:
         values = np.zeros(shape=2)
     else:
         values = np.ones(shape=2)
     values[1] = np.exp(weight)
-    return values
+    return cc.CoordinateCore(values, headcolors)
 
 
 def generate_factor_dict(expression, formulaKey="f0", weight=0, headType="truthEvaluation"):
@@ -20,11 +20,15 @@ def generate_factor_dict(expression, formulaKey="f0", weight=0, headType="truthE
         factorDict[formulaKey + "_" + str(expression) + "_" + headType] = cc.CoordinateCore(
             bc.create_truth_vec(), headColors)
     elif headType == "expFactor":
-        factorDict[formulaKey + "_" + str(expression) + "_" + headType] = cc.CoordinateCore(
-            generate_exponentiationHeadValues(weight, differentiated=False), headColors)
+        factorDict[formulaKey + "_" + str(expression) + "_" + headType] = generate_exponentiationHeadValues(weight,
+                                                                                                            headColors,
+                                                                                                            differentiated=False)
     elif headType == "diffExpFactor":
-        factorDict[formulaKey + "_" + str(expression) + "_" + headType] = cc.CoordinateCore(
-            generate_exponentiationHeadValues(weight, differentiated=True), headColors)
+        factorDict[formulaKey + "_" + str(expression) + "_" + headType] = generate_exponentiationHeadValues(weight,
+                                                                                                            headColors,
+                                                                                                            differentiated=True)
+    elif headType == "empty":
+        pass
     else:
         raise ValueError("Head Type {} not understood!".format(headType))
     return factorDict

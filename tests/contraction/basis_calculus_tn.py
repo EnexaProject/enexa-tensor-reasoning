@@ -3,16 +3,13 @@ from tnreason.contraction import core_contractor as coc
 
 import numpy as np
 
-
+## Optional
 def inspect_formulaDict(insFormulaDict):
     for key in insFormulaDict:
         print("###")
         print(key)
         print(insFormulaDict[key].colors)
         print(insFormulaDict[key].values)
-
-
-# inspect_formulaDict(formulaDict)
 
 testDict = {
     "t1": [["P1", "and", "P2"], ["P1", "P2"], np.array([[0, 0], [0, 1]])],
