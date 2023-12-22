@@ -72,18 +72,18 @@ class CoordinateCore:
             raise TypeError("Shapes do not match for summations!")
         return CoordinateCore(self.values + core1.values, self.colors, str(self.name) + "+" + str(core1.name))
 
-    def compute_or(self,core1):
+    def compute_or(self, core1):
         core0 = self.extend_colors(core1)
         core1 = core1.extend_colors(self)
 
         summed = core0.sum_with(core1)
-        truth_positions = np.argwhere(summed.values>0)
+        truth_positions = np.argwhere(summed.values > 0)
         orValues = np.zeros(shape=summed.values.shape)
         for pos in truth_positions:
             orValues[tuple(pos)] = 1
-        return CoordinateCore(orValues, summed.colors, [self.name,"and",core1.name])
+        return CoordinateCore(orValues, summed.colors, [self.name, "and", core1.name])
 
-    def extend_colors(self,core1):
+    def extend_colors(self, core1):
         core0 = self.clone()
 
         colorDict = {core0.colors[i]: alphabet[i] for i in range(len(core0.colors))}
@@ -103,14 +103,14 @@ class CoordinateCore:
         core0_string = "".join([colorDict[color] for color in core0.colors])
         added_string = "".join([colorDict[color] for color in added_colors])
 
-        premise_string = ",".join([core0_string,added_string])
+        premise_string = ",".join([core0_string, added_string])
         head_string = core0_string + added_string
         contraction_string = "->".join([premise_string, head_string])
-        newValues = np.einsum(contraction_string,core0.values, np.ones(shape=added_shape))
+        newValues = np.einsum(contraction_string, core0.values, np.ones(shape=added_shape))
 
         return CoordinateCore(newValues, core0.colors + added_colors, name=str(core0.name) + "_extended")
 
-    def contract_common_colors(self, in_core1, exceptions = []):
+    def contract_common_colors(self, in_core1, exceptions=[]):
         core0 = self.clone()
         core1 = in_core1.clone()
 
@@ -171,21 +171,29 @@ class CoordinateCore:
         ## To be implemented for efficiency increase: Alternative using np.sum
         if conColor not in self.colors:
             raise ValueError("Color {} not found in core {} for reduction.".format(conColor, self.name))
-        colorDict = {col:alphabet[i] for i, col in enumerate(self.colors)}
-        contractionstring = "".join([colorDict[col] for col in self.colors]) + "," + colorDict[conColor] + "->" + "".join(([colorDict[col] for col in self.colors if col != conColor]))
+        colorDict = {col: alphabet[i] for i, col in enumerate(self.colors)}
+        contractionstring = "".join([colorDict[col] for col in self.colors]) + "," + colorDict[
+            conColor] + "->" + "".join(([colorDict[col] for col in self.colors if col != conColor]))
         onesValues = np.ones(self.values.shape[self.colors.index(conColor)])
         newValues = np.einsum(contractionstring, self.values, onesValues)
-        return CoordinateCore(newValues, [col for col in self.colors if col!=conColor])
+        return CoordinateCore(newValues, [col for col in self.colors if col != conColor])
 
     ## For usage in model (former BasisCalculus methods)
     def weighted_exponentiation(self, weight):
-        return CoordinateCore(np.exp(weight*self.values), self.colors)
+        return CoordinateCore(np.exp(weight * self.values), self.colors)
 
     def count_satisfaction(self):
-        return np.sum(self.values)/np.prod(self.values.shape)
+        return np.sum(self.values) / np.prod(self.values.shape)
 
     def normalize(self, sum=1):
-        return CoordinateCore(self.values*(sum/np.sum(self.values)), self.colors, self.name)
+        return CoordinateCore(self.values * (sum / np.sum(self.values)), self.colors, self.name)
+
+    def exponentiate(self):
+        return CoordinateCore(np.exp(self.values), self.colors, self.name)
+
+    def logarithm(self):
+        return CoordinateCore(np.log(self.values), self.colors, self.name)
+
 
 ## Small Test Skript
 if __name__ == "__main__":

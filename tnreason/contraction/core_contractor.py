@@ -30,11 +30,11 @@ class CoreContractor:
                 if color not in colorDimDict:
                     colorDimDict[color] = self.coreDict[coreKey].values.shape[i]
         if method == "GreedyHeuristic":
-            optimizer = co.GreedyHeuristicOptimizer(coreColorDict, colorDimDict)
+            optimizer = co.GreedyHeuristicOptimizer(coreColorDict, colorDimDict, globallyOpenColors=self.openColors)
             # Optimize coreList i.e. order of contraction
             optimizer.optimize()
         elif method == "Dijkstra":
-            optimizer = co.DijkstraOptimizer(coreColorDict, colorDimDict)
+            optimizer = co.DijkstraOptimizer(coreColorDict, colorDimDict, globallyOpenColors=self.openColors)
             optimizer.optimize()
         self.coreList = optimizer.coreList
 
@@ -118,6 +118,8 @@ class CoreContractor:
                 contracted = contracted.compute_and(self.coreDict[instruction[1]])
             elif instruction[0] == "reduce":
                 contracted = contracted.reduce_color(instruction[1])
+            elif instruction[0] == "exp":
+                contracted = contracted.exponenentiate()
             else:
                 raise ValueError("Instruction {} not understood.".format(instruction))
         if verbose and len(contracted.values.shape) > 0:
