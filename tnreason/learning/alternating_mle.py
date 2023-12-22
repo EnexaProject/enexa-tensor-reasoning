@@ -109,9 +109,48 @@ class AlternatingMLE:
         for coreKey in self.variableCoresDict:
             self.variableCoresDict[coreKey].values = np.random.random(size=self.variableCoresDict[coreKey].values.shape)
 
+    def alternating_newton(self, sweepNum = 2):
+        for sweep in range(sweepNum):
+            for variableKey in variableCoresDict:
+                self.newton_step(variableKey)
+
     def newton_step(self, tboVariableKey):
-        ## To do: Do Multidimensional Newton on First Order Condition
-        pass
+        expGradient = optimizer.contract_gradient_exponential(tboVariableKey)
+
+        vector = expGradient.sum_with(optimizer.contract_truth_gradient(tboVariableKey).negate(ignore_ones=True))
+
+        ## Operator
+        doubleExpGradient = optimizer.contract_double_gradient_exponential(tboVariableKey).negate(ignore_ones=True)
+
+        empOperator = expGradient.clone()
+        empOperator.colors = [color + "_out" for color in empOperator.colors]
+        empOperator = empOperator.compute_and(optimizer.contract_truth_gradient(tboVariableKey))
+
+        operator = empOperator.sum_with(doubleExpGradient)
+
+        ## Flatten
+        outColors = [color for color in operator.colors if color.endswith("_out")]
+        inColors = [color for color in operator.colors if color not in outColors]
+
+        outshape = [operator.values.shape[i] for i, color in enumerate(operator.colors) if color in outColors]
+        inshape = [operator.values.shape[i] for i, color in enumerate(operator.colors) if color in inColors]
+
+        outDim = np.prod(outshape)
+        inDim = np.prod(inshape)
+
+        operator.reorder_colors(inColors + outColors)
+        vector.reorder_colors(inColors)
+
+        flattenedOperatorValues = operator.values.reshape(inDim, outDim)
+        flattenedVectorValues = vector.values.reshape(inDim)
+
+        ## Solve Newton
+        update, residuals, rank, singular_values = np.linalg.lstsq(flattenedOperatorValues, flattenedVectorValues)
+
+        update.reshape(inshape)
+        updateCore = cc.CoordinateCore(update.reshape(inshape), inColors)
+
+        variableCoresDict[tboVariableKey] = variableCoresDict[tboVariableKey].sum_with(updateCore)
 
 
 def copy_CoreDict(tbdDict, suffix="", exceptionColors=[]):
@@ -163,16 +202,64 @@ if __name__ == "__main__":
 
     sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
     optimizer.create_fixedCores(sampleDf)
-
     optimizer.create_exponentiated_variables()
 
+#    optimizer.newton_step("v2")
+    optimizer.alternating_newton(100)
+    exit()
+
     expGradient = optimizer.contract_gradient_exponential("v1")
+
+    vector = expGradient.negate(ignore_ones=True).sum_with(optimizer.contract_truth_gradient("v1"))
+
     print(expGradient.values.shape)
     print(expGradient.colors)
-    doubleExpGradient = optimizer.contract_double_gradient_exponential("v1")
+
+
+
+    ## Operator
+    doubleExpGradient = optimizer.contract_double_gradient_exponential("v1").negate(ignore_ones=True)
+
+    empOperator = expGradient.clone()
+    empOperator.colors = [color + "_out" for color in empOperator.colors]
+    empOperator = empOperator.compute_and(optimizer.contract_truth_gradient("v1"))
+
+    operator = empOperator.sum_with(doubleExpGradient)
+
     print(doubleExpGradient.colors)
     print(doubleExpGradient.values.shape)
 
+
+
+    ## Flatten
+    outColors = [color for color in operator.colors if color.endswith("_out")]
+    inColors = [color for color in operator.colors if color not in outColors]
+
+    outshape = [operator.values.shape[i] for i, color in enumerate(operator.colors) if color in outColors]
+    inshape = [operator.values.shape[i] for i, color in enumerate(operator.colors) if color in inColors]
+
+    outDim = np.prod(outshape)
+    inDim = np.prod(inshape)
+    print(outColors)
+    print(inColors)
+
+    operator.reorder_colors(inColors+outColors)
+    vector.reorder_colors(inColors)
+
+    flattenedOperatorValues = operator.values.reshape(inDim, outDim)
+    flattenedVectorValues = vector.values.reshape(inDim)
+
+
+    print(flattenedOperatorValues.shape)
+    print(flattenedVectorValues.shape)
+
+    update, residuals, rank, singular_values = np.linalg.lstsq(flattenedOperatorValues, flattenedVectorValues)
+    print(update)
+
+    update.reshape(inshape)
+    updateCore = cc.CoordinateCore(update.reshape(inshape), inColors)
+
+    variableCoresDict["v1"] = variableCoresDict["v1"].sum_with(updateCore)
 #    print(optimizer.contract_truth_gradient("v1").values)
 #    print(optimizer.rawCoreDict.keys())
 #    print(optimizer.dataNum)
