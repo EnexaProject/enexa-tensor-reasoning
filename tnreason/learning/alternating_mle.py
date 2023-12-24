@@ -11,7 +11,7 @@ import tnreason.logic.coordinate_calculus as cc
 import numpy as np
 
 
-class AlternatingMLE:
+class AlternatingNewtonMLE:
     def __init__(self, skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict={}):
         self.skeleton = skeletonExpression  ## Can just handle pure conjunctions!
         self.skeletonPlaceholders = eu.get_variables(skeletonExpression)
@@ -41,6 +41,10 @@ class AlternatingMLE:
                 values[tuplePos] = 1
             self.atomSelectorDict["Selector_" + variableKey] = cc.CoordinateCore(values, [variableKey, *atoms])
 
+    def generate_mln_core(self):
+        self.formulaCoreDict = bcg.generate_formulaCoreDict(self.learnedFormulaDict)
+#            {formulaKey: self.learnedFormulaDict[formulaKey][0] for formulaKey in self.learnedFormulaDict})
+
     def create_exponentiated_variables(self):
         ## To do: Think of removing this bottleneck: Constract the current variables to a single core instead of exp TN!
         ## Missing for generality (not just pure conjunctions): Skeleton in form of another contraction dict
@@ -50,29 +54,20 @@ class AlternatingMLE:
         variablesContractor.create_instructionList_from_coreList()
         self.variablesExpFactor = variablesContractor.contract().exponentiate()
 
-    def generate_mln_core(self):
-        self.rawCoreDict = bcg.generate_rawCoreDict(
-            {formulaKey: self.learnedFormulaDict[formulaKey][0] for formulaKey in self.learnedFormulaDict})
-
     def create_variable_gradient(self, tboVariableKey):
         return {key: self.variableCoresDict[key] for key in self.variableCoresDict if key != tboVariableKey}
 
     def contract_gradient_exponential(self, tboVariableKey):
-        ## To do: Generate contraction for term in first order condition
-        contractionDict = {**self.rawCoreDict, "variablesExpFactor": self.variablesExpFactor,
+        contractionDict = {**self.formulaCoreDict, "variablesExpFactor": self.variablesExpFactor,
                            **self.create_variable_gradient(tboVariableKey),
                            **self.atomSelectorDict}
         contractor = coc.CoreContractor(contractionDict, openColors=self.variableCoresDict[tboVariableKey].colors)
-        # print("OPEN",self.variableCoresDict[tboVariableKey].colors)
-        # print([self.atomSelectorDict[coreKey].colors for coreKey in self.atomSelectorDict])
         contractor.optimize_coreList()
         contractor.create_instructionList_from_coreList()
         return contractor.contract()
 
     def contract_double_gradient_exponential(self, tboVariableKey):
-        ## To do: Generate contraction for term in Jacobi Matrix
-
-        contractionDict = {**self.rawCoreDict, "variablesExpFactor": self.variablesExpFactor,
+        contractionDict = {**self.formulaCoreDict, "variablesExpFactor": self.variablesExpFactor,
                            **self.create_variable_gradient(tboVariableKey),
                            **self.atomSelectorDict,
                            **copy_CoreDict(self.create_variable_gradient(tboVariableKey), suffix="out"),
@@ -109,22 +104,27 @@ class AlternatingMLE:
         for coreKey in self.variableCoresDict:
             self.variableCoresDict[coreKey].values = np.random.random(size=self.variableCoresDict[coreKey].values.shape)
 
-    def alternating_newton(self, sweepNum = 2):
+    def alternating_newton(self, sweepNum=10, dampFactor=0.001, monotoneousCondition=True, regParameter=0,
+                           verbose=True):
+        self.likelihood = self.compute_likelihood()
         for sweep in range(sweepNum):
-            for variableKey in variableCoresDict:
-                self.newton_step(variableKey)
+            print("### SWEEP {} ###".format(sweep))
+            for variableKey in self.variableCoresDict:
+                self.newton_step(variableKey, dampFactor=dampFactor, monotoneusCondition=monotoneousCondition,
+                                 regParameter=regParameter, verbose=verbose)
 
-    def newton_step(self, tboVariableKey):
-        expGradient = optimizer.contract_gradient_exponential(tboVariableKey)
+    def newton_step(self, tboVariableKey, dampFactor, monotoneusCondition, regParameter, verbose=True):
+        expGradient = self.contract_gradient_exponential(tboVariableKey)
 
-        vector = expGradient.sum_with(optimizer.contract_truth_gradient(tboVariableKey).negate(ignore_ones=True))
+        vector = expGradient.sum_with(
+            self.contract_truth_gradient(tboVariableKey).multiply(-1 / (self.dataNum * self.compute_partition())))
 
         ## Operator
-        doubleExpGradient = optimizer.contract_double_gradient_exponential(tboVariableKey).negate(ignore_ones=True)
+        doubleExpGradient = self.contract_double_gradient_exponential(tboVariableKey).multiply(-1)
 
         empOperator = expGradient.clone()
         empOperator.colors = [color + "_out" for color in empOperator.colors]
-        empOperator = empOperator.compute_and(optimizer.contract_truth_gradient(tboVariableKey))
+        empOperator = empOperator.compute_and(self.contract_truth_gradient(tboVariableKey).multiply(1 / self.dataNum))
 
         operator = empOperator.sum_with(doubleExpGradient)
 
@@ -141,7 +141,7 @@ class AlternatingMLE:
         operator.reorder_colors(inColors + outColors)
         vector.reorder_colors(inColors)
 
-        flattenedOperatorValues = operator.values.reshape(inDim, outDim)
+        flattenedOperatorValues = operator.values.reshape(inDim, outDim) + regParameter * np.eye(inDim)
         flattenedVectorValues = vector.values.reshape(inDim)
 
         ## Solve Newton
@@ -150,7 +150,36 @@ class AlternatingMLE:
         update.reshape(inshape)
         updateCore = cc.CoordinateCore(update.reshape(inshape), inColors)
 
-        variableCoresDict[tboVariableKey] = variableCoresDict[tboVariableKey].sum_with(updateCore)
+        oldCore = self.variableCoresDict[tboVariableKey].clone()
+
+        self.variableCoresDict[tboVariableKey] = self.variableCoresDict[tboVariableKey].sum_with(
+            updateCore.multiply(dampFactor))
+
+        if monotoneusCondition:
+            likelihood = self.compute_likelihood()
+            if likelihood < self.likelihood:
+                print("Update of {} is not accepted.".format(tboVariableKey))
+                self.variableCoresDict[tboVariableKey] = oldCore
+            else:
+                self.likelihood = likelihood
+
+        if verbose:
+            print("Update Norm", np.linalg.norm(update), "Operator Condition", np.linalg.cond(flattenedOperatorValues))
+            print(self.compute_likelihood())
+
+    def compute_likelihood(self):
+        ## Without learned formulas!
+        contractor = coc.CoreContractor(coreDict={**self.fixedCoresDict, **self.variableCoresDict})
+        contractor.optimize_coreList()
+        contractor.create_instructionList_from_coreList()
+        return contractor.contract().values / (self.dataNum * self.compute_partition())
+
+    def compute_partition(self):
+        ## Without learned formulas!
+        contractionDict = {"variablesExpFactor": self.variablesExpFactor,
+                           **self.formulaCoreDict}
+        
+        return np.sum(self.variablesExpFactor.values)
 
 
 def copy_CoreDict(tbdDict, suffix="", exceptionColors=[]):
@@ -192,8 +221,7 @@ if __name__ == "__main__":
         "f2": ["c", 2]
     }
 
-    optimizer = AlternatingMLE(skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict)
-    print(optimizer.candidatesAtomsList)
+    optimizer = AlternatingNewtonMLE(skeletonExpression, candidatesDict, variableCoresDict, {})
 
     optimizer.random_initialize_variableCoresDict()
     optimizer.generate_mln_core()
@@ -204,62 +232,4 @@ if __name__ == "__main__":
     optimizer.create_fixedCores(sampleDf)
     optimizer.create_exponentiated_variables()
 
-#    optimizer.newton_step("v2")
-    optimizer.alternating_newton(100)
-    exit()
-
-    expGradient = optimizer.contract_gradient_exponential("v1")
-
-    vector = expGradient.negate(ignore_ones=True).sum_with(optimizer.contract_truth_gradient("v1"))
-
-    print(expGradient.values.shape)
-    print(expGradient.colors)
-
-
-
-    ## Operator
-    doubleExpGradient = optimizer.contract_double_gradient_exponential("v1").negate(ignore_ones=True)
-
-    empOperator = expGradient.clone()
-    empOperator.colors = [color + "_out" for color in empOperator.colors]
-    empOperator = empOperator.compute_and(optimizer.contract_truth_gradient("v1"))
-
-    operator = empOperator.sum_with(doubleExpGradient)
-
-    print(doubleExpGradient.colors)
-    print(doubleExpGradient.values.shape)
-
-
-
-    ## Flatten
-    outColors = [color for color in operator.colors if color.endswith("_out")]
-    inColors = [color for color in operator.colors if color not in outColors]
-
-    outshape = [operator.values.shape[i] for i, color in enumerate(operator.colors) if color in outColors]
-    inshape = [operator.values.shape[i] for i, color in enumerate(operator.colors) if color in inColors]
-
-    outDim = np.prod(outshape)
-    inDim = np.prod(inshape)
-    print(outColors)
-    print(inColors)
-
-    operator.reorder_colors(inColors+outColors)
-    vector.reorder_colors(inColors)
-
-    flattenedOperatorValues = operator.values.reshape(inDim, outDim)
-    flattenedVectorValues = vector.values.reshape(inDim)
-
-
-    print(flattenedOperatorValues.shape)
-    print(flattenedVectorValues.shape)
-
-    update, residuals, rank, singular_values = np.linalg.lstsq(flattenedOperatorValues, flattenedVectorValues)
-    print(update)
-
-    update.reshape(inshape)
-    updateCore = cc.CoordinateCore(update.reshape(inshape), inColors)
-
-    variableCoresDict["v1"] = variableCoresDict["v1"].sum_with(updateCore)
-#    print(optimizer.contract_truth_gradient("v1").values)
-#    print(optimizer.rawCoreDict.keys())
-#    print(optimizer.dataNum)
+    optimizer.alternating_newton(10)

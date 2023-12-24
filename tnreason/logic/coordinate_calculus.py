@@ -24,6 +24,9 @@ class CoordinateCore:
         else:
             return CoordinateCore(np.ones(self.values.shape) - np.copy(self.values), self.colors.copy(), newName)
 
+    def multiply(self, factor):
+        return CoordinateCore(factor*self.values, self.colors, self.name)
+
     def compute_and(self, in_core1):
         core0 = self.clone()
         core1 = in_core1.clone()

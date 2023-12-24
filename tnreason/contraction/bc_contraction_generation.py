@@ -3,12 +3,26 @@ from tnreason.logic import basis_calculus as bc
 
 import numpy as np
 
+
 def generate_rawCoreDict(expressionDict):
+    ## ExpressionDict of structure key: expression
     rawCoreDict = {}
     for formulaKey in expressionDict:
         expression = expressionDict[formulaKey]
-        rawCoreDict = {**rawCoreDict, **generate_factor_dict(expression,formulaKey=formulaKey,headType="empty")}
+        rawCoreDict = {**rawCoreDict, **generate_factor_dict(expression, formulaKey=formulaKey, headType="empty")}
     return rawCoreDict
+
+
+def generate_formulaCoreDict(expressionDict):
+    ## ExpressionDict of structure key: [expression, weight]
+    rawCoreDict = {}
+    for formulaKey in expressionDict:
+        expression = expressionDict[formulaKey][0]
+        weight = expressionDict[formulaKey][1]
+        rawCoreDict = {**rawCoreDict,
+                       **generate_factor_dict(expression, formulaKey=formulaKey, weight=weight, headType="expFactor")}
+    return rawCoreDict
+
 
 def generate_exponentiationHeadValues(weight, headcolors, differentiated=False):
     if differentiated:
