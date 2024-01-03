@@ -40,4 +40,5 @@ def generate_skeletonLayerDict(skeletonExpression, shapesDict, sampleNum):
         return layerDict
 
 if __name__ == "__main__":
-    print(generate_skeletonLayerDict(["a","and",["not","b"]], {"a": 2, "b": 10}, 4))
+    print(generate_skeletonLayerDict(["a","and",["not","b"]], {"a": 2, "b": 10}, 4).keys())
+    print(generate_skeletonLayerDict(["a","and",["not","b"]], {"a": 2, "b": 10}, 4)["['not', 'b']"].colors)

@@ -11,7 +11,6 @@ class LayeredCoreContractor:
         self.openColors = openColors
 
     def contract(self):
-        print(self.instructionList)
         contracted = self.layerDict[self.instructionList[0][1]]
         for instruction in self.instructionList[1:]:
             if instruction[0] == "add":
