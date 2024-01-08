@@ -12,8 +12,8 @@ import tnreason.logic.coordinate_calculus as cc
 import numpy as np
 
 
-class MLEOptimizerBase:
-    def __init__(self, skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict={}):
+class MLEBase:
+    def __init__(self, skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict={}, sampleDf=None):
         self.skeleton = skeletonExpression  ## Can just handle pure conjunctions!
         self.skeletonPlaceholders = eu.get_variables(skeletonExpression)
 
@@ -24,13 +24,18 @@ class MLEOptimizerBase:
         self.variableCoresDict = variableCoresDict
 
         self.learnedFormulaDict = learnedFormulaDict
-        self.create_mln_core()
+        self.formulaCoreDict = bcg.generate_formulaCoreDict(self.learnedFormulaDict)
 
         self.candidatesAtomsList = []
         for candidatesKey in candidatesDict:
             for atom in candidatesDict[candidatesKey]:
                 if atom not in self.candidatesAtomsList:
                     self.candidatesAtomsList.append(atom)
+
+        if sampleDf is not None:
+            self.create_fixedCores(sampleDf)
+            formulaAtoms = eu.get_all_variables([self.learnedFormulaDict[key][0] for key in self.learnedFormulaDict])
+            self.atomDataCores = create_atomDataCores(sampleDf, formulaAtoms)
 
     def create_atom_selectors(self):
         ## Creates atom selector cores selecting atom activation
@@ -51,10 +56,6 @@ class MLEOptimizerBase:
                 self.atomSelectorDict[placeHolderKey + "_enumeratedWorlds_" + atomKey] = cc.CoordinateCore(
                     coreValues, [placeHolderKey, atomKey], placeHolderKey + "_enumeratedWorlds_" + atomKey)
 
-    def create_mln_core(self):
-        ## Creates exponentiated factors of other formulas
-        self.formulaCoreDict = bcg.generate_formulaCoreDict(self.learnedFormulaDict)
-
     def create_exponentiated_variables(self):
         ## Creates exponentiated factor to the variables tbo
         ## To do: Think of removing this bottleneck: Constract the current variables to a single core instead of exp TN!
@@ -68,16 +69,11 @@ class MLEOptimizerBase:
 
     def contract_partition_gradient(self, tboVariableKey):
         self.create_exponentiated_variables()
-        print("VarExpFactor", tboVariableKey,
-              np.linalg.norm(self.variablesExpFactor.values))  ## Problem: Gets infinite -> Introduced the NaNs
         contractionDict = {**self.formulaCoreDict, "variablesExpFactor": self.variablesExpFactor,
                            **self.create_variable_gradient(tboVariableKey),
                            **self.atomSelectorDict}
         contractor = coc.CoreContractor(contractionDict, openColors=self.variableCoresDict[tboVariableKey].colors)
-        contractor.optimize_coreList()
-        contractor.create_instructionList_from_coreList()
-
-        return contractor.contract().multiply(1 / self.contract_partition())
+        return contractor.contract(optimizationMethod="GreedyHeuristic").multiply(1 / self.contract_partition())
 
     def contract_partition(self, visualize=False):
         self.create_exponentiated_variables()
@@ -90,10 +86,16 @@ class MLEOptimizerBase:
         return contractor.contract(optimizationMethod="GreedyHeuristic").values
 
     ## Data Side: Compute Gradient
+    def load_sampleDf(self, sampleDf):
+        self.dataNum = sampleDf.values.shape[0]
+        self.create_fixedCores(sampleDf)
+        formulaAtoms = eu.get_all_variables([self.learnedFormulaDict[key][0] for key in self.learnedFormulaDict])
+        self.atomDataCores = create_atomDataCores(sampleDf, formulaAtoms)
+
     def create_fixedCores(self, sampleDf):
         self.dataNum = sampleDf.values.shape[0]
         self.fixedCoresDict = {}
-        # Supports only and connectivity!
+        # Supports only and connectivity! Need to add
         for placeholderKey in self.skeletonPlaceholders:
             self.fixedCoresDict[placeholderKey + "_fixedCore"] = stoc.create_fixedCore(sampleDf, self.candidatesDict[
                 placeholderKey], ["j", placeholderKey], placeholderKey)
@@ -106,13 +108,27 @@ class MLEOptimizerBase:
         return contractor.contract(optimizationMethod="GreedyHeuristic").multiply(1 / self.dataNum)
 
     ## Compute Estimation Metric: Log likelihood
-    def compute_likelihood(self, visualize=False):
+    def compute_likelihood(self, visualize=False, sampleDf=None):
         ## Without learned formulas!
         contractor = coc.CoreContractor(coreDict={**self.fixedCoresDict, **self.variableCoresDict})
         if visualize:
-            contractor.visualize(title="Likelihood Data")
+            contractor.visualize(title="Likelihood VariableCores")
+        formulaCorrectionTerm = 0
+        for formulaKey in self.learnedFormulaDict:
+            formulaAtoms = eu.get_variables(self.learnedFormulaDict[formulaKey][0])
+            formulaContractor = coc.CoreContractor(coreDict={**self.atomDataCores,
+                                                             **bcg.generate_factor_dict(
+                                                                 expression=self.learnedFormulaDict[formulaKey][0],
+                                                                 formulaKey=formulaKey,
+                                                                 weight=0,
+                                                                 headType="truthEvaluation"),
+                                                             })
+            if visualize:
+                formulaContractor.visualize(title="Likelihood Formula {}".format(formulaKey))
+            formulaCorrectionTerm += formulaContractor.contract(optimizationMethod="GreedyHeuristic").values * (
+                        self.learnedFormulaDict[formulaKey][1] / self.dataNum)
         return contractor.contract(optimizationMethod="GreedyHeuristic").values / (self.dataNum) - np.log(
-            self.contract_partition())
+            self.contract_partition()) + formulaCorrectionTerm
 
     ## Optimization preparation
     def random_initialize_variableCoresDict(self):
@@ -120,7 +136,7 @@ class MLEOptimizerBase:
             self.variableCoresDict[coreKey].values = np.random.random(size=self.variableCoresDict[coreKey].values.shape)
 
 
-class GradientDescentMLE(MLEOptimizerBase):
+class GradientDescentMLE(MLEBase):
 
     def compute_gradient(self, tboVariableKey):
         partition_gradient = self.contract_partition_gradient(tboVariableKey)
@@ -133,25 +149,30 @@ class GradientDescentMLE(MLEOptimizerBase):
         )
 
     def alternating_gradient_descent(self, sweepNum, stepWidth, computeLikelihood=True, verbose=True):
+        safeLikeLihood = -2.2250738585072014e308
         likelihoods = np.empty(shape=(sweepNum, len(self.variableCoresDict)))
         for sweep in range(sweepNum):
             for i, variableKey in enumerate(self.variableCoresDict):
                 self.descent_step(variableKey, stepWidth)
                 if computeLikelihood:
                     likelihoods[sweep, i] = self.compute_likelihood()
+                    if likelihoods[sweep, i] < safeLikeLihood and verbose:
+                        print(
+                            "Warning: Likelihood increased on variableCore {} in sweep {}.".format(variableKey, sweep))
+                    if likelihoods[sweep, i] > 0:
+                        print("Warning: Positive Likelihood on variableCore {} in sweep {}.".format(variableKey, sweep))
+                    safeLikeLihood = likelihoods[sweep, i]
         return likelihoods
 
 
-class AlternatingNewtonMLE(MLEOptimizerBase):
+class AlternatingNewtonMLE(MLEBase):
 
     def contract_gradient_exponential(self, tboVariableKey):
         contractionDict = {**self.formulaCoreDict, "variablesExpFactor": self.variablesExpFactor,
                            **self.create_variable_gradient(tboVariableKey),
                            **self.atomSelectorDict}
         contractor = coc.CoreContractor(contractionDict, openColors=self.variableCoresDict[tboVariableKey].colors)
-        contractor.optimize_coreList()
-        contractor.create_instructionList_from_coreList()
-        return contractor.contract()
+        return contractor.contract(optimizationMethod="GreedyHeuristic")
 
     def contract_double_gradient_exponential(self, tboVariableKey):
         contractionDict = {**self.formulaCoreDict, "variablesExpFactor": self.variablesExpFactor,
@@ -164,13 +185,11 @@ class AlternatingNewtonMLE(MLEOptimizerBase):
         openColors = self.variableCoresDict[tboVariableKey].colors
         openColors = openColors + [color + "_out" for color in openColors]
         contractor = coc.CoreContractor(contractionDict, openColors=openColors)
-        contractor.optimize_coreList()
-        contractor.create_instructionList_from_coreList()
-        return contractor.contract()
+        return contractor.contract(optimizationMethod="GreedyHeuristic")
 
     ## Algorithm
     def alternating_newton(self, sweepNum=10, dampFactor=0.001, monotoneousCondition=True, regParameter=0,
-                           computeLikelihood=True, verbose=True):
+                           verbose=True):
         self.likelihood = self.compute_likelihood()
         likelihoods = np.empty(shape=(sweepNum, len(self.variableCoresDict)))
         for sweep in range(sweepNum):
@@ -185,14 +204,14 @@ class AlternatingNewtonMLE(MLEOptimizerBase):
         expGradient = self.contract_gradient_exponential(tboVariableKey)
 
         vector = expGradient.sum_with(
-            self.contract_data_gradient(tboVariableKey).multiply(-1 / (self.dataNum * self.contract_partition())))
+            self.contract_data_gradient(tboVariableKey).multiply(-1 / self.contract_partition()))
 
         ## Operator
         doubleExpGradient = self.contract_double_gradient_exponential(tboVariableKey).multiply(-1)
 
         empOperator = expGradient.clone()
         empOperator.colors = [color + "_out" for color in empOperator.colors]
-        empOperator = empOperator.compute_and(self.contract_data_gradient(tboVariableKey).multiply(1 / self.dataNum))
+        empOperator = empOperator.compute_and(self.contract_data_gradient(tboVariableKey))
 
         operator = empOperator.sum_with(doubleExpGradient)
 
@@ -250,6 +269,21 @@ def copy_CoreDict(tbdDict, suffix="", exceptionColors=[]):
     return doubleDict
 
 
+def create_atomDataCores(sampleDf, atoms):
+    atomDataDict = {}
+    for atomKey in atoms:
+        dfEntries = sampleDf[atomKey].values
+        dataNum = dfEntries.shape[0]
+        values = np.zeros(shape=(dataNum, 2))
+        for i in range(dataNum):
+            if dfEntries[i] == 0:
+                values[i, 0] = 1
+            else:
+                values[i, 1] = 1
+        atomDataDict[atomKey + "_dataCore"] = cc.CoordinateCore(values, ["j", atomKey])
+    return atomDataDict
+
+
 if __name__ == "__main__":
     from tnreason.logic import coordinate_calculus as cc
 
@@ -275,15 +309,14 @@ if __name__ == "__main__":
         "f2": ["c", 2]
     }
 
-    optimizer = AlternatingNewtonMLE(skeletonExpression, candidatesDict, variableCoresDict, {})
-
-    optimizer.random_initialize_variableCoresDict()
-    optimizer.create_mln_core()
-
     import tnreason.model.generate_test_data as gtd
 
     sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
-    optimizer.create_fixedCores(sampleDf)
+
+    optimizer = AlternatingNewtonMLE(skeletonExpression, candidatesDict, variableCoresDict, {}, sampleDf=sampleDf)
+
+    optimizer.random_initialize_variableCoresDict()
+
     optimizer.create_exponentiated_variables()
 
     optimizer.alternating_newton(10)

@@ -3,6 +3,7 @@ from tnreason.model import generate_test_data as gtd
 from tnreason.logic import coordinate_calculus as cc
 
 from tnreason.contraction import contraction_visualization as cv
+from tnreason.contraction import bc_contraction_generation as bcg
 
 import numpy as np
 
@@ -20,18 +21,25 @@ candidatesDict = {"P1": list(atomDict.keys()),
 variableCoresDict = {
     "P1_variableCore": cc.CoordinateCore(np.zeros(shape=(3, 2)), ["P1", "H1"]),
     "P2_variableCore": cc.CoordinateCore(np.zeros(shape=(3, 2)), ["P2", "H1"]),
+    "hiddenCore": cc.CoordinateCore(np.zeros(shape=(2)), ["H1"])
 }
 
 learnedFormulaDict = {
-    "f0": ["a2", 10],
-    "f1": [["not", ["a1", "and", "a2"]], 5],
+    "f0": ["a2", 1.2],
+    "f1": [["a1", "and", "a2"], 1.3],
     "f2": ["a3", 2]
 }
-sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
 
-optimizer = amle.GradientDescentMLE(skeletonExpression, candidatesDict, variableCoresDict, {})
 
-optimizer.create_fixedCores(sampleDf)
+
+sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 10)
+
+optimizer = amle.GradientDescentMLE(skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict, sampleDf=sampleDf)
+
+#import tnreason.contraction.expression_evaluation as ee
+#eval = ee.ExpressionEvaluator("a2")
+#print(eval.evaluate_on_sampleDf(sampleDf).values)
+
 optimizer.random_initialize_variableCoresDict()
 optimizer.create_atom_selectors()
 optimizer.create_exponentiated_variables()
@@ -39,6 +47,23 @@ optimizer.create_exponentiated_variables()
 # cv.draw_contractionDiagram({"varExp":optimizer.variablesExpFactor,**optimizer.atomSelectorDict})
 # cv.draw_contractionDiagram({**optimizer.variableCoresDict,**optimizer.fixedCoresDict})
 
+print("Likelihood",optimizer.compute_likelihood())
+print(optimizer.contract_partition())
 print(optimizer.formulaCoreDict)
-print(optimizer.compute_likelihood())
-print(optimizer.compute_partition())
+
+exit()
+
+coreDict = bcg.generate_formulaCoreDict(learnedFormulaDict)
+print(coreDict.keys())
+for key in coreDict:
+    print(key)
+    print(coreDict[key].values)
+    print(coreDict[key].colors)
+exit()
+
+fDict = bcg.generate_factor_dict(["a1","and","a2"])
+print(list(fDict.keys()))
+for key in coreDict:
+    print(key)
+    print(fDict[key].values)
+exit()

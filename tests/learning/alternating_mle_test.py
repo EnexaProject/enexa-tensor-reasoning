@@ -26,12 +26,11 @@ learnedFormulaDict = {
     "f2": ["c", 2]
 }
 
-optimizer = amle.AlternatingNewtonMLE(skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict)
-optimizer.create_mln_core()
-
 import tnreason.model.generate_test_data as gtd
 sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
-optimizer.create_fixedCores(sampleDf)
+
+optimizer = amle.AlternatingNewtonMLE(skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict, sampleDf=sampleDf)
+
 optimizer.create_exponentiated_variables()
 
 optimizer.random_initialize_variableCoresDict()

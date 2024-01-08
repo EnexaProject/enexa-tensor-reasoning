@@ -18,6 +18,7 @@ candidatesDict = {"P1": list(atomDict.keys()),
 variableCoresDict = {
     "v1": cc.CoordinateCore(np.zeros(shape=(3, 2)), ["P1", "H1"]),
     "v2": cc.CoordinateCore(np.zeros(shape=(3, 2)), ["P2", "H1"]),
+    "hiddenCore": cc.CoordinateCore(np.zeros(shape=(2)), ["H1"])
 }
 
 learnedFormulaDict = {
@@ -26,14 +27,14 @@ learnedFormulaDict = {
     "f2": ["c", 2]
 }
 
-optimizer = amle.GradientDescentMLE(skeletonExpression, candidatesDict, variableCoresDict, {})
-optimizer.create_mln_core()
-
 import tnreason.model.generate_test_data as gtd
+sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
 
-sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 1000)
-optimizer.create_fixedCores(sampleDf)
-optimizer.create_exponentiated_variables()
+optimizer = amle.GradientDescentMLE(skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict, sampleDf)
+
+
+
+#optimizer.create_exponentiated_variables()
 
 optimizer.random_initialize_variableCoresDict()
 print(optimizer.alternating_gradient_descent(100, 1))
