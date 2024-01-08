@@ -26,14 +26,14 @@ learnedFormulaDict = {
     "f2": ["c", 2]
 }
 
-optimizer = amle.GradientDescentMLE(skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict)
+optimizer = amle.GradientDescentMLE(skeletonExpression, candidatesDict, variableCoresDict, {})
 optimizer.create_mln_core()
 
 import tnreason.model.generate_test_data as gtd
-sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
+
+sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 1000)
 optimizer.create_fixedCores(sampleDf)
 optimizer.create_exponentiated_variables()
 
 optimizer.random_initialize_variableCoresDict()
-print(optimizer.alternating_gradient_descent(10, 0.1))
-
+print(optimizer.alternating_gradient_descent(100, 1))

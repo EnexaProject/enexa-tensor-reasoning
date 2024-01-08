@@ -19,10 +19,12 @@ class MLEOptimizerBase:
 
         self.candidatesDict = candidatesDict
 
-        self.create_atom_selectors()  ## Creates self.atomSelectorDict
+        self.create_atom_selectors()
 
         self.variableCoresDict = variableCoresDict
+
         self.learnedFormulaDict = learnedFormulaDict
+        self.create_mln_core()
 
         self.candidatesAtomsList = []
         for candidatesKey in candidatesDict:
@@ -33,15 +35,21 @@ class MLEOptimizerBase:
     def create_atom_selectors(self):
         ## Creates atom selector cores selecting atom activation
         self.atomSelectorDict = {}
-        for variableKey in self.skeletonPlaceholders:
-            atoms = self.candidatesDict[variableKey]
-            shape = [len(atoms)] + [2 for atom in atoms]
-            values = np.zeros(shape=shape)  ## Bottleneck! Can instead do Hadamards with selection matrices.
-            for i, atom in enumerate(atoms):
-                pos = [i] + [0 for pos in range(i)] + [1] + [0 for pos in range(len(atoms) - i - 1)]
-                tuplePos = tuple(entry for entry in pos)
-                values[tuplePos] = 1
-            self.atomSelectorDict["Selector_" + variableKey] = cc.CoordinateCore(values, [variableKey, *atoms])
+        # for variableKey in self.skeletonPlaceholders:
+        #    atoms = self.candidatesDict[variableKey]
+        #    shape = [len(atoms)] + [2 for atom in atoms]
+        #    values = np.zeros(shape=shape)  ## Bottleneck! Can instead do Hadamards with selection matrices.
+        #    for i, atom in enumerate(atoms):
+        #        pos = [i] + [0 for pos in range(i)] + [1] + [0 for pos in range(len(atoms) - i - 1)]
+        #        tuplePos = tuple(entry for entry in pos)
+        #        values[tuplePos] = 1
+        #    self.atomSelectorDict[variableKey+"_Selector"] = cc.CoordinateCore(values, [variableKey, *atoms])
+        for placeHolderKey in self.candidatesDict:
+            for i, atomKey in enumerate(self.candidatesDict[placeHolderKey]):
+                coreValues = np.ones(shape=(len(self.candidatesDict[placeHolderKey]), 2))
+                coreValues[i, 0] = 0
+                self.atomSelectorDict[placeHolderKey + "_enumeratedWorlds_" + atomKey] = cc.CoordinateCore(
+                    coreValues, [placeHolderKey, atomKey], placeHolderKey + "_enumeratedWorlds_" + atomKey)
 
     def create_mln_core(self):
         ## Creates exponentiated factors of other formulas
@@ -53,54 +61,58 @@ class MLEOptimizerBase:
         ## Missing for generality (not just pure conjunctions): Skeleton in form of another contraction dict
         variablesContractor = coc.CoreContractor({**self.variableCoresDict, **self.atomSelectorDict},
                                                  openColors=self.candidatesAtomsList)
-        variablesContractor.optimize_coreList()
-        variablesContractor.create_instructionList_from_coreList()
-        self.variablesExpFactor = variablesContractor.contract().exponentiate()
+        self.variablesExpFactor = variablesContractor.contract(optimizationMethod="GreedyHeuristic").exponentiate()
 
     def create_variable_gradient(self, tboVariableKey):
         return {key: self.variableCoresDict[key] for key in self.variableCoresDict if key != tboVariableKey}
 
     def contract_partition_gradient(self, tboVariableKey):
+        self.create_exponentiated_variables()
+        print("VarExpFactor", tboVariableKey,
+              np.linalg.norm(self.variablesExpFactor.values))  ## Problem: Gets infinite -> Introduced the NaNs
         contractionDict = {**self.formulaCoreDict, "variablesExpFactor": self.variablesExpFactor,
                            **self.create_variable_gradient(tboVariableKey),
                            **self.atomSelectorDict}
         contractor = coc.CoreContractor(contractionDict, openColors=self.variableCoresDict[tboVariableKey].colors)
         contractor.optimize_coreList()
         contractor.create_instructionList_from_coreList()
-        return contractor.contract().multiply(1 / self.compute_partition())
 
-    def compute_likelihood(self):
-        ## Without learned formulas!
-        contractor = coc.CoreContractor(coreDict={**self.fixedCoresDict, **self.variableCoresDict})
-        contractor.optimize_coreList()
-        contractor.create_instructionList_from_coreList()
-        return contractor.contract().values / (self.dataNum * self.compute_partition())
+        return contractor.contract().multiply(1 / self.contract_partition())
 
-    def compute_partition(self):
+    def contract_partition(self, visualize=False):
+        self.create_exponentiated_variables()
         contractionDict = {"variablesExpFactor": self.variablesExpFactor,
+                           ## To be replaced by superposed formula tensor
                            **self.formulaCoreDict}
         contractor = coc.CoreContractor(coreDict=contractionDict, openColors=[])
-        contractor.optimize_coreList()
-        contractor.create_instructionList_from_coreList()
-        return contractor.contract().values
+        if visualize:
+            contractor.visualize(title="Partition Function")
+        return contractor.contract(optimizationMethod="GreedyHeuristic").values
 
     ## Data Side: Compute Gradient
     def create_fixedCores(self, sampleDf):
         self.dataNum = sampleDf.values.shape[0]
         self.fixedCoresDict = {}
         # Supports only and connectivity!
-        for atomKey in self.skeletonPlaceholders:
-            self.fixedCoresDict[atomKey] = stoc.create_fixedCore(sampleDf, self.candidatesDict[atomKey], ["j", atomKey],
-                                                                 atomKey)
+        for placeholderKey in self.skeletonPlaceholders:
+            self.fixedCoresDict[placeholderKey + "_fixedCore"] = stoc.create_fixedCore(sampleDf, self.candidatesDict[
+                placeholderKey], ["j", placeholderKey], placeholderKey)
 
     def contract_data_gradient(self, tboVariableKey):
         ## Contract the variable gradient with the fixedCores
         contractor = coc.CoreContractor(
             coreDict={**self.fixedCoresDict, **self.create_variable_gradient(tboVariableKey)},
             openColors=self.variableCoresDict[tboVariableKey].colors)
-        contractor.optimize_coreList()
-        contractor.create_instructionList_from_coreList()
-        return contractor.contract()
+        return contractor.contract(optimizationMethod="GreedyHeuristic").multiply(1 / self.dataNum)
+
+    ## Compute Estimation Metric: Log likelihood
+    def compute_likelihood(self, visualize=False):
+        ## Without learned formulas!
+        contractor = coc.CoreContractor(coreDict={**self.fixedCoresDict, **self.variableCoresDict})
+        if visualize:
+            contractor.visualize(title="Likelihood Data")
+        return contractor.contract(optimizationMethod="GreedyHeuristic").values / (self.dataNum) - np.log(
+            self.contract_partition())
 
     ## Optimization preparation
     def random_initialize_variableCoresDict(self):
@@ -173,7 +185,7 @@ class AlternatingNewtonMLE(MLEOptimizerBase):
         expGradient = self.contract_gradient_exponential(tboVariableKey)
 
         vector = expGradient.sum_with(
-            self.contract_data_gradient(tboVariableKey).multiply(-1 / (self.dataNum * self.compute_partition())))
+            self.contract_data_gradient(tboVariableKey).multiply(-1 / (self.dataNum * self.contract_partition())))
 
         ## Operator
         doubleExpGradient = self.contract_double_gradient_exponential(tboVariableKey).multiply(-1)
