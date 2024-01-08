@@ -115,6 +115,7 @@ class MLEBase:
             contractor.visualize(title="Likelihood VariableCores")
         formulaCorrectionTerm = 0
         for formulaKey in self.learnedFormulaDict:
+            ## Check alternative: Calculate directly the truth rate via ee.ExpressionEvaluation
             formulaAtoms = eu.get_variables(self.learnedFormulaDict[formulaKey][0])
             formulaContractor = coc.CoreContractor(coreDict={**self.atomDataCores,
                                                              **bcg.generate_factor_dict(
@@ -126,7 +127,7 @@ class MLEBase:
             if visualize:
                 formulaContractor.visualize(title="Likelihood Formula {}".format(formulaKey))
             formulaCorrectionTerm += formulaContractor.contract(optimizationMethod="GreedyHeuristic").values * (
-                        self.learnedFormulaDict[formulaKey][1] / self.dataNum)
+                    self.learnedFormulaDict[formulaKey][1] / self.dataNum)
         return contractor.contract(optimizationMethod="GreedyHeuristic").values / (self.dataNum) - np.log(
             self.contract_partition()) + formulaCorrectionTerm
 
@@ -143,13 +144,13 @@ class GradientDescentMLE(MLEBase):
         data_gradient = self.contract_data_gradient(tboVariableKey)
         return partition_gradient.sum_with(data_gradient.multiply(-1))
 
-    def descent_step(self, tboVariableKey, stepWidth):
+    def descent_step(self, tboVariableKey, stepWidth=1):
         self.variableCoresDict[tboVariableKey] = self.variableCoresDict[tboVariableKey].sum_with(
             self.compute_gradient(tboVariableKey).multiply(-1 * stepWidth)
         )
 
     def alternating_gradient_descent(self, sweepNum, stepWidth, computeLikelihood=True, verbose=True):
-        safeLikeLihood = -2.2250738585072014e308
+        safeLikeLihood = -2.2250738585072014e308  # The smallest float
         likelihoods = np.empty(shape=(sweepNum, len(self.variableCoresDict)))
         for sweep in range(sweepNum):
             for i, variableKey in enumerate(self.variableCoresDict):
@@ -166,13 +167,6 @@ class GradientDescentMLE(MLEBase):
 
 
 class AlternatingNewtonMLE(MLEBase):
-
-    def contract_gradient_exponential(self, tboVariableKey):
-        contractionDict = {**self.formulaCoreDict, "variablesExpFactor": self.variablesExpFactor,
-                           **self.create_variable_gradient(tboVariableKey),
-                           **self.atomSelectorDict}
-        contractor = coc.CoreContractor(contractionDict, openColors=self.variableCoresDict[tboVariableKey].colors)
-        return contractor.contract(optimizationMethod="GreedyHeuristic")
 
     def contract_double_gradient_exponential(self, tboVariableKey):
         contractionDict = {**self.formulaCoreDict, "variablesExpFactor": self.variablesExpFactor,
@@ -201,7 +195,7 @@ class AlternatingNewtonMLE(MLEBase):
         return likelihoods
 
     def newton_step(self, tboVariableKey, dampFactor, monotoneusCondition, regParameter, verbose=True):
-        expGradient = self.contract_gradient_exponential(tboVariableKey)
+        expGradient = self.contract_partition_gradient(tboVariableKey)
 
         vector = expGradient.sum_with(
             self.contract_data_gradient(tboVariableKey).multiply(-1 / self.contract_partition()))
