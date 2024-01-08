@@ -2,6 +2,8 @@ from matplotlib import pyplot as plt
 
 from tnreason.contraction import contraction_optimization as co
 from tnreason.contraction import bc_contraction_generation as cg
+from tnreason.contraction import contraction_visualization as cv
+
 
 class CoreContractor:
     """
@@ -18,7 +20,7 @@ class CoreContractor:
 
     def generate_coreDict_from_formulaList(self, formulaList):
         for formula in formulaList:
-            self.coreDict = {**self.coreDict,**cg.generate_factor_dict(formula)}
+            self.coreDict = {**self.coreDict, **cg.generate_factor_dict(formula)}
 
     def optimize_coreList(self, method="GreedyHeuristic"):
         # Generate the coreColorDict and colorDimDict for ContractionOptimizer
@@ -101,6 +103,9 @@ class CoreContractor:
 
         return sizeList, shapeList, colorList
 
+    def visualize(self, title="Contraction Diagram"):
+        cv.draw_contractionDiagram(self.coreDict, title=title)
+
     def contract(self, optimizationMethod=None, verbose=False):
         if optimizationMethod is None:
             if self.instructionList is None:
@@ -178,15 +183,15 @@ def find_affected(coreDict, color):
             affectedKeys.append(key)
     return affectedCores, affectedKeys
 
+
 ## To replace Optimization Calculus
 class NegationTolerantCoreContractor:
     ## In CoreDict
     def __init__(self, coreDict={}, coreList=None, instructionList=None, openColors=[]):
-        self.coreDict = coreDict ## Now each key gives a list of list [core, ignorecolors]
+        self.coreDict = coreDict  ## Now each key gives a list of list [core, ignorecolors]
         self.coreList = coreList
         self.instructionList = instructionList
         self.openColors = openColors
-
 
     def contract(self):
 
@@ -195,18 +200,21 @@ class NegationTolerantCoreContractor:
         for instruction in self.instructionList[1:]:
             if instruction[0] == "add":
                 contractedList = compute_list_and(contractedList, self.coreDict[instruction[1]])
-#            elif instruction[0] == "reduce":
-#                contracted = contracted.reduce_color(instruction[1])
+                #            elif instruction[0] == "reduce":
+                #                contracted = contracted.reduce_color(instruction[1])
                 print(instruction, len(contractedList))
         return contractedList
+
+
 def compute_list_and(leftList, rightList):
     preResultList = []
 
     ## Add the non Constants
     for leftCore, leftIgnoreColors in leftList:
         for rightCore, rightIgnoreColors in rightList:
-            if (not is_constant(leftIgnoreColors,rightCore.colors)) and (not is_constant(leftIgnoreColors,rightCore.colors)):
-                preResultList.append([leftCore.compute_and(rightCore), leftIgnoreColors+rightIgnoreColors])
+            if (not is_constant(leftIgnoreColors, rightCore.colors)) and (
+                    not is_constant(leftIgnoreColors, rightCore.colors)):
+                preResultList.append([leftCore.compute_and(rightCore), leftIgnoreColors + rightIgnoreColors])
 
     ## Add the constants from both sides
     for leftCore, leftIgnoreColors in leftList:
@@ -218,10 +226,9 @@ def compute_list_and(leftList, rightList):
         if is_constant(rightIgnoreColors, firstLeftCore.colors):
             preResultList.append([rightCore, rightIgnoreColors])
 
-
     ## Sum the cores with same colors
     resultList = []
-    while len(preResultList)>0:
+    while len(preResultList) > 0:
         core1, ignoreColors1 = preResultList.pop()
         for core2, ignoreColors2 in preResultList.copy():
             if color_equivalence(core1, core2):
@@ -230,11 +237,13 @@ def compute_list_and(leftList, rightList):
         resultList.append([core1, ignoreColors1])
     return resultList
 
+
 def is_constant(ignoreColors, testColors):
     for color in ignoreColors:
         if color in testColors:
             return True
     return False
+
 
 def color_equivalence(core1, core2):
     for color in core1.colors:
@@ -278,27 +287,24 @@ if __name__ == "__main__":
         "b": 1.72345
     }
 
-
     contractor = NegationTolerantCoreContractor(
         coreDict={
-            "a" : [[cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "y", "z"], name="a"),["y"]],
-                   [cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "r", "z"], name="a"),["y2"]]
-                   ],
-            "b" : [[cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "y2", "z"], name="a2"), ["y2"]],
-                   [cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "r", "z"], name="a"), ["y2"]]
-                   ],
-    },
-        instructionList = [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"]],
+            "a": [
+                [cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "y", "z"], name="a"), ["y"]],
+                [cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "r", "z"], name="a"), ["y2"]]
+            ],
+            "b": [[cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "y2", "z"], name="a2"),
+                   ["y2"]],
+                  [cc.CoordinateCore(np.random.binomial(n=1, p=0.4, size=(10, 7, 5)), ["x", "r", "z"], name="a"),
+                   ["y2"]]
+                  ],
+        },
+        instructionList=[["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"]],
     )
-    result =  contractor.contract()
+    result = contractor.contract()
     print(result)
 
-
-
-
     exit()
-
-
 
     contractor = CoreContractor(coordinateDict,
                                 None,
