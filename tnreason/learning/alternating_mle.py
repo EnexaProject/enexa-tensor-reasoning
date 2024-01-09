@@ -5,7 +5,6 @@ import tnreason.representation.sampledf_to_cores as stoc
 import tnreason.contraction.bc_contraction_generation as bcg
 import tnreason.contraction.expression_evaluation as ee
 import tnreason.contraction.core_contractor as coc
-import tnreason.contraction.layered_core_contractor as lcoc
 
 import tnreason.logic.coordinate_calculus as cc
 
@@ -116,7 +115,6 @@ class MLEBase:
         formulaCorrectionTerm = 0
         for formulaKey in self.learnedFormulaDict:
             ## Check alternative: Calculate directly the truth rate via ee.ExpressionEvaluation
-            formulaAtoms = eu.get_variables(self.learnedFormulaDict[formulaKey][0])
             formulaContractor = coc.CoreContractor(coreDict={**self.atomDataCores,
                                                              **bcg.generate_factor_dict(
                                                                  expression=self.learnedFormulaDict[formulaKey][0],

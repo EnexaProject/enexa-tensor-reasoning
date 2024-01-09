@@ -1,33 +1,59 @@
 from tnreason.logic import coordinate_calculus as cc
+from tnreason.logic import expression_utils as eu
 
 from tnreason.contraction import bc_contraction_generation as bcg
+from tnreason.contraction import core_contractor as coc
 
 import numpy as np
 
 
 class FormulaTensor:
-    def __init__(self, expression, key=None, headType="truthEvaluation", weight=0):
-        if key is not None:
-            self.formulaKey = key
+    '''
+    expression:
+    formulaKey: For distinction , typically passed by TensorRepresentation as dict key
+    headType: Whether \weight\ftensor (truthEvaluation, default) or \expof{\weight\ftensor} (expFactor) or \partial\expof{\weight\ftensor} (diffExpFactor) is created
+    weight: Factor on the formulaTensor
+    '''
+
+    def __init__(self, expression, formulaKey=None, headType="truthEvaluation", weight=1):
+        if formulaKey is not None:
+            self.formulaKey = formulaKey
         else:
             self.formulaKey = str(expression)
         self.expression = expression
-        self.create_subExpressionCores()
+        self.atoms = np.unique(eu.get_variables(expression))
 
+        ## Build the Cores
+        self.create_subExpressionCores()
         self.set_head(headType=headType, weight=weight)
 
     def create_subExpressionCores(self):
         self.subExpressionCoresDict = bcg.create_formulaProcedure(self.expression, str(self.formulaKey))
 
-    def set_head(self, headType, weight=0):
+    def set_head(self, headType, weight=1):
         if headType == "truthEvaluation":
             headValues = np.zeros(shape=(2))
-            headValues[1] = 1
+            headValues[1] = weight
         elif headType == "expFactor":
             headValues = create_expFactor_values(weight, False)
         elif headType == "diffExpFactor":
             headValues = create_expFactor_values(weight, True)
+        else:
+            raise ValueError("Headtype {} not understood!".format(headType))
         self.headCore = cc.CoordinateCore(headValues, [self.formulaKey + "_" + str(self.expression)])
+
+    def infer_on_evidenceDict(self, evidenceDict):
+        evidenceCoresDict = {}
+        for atomKey in evidenceDict:
+            truthValues = np.zeros(shape=(2))
+            if bool(evidenceDict[atomKey]):
+                truthValues[1] = 1
+            else:
+                truthValues[0] = 1
+            evidenceCoresDict[atomKey + "_evidence"] = cc.CoordinateCore(truthValues, [atomKey], atomKey + "_evidence")
+        return coc.CoreContractor(
+            {**self.subExpressionCoresDict, self.formulaKey + "_head": self.headCore, **evidenceCoresDict},
+            openColors=[atomKey for atomKey in self.atoms if atomKey not in evidenceDict]).contract()
 
 
 class SuperposedFormulaTensor:
@@ -104,7 +130,7 @@ def skeleton_recursion(headExpression, candidatesDict):
         if type(headExpression[0]) == str:
             leftSkeletonCoreDict = {headExpression[0] + "_" + atomKey + "_l": create_deltaCore(
                 colors=[headExpression[0] + "_" + atomKey, str(headExpression) + "_" + atomKey])
-                                    for atomKey in candidatesDict[headExpression[0]]}
+                for atomKey in candidatesDict[headExpression[0]]}
             leftatoms = candidatesDict[headExpression[0]]
         else:
             leftSkeletonCoreDict, leftatoms = skeleton_recursion(headExpression[0], candidatesDict)
@@ -112,19 +138,19 @@ def skeleton_recursion(headExpression, candidatesDict):
             leftSkeletonCoreDict = {**leftSkeletonCoreDict,
                                     **{str(headExpression[0]) + "_" + atomKey + "_lPass": create_deltaCore(
                                         [str(headExpression[0]) + "_" + atomKey, str(headExpression) + "_" + atomKey])
-                                       for atomKey in leftatoms}
+                                        for atomKey in leftatoms}
                                     }
         if type(headExpression[2]) == str:
             rightSkeletonCoreDict = {headExpression[2] + "_" + atomKey + "_r": create_deltaCore(
                 colors=[headExpression[2] + "_" + atomKey, str(headExpression) + "_" + atomKey])
-                                     for atomKey in candidatesDict[headExpression[2]]}
+                for atomKey in candidatesDict[headExpression[2]]}
             rightatoms = candidatesDict[headExpression[2]]
         else:
             rightSkeletonCoreDict, rightatoms = skeleton_recursion(headExpression[2], candidatesDict)
             rightSkeletonCoreDict = {**rightSkeletonCoreDict,
                                      **{str(headExpression[2]) + "_" + atomKey + "_rPass": create_deltaCore(
                                          [str(headExpression[2]) + "_" + atomKey, str(headExpression) + "_" + atomKey])
-                                        for atomKey in rightatoms}
+                                         for atomKey in rightatoms}
                                      }
         return {**leftSkeletonCoreDict, **rightSkeletonCoreDict}, leftatoms + rightatoms
 
@@ -162,6 +188,6 @@ if __name__ == "__main__":
     from tnreason.contraction import contraction_visualization as cv
 
     expression = ["A1", "and", ["not", "A2"]]
-    fTensor = FormulaTensor(expression, "f1", headType="expFactor", weight=1)
-
+    fTensor = FormulaTensor(expression, "f1", headType="truthEvaluation", weight=1)
+    print(fTensor.infer_on_evidenceDict({"A1": 1}).values)
     cv.draw_contractionDiagram({**fTensor.subExpressionCoresDict, "head": fTensor.headCore})
