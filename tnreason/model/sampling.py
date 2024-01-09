@@ -1,5 +1,6 @@
 from tnreason.logic import expression_utils as eu
 from tnreason.logic import expression_generation as eg
+from tnreason.logic import coordinate_calculus as cc
 
 from tnreason.model import tensor_model as tm
 from tnreason.model import infer_mln as imln
@@ -56,13 +57,38 @@ class GibbsSampler(SamplerBase):
         return sampleDict
 
 
+class ExactSampler:
+    def __init__(self, expressionsDict, margAtoms=None):
+        self.expressionsDict = expressionsDict
+        self.atoms = eu.get_all_variables([self.expressionsDict[formulaKey][0] for formulaKey in self.expressionsDict])
+
+        if margAtoms is None:
+            margAtoms = self.atoms
+        self.compute_distributionCore(margAtoms)
+
+    def compute_distributionCore(self, margAtoms):
+        tensorRepresented = tm.TensorRepresentation(self.expressionsDict, headType="expFactor")
+        self.distributionCore = tensorRepresented.marginalized_contraction(margAtoms).normalize()
+
+    def compute_superposedSampleCore(self, sampleNum):
+        return cc.CoordinateCore(np.random.multinomial(sampleNum, self.distributionCore.values.flatten()).reshape(
+            self.distributionCore.values.shape), self.distributionCore.colors)
+
+
 if __name__ == "__main__":
     learnedFormulaDict = {
-        "f0": ["A1", 10],
-        "f1": [["not", ["A2", "and", "A3"]], 10],
-        "f2": ["A2", -10]
+        "f0": ["A1", 1],
+        "f1": [["not", ["A2", "and", "A3"]], 1],
+        "f2": ["A2", -1]
     }
-    sampler = GibbsSampler(learnedFormulaDict)
-    sampler.compute_marginalized_distributions()
+    exactSampler = ExactSampler(learnedFormulaDict)
 
-    print(sampler.create_sampleDf(100, 20)["A1"])
+    sampleNums = [1, 10, 100, 1000, 10000]
+    for sampleNum in sampleNums:
+        print(sampleNum, np.linalg.norm(
+            exactSampler.distributionCore.values - exactSampler.compute_superposedSampleCore(
+                sampleNum).values / sampleNum))
+
+    # sampler = GibbsSampler(learnedFormulaDict)
+    # sampler.compute_marginalized_distributions()
+    # print(sampler.create_sampleDf(100, 20)["A1"])
