@@ -1,8 +1,10 @@
+import numpy as np
+
 def get_all_variables(expressionList):
     variables = []
     for expression in expressionList:
         variables = variables + get_variables(expression)
-    return variables
+    return np.unique(variables)
 
 
 def get_variables(expression):

@@ -13,6 +13,7 @@ learnedFormulaDict = {
     }
 
 sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 10)
+print(sampleDf)
 
 skeletonExpression = ["P1","and",["not","P2"]]
 candidatesDict = {"P1": ["A1", "A2"], "P2": ["A2"]}

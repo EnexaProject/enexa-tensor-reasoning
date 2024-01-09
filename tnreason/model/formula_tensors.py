@@ -21,7 +21,7 @@ class FormulaTensor:
         else:
             self.formulaKey = str(expression)
         self.expression = expression
-        self.atoms = np.unique(eu.get_variables(expression))
+        self.atoms = eu.get_variables(expression)
 
         ## Build the Cores
         self.create_subExpressionCores()

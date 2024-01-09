@@ -13,11 +13,12 @@ import numpy as np
 import pandas as pd
 
 
+## Shifted main sampling functionality to sampling
+
 class TensorMLN:
     def __init__(self, expressionsDict, formulaCoreDict=None):
         self.expressionsDict = expressionsDict
-        self.atomKeys = np.unique(
-            eu.get_all_variables([self.expressionsDict[formulaKey][0] for formulaKey in self.expressionsDict]))
+        self.atomKeys = eu.get_all_variables([self.expressionsDict[formulaKey][0] for formulaKey in self.expressionsDict])
         self.formulaCoreDict = formulaCoreDict
 
     def infer_on_evidenceDict(self, evidenceDict={}):
