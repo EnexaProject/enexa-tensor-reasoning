@@ -41,7 +41,7 @@ optimizer = amle.GradientDescentMLE(skeletonExpression, candidatesDict, variable
 #print(eval.evaluate_on_sampleDf(sampleDf).values)
 
 optimizer.random_initialize_variableCoresDict()
-optimizer.create_atom_selectors()
+#optimizer.create_atom_selectors()
 optimizer.create_exponentiated_variables()
 
 # cv.draw_contractionDiagram({"varExp":optimizer.variablesExpFactor,**optimizer.atomSelectorDict})

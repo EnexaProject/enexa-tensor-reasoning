@@ -28,13 +28,12 @@ learnedFormulaDict = {
 }
 
 import tnreason.model.generate_test_data as gtd
+
 sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
 
 optimizer = amle.GradientDescentMLE(skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict, sampleDf)
 
-
-
-#optimizer.create_exponentiated_variables()
+# optimizer.create_exponentiated_variables()
 
 optimizer.random_initialize_variableCoresDict()
-print(optimizer.alternating_gradient_descent(100, 1))
+print(optimizer.alternating_gradient_descent(10, 1))

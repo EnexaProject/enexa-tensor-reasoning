@@ -55,6 +55,8 @@ class FormulaTensor:
             {**self.subExpressionCoresDict, self.formulaKey + "_head": self.headCore, **evidenceCoresDict},
             openColors=[atomKey for atomKey in self.atoms if atomKey not in evidenceDict]).contract()
 
+    def get_all_cores(self):
+        return {**self.subExpressionCoresDict, self.formulaKey+"_head": self.headCore}
 
 class SuperposedFormulaTensor:
     ## Shall be the central object to be optimized during MLE
@@ -68,8 +70,14 @@ class SuperposedFormulaTensor:
         self.create_selectorCoresDict()
         self.create_skeletonCoreDict()
 
+        self.dataCoresDict = {}
+
     def set_parameterCoresDict(self, parameterCoresDict):
         self.parameterCoresDict = parameterCoresDict
+
+    def random_initialize_parameterCoresDict(self):
+        for coreKey in self.parameterCoresDict:
+            self.parameterCoresDict[coreKey].values = np.random.random(size=self.parameterCoresDict[coreKey].values.shape)
 
     def create_selectorCoresDict(self):
         ## incolors: placeHolderKey
@@ -99,7 +107,12 @@ class SuperposedFormulaTensor:
             for atomKey in self.atoms
         }
 
-    def get_all_cores(self, expeptionKeys):
+    ## All without Datacores!
+    def get_all_fTensor_cores(self, parameterExceptionKeys=[]):
+        return {**{key: self.parameterCoresDict[key] for key in self.parameterCoresDict if
+                   key not in parameterExceptionKeys},
+                **self.selectorCoresDict,
+                **self.skeletonCoresDict}
 
 
 def dataCore_from_sampleDf(sampleDf, atomKey):
