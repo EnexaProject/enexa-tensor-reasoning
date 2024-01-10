@@ -3,7 +3,7 @@ from tnreason.logic import expression_generation as eg
 from tnreason.logic import coordinate_calculus as cc
 
 from tnreason.model import tensor_model as tm
-from tnreason.model import infer_mln as imln
+from tnreason.model import logic_model as lm
 
 import numpy as np
 import pandas as pd
@@ -26,11 +26,10 @@ class SamplerBase:
         return {atomKey: np.random.multinomial(1, self.marginalizedDict[atomKey].values)[0] == 0 for atomKey in
                 self.atoms}
 
-    ## To be outsourced to LogicModel!
     def infer_expressionsDict(self, evidenceDict={}):
         inferedExpressionsDict = {}
         for key in self.expressionsDict:
-            inferedFormula = imln.infer_expression(self.expressionsDict[key][0], evidenceDict)
+            inferedFormula = lm.infer_expression(self.expressionsDict[key][0], evidenceDict)
             if inferedFormula not in ["Thing", "Nothing"]:
                 inferedFormula = eg.remove_double_not(inferedFormula)
                 inferedExpressionsDict[key] = [inferedFormula, self.expressionsDict[key][1]]
@@ -81,14 +80,16 @@ if __name__ == "__main__":
         "f1": [["not", ["A2", "and", "A3"]], 1],
         "f2": ["A2", -1]
     }
-    exactSampler = ExactSampler(learnedFormulaDict)
 
+    sampler = GibbsSampler(learnedFormulaDict)
+    sampler.compute_marginalized_distributions()
+    print(sampler.create_sampleDf(100, 20)["A1"])
+
+    exit()
+
+    exactSampler = ExactSampler(learnedFormulaDict)
     sampleNums = [1, 10, 100, 1000, 10000]
     for sampleNum in sampleNums:
         print(sampleNum, np.linalg.norm(
             exactSampler.distributionCore.values - exactSampler.compute_superposedSampleCore(
                 sampleNum).values / sampleNum))
-
-    # sampler = GibbsSampler(learnedFormulaDict)
-    # sampler.compute_marginalized_distributions()
-    # print(sampler.create_sampleDf(100, 20)["A1"])

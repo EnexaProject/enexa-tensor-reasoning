@@ -7,13 +7,13 @@ from tnreason.contraction import core_contractor as coc
 
 import numpy as np
 class TensorRepresentation:
-    def __init__(self, formulaDict, headType="expFactor"):
-        self.formulaTensorsDict = {formulaKey : ft.FormulaTensor(formulaDict[formulaKey][0]) for formulaKey in formulaDict}
-        for formulaKey in formulaDict:
-            self.formulaTensorsDict[formulaKey].set_head(headType, weight=formulaDict[formulaKey][1])
+    def __init__(self, expressionsDict, headType="expFactor"):
+        self.formulaTensorsDict = {formulaKey : ft.FormulaTensor(expressionsDict[formulaKey][0]) for formulaKey in expressionsDict}
+        for formulaKey in expressionsDict:
+            self.formulaTensorsDict[formulaKey].set_head(headType, weight=expressionsDict[formulaKey][1])
 
         self.headsDict = {}
-        self.atoms = np.unique(eu.get_all_variables([formulaDict[formulaKey][0] for formulaKey in formulaDict]))
+        self.atoms = np.unique(eu.get_all_variables([expressionsDict[formulaKey][0] for formulaKey in expressionsDict]))
 
     def all_cores(self):
         allCoresDict = {}
