@@ -45,6 +45,7 @@ def generate_from_generic_expression(expression):
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 
+
 def replace_atoms(expression, atomDict):
     if type(expression) == str:
         return atomDict[expression]
@@ -53,6 +54,7 @@ def replace_atoms(expression, atomDict):
             return ["not", replace_atoms(expression[1], atomDict)]
         elif expression[1] == "and":
             return [replace_atoms(expression[0], atomDict), "and", replace_atoms(expression[2], atomDict)]
+
 
 def generate_pracmln_string(expression, weight):
     return str(weight) + " " + generate_pracmln_formulastring(expression)
@@ -70,7 +72,4 @@ def generate_pracmln_formulastring(expression):
 
 if __name__ == "__main__":
     and_expression = generate_from_generic_expression(["jaszczur", "or", ["sikorka", "or", ["not", "sledz"]]])
-    assert remove_double_not(and_expression) == ['not',
-                                                 [['not', 'jaszczur'], 'and', [['not', 'sikorka'], 'and', 'sledz']]], \
-        "Generate from disjunctions or double not does not work"
-    assert remove_double_not(["not", ["not", "sledz"]]) == "sledz", "Removing double not does not work"
+    print(and_expression)

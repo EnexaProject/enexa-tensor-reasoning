@@ -99,6 +99,8 @@ class SuperposedFormulaTensor:
             for atomKey in self.atoms
         }
 
+    def get_all_cores(self, expeptionKeys):
+
 
 def dataCore_from_sampleDf(sampleDf, atomKey):
     if atomKey not in sampleDf.keys():

@@ -26,13 +26,9 @@ class SamplerBase:
                 self.atoms}
 
     def infer_expressionsDict(self, evidenceDict={}):
-        inferedExpressionsDict = {}
-        for key in self.expressionsDict:
-            inferedFormula = lm.infer_expression(self.expressionsDict[key][0], evidenceDict)
-            if inferedFormula not in ["Thing", "Nothing"]:
-                inferedFormula = lm.reduce_double_not(inferedFormula)
-                inferedExpressionsDict[key] = [inferedFormula, self.expressionsDict[key][1]]
-        return inferedExpressionsDict
+        logRep = lm.LogicRepresentation(self.expressionsDict)
+        logRep.infer(evidenceDict=evidenceDict, simplify=True)
+        return logRep.expressionsDict
 
 
 class GibbsSampler(SamplerBase):
@@ -82,7 +78,7 @@ if __name__ == "__main__":
 
     sampler = GibbsSampler(learnedFormulaDict)
     sampler.compute_marginalized_distributions()
-    print(sampler.create_sampleDf(100, 20)["A1"])
+    print(sampler.create_sampleDf(100, 20))
 
     exit()
 

@@ -6,9 +6,12 @@ from tnreason.logic import coordinate_calculus as cc
 from tnreason.contraction import core_contractor as coc
 
 import numpy as np
+
+
 class TensorRepresentation:
     def __init__(self, expressionsDict, headType="expFactor"):
-        self.formulaTensorsDict = {formulaKey : ft.FormulaTensor(expressionsDict[formulaKey][0]) for formulaKey in expressionsDict}
+        self.formulaTensorsDict = {formulaKey: ft.FormulaTensor(expressionsDict[formulaKey][0]) for formulaKey in
+                                   expressionsDict}
         for formulaKey in expressionsDict:
             self.formulaTensorsDict[formulaKey].set_head(headType, weight=expressionsDict[formulaKey][1])
 
@@ -18,19 +21,25 @@ class TensorRepresentation:
     def all_cores(self):
         allCoresDict = {}
         for formulaKey in self.formulaTensorsDict:
-            allCoresDict = {**allCoresDict, **self.formulaTensorsDict[formulaKey].subExpressionCoresDict, formulaKey+"_head": self.formulaTensorsDict[formulaKey].headCore}
+            allCoresDict = {**allCoresDict, **self.formulaTensorsDict[formulaKey].subExpressionCoresDict,
+                            formulaKey + "_head": self.formulaTensorsDict[formulaKey].headCore}
         return allCoresDict
 
     def marginalized_contraction(self, atomList):
-        marginalizationDict = {atomKey + "_marg": cc.CoordinateCore(np.ones(shape=(2)),[atomKey]) for atomKey in self.atoms if atomKey not in atomList}
+        marginalizationDict = {atomKey + "_marg": cc.CoordinateCore(np.ones(shape=(2)), [atomKey]) for atomKey in
+                               self.atoms if atomKey not in atomList}
         margContractor = coc.CoreContractor({**self.all_cores(), **marginalizationDict}, openColors=atomList)
         return margContractor.contract()
 
-    def evidence_contraction(self, evidenceDict, headType="expFactor"):
-        inferedFormulaTensorDict = {formulaKey : self.formulaTensorsDict[formulaKey].infer_on_evidenceDict(evidenceDict) for formulaKey in self.formulaTensorsDict}
-        resContractor = coc.CoreContractor(inferedFormulaTensorDict, openColors=[atomKey for atomKey in self.atoms if atomKey not in evidenceDict])
-        return resContractor.contract()
+    def contract_partition(self):
+        return self.marginalized_contraction([]).values
 
+    def evidence_contraction(self, evidenceDict):
+        inferedFormulaTensorDict = {formulaKey: self.formulaTensorsDict[formulaKey].infer_on_evidenceDict(evidenceDict)
+                                    for formulaKey in self.formulaTensorsDict}
+        resContractor = coc.CoreContractor(inferedFormulaTensorDict, openColors=[atomKey for atomKey in self.atoms if
+                                                                                 atomKey not in evidenceDict])
+        return resContractor.contract()
 
 
 if __name__ == "__main__":
@@ -41,5 +50,6 @@ if __name__ == "__main__":
     }
     tRep = TensorRepresentation(learnedFormulaDict)
     print(tRep.evidence_contraction({"A2": 1, "A3": False}).values)
+    print(tRep.marginalized_contraction(["A2", "A3"]).values)
 
-#    print(tRep.marginalize_on(["A2","A3"]).values)
+    print(tRep.contract_partition())
