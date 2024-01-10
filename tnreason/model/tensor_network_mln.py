@@ -1,13 +1,9 @@
-#from tnreason.logic import expression_calculus as ec
-
 from tnreason.logic import expression_utils as eu
-from tnreason.logic import expression_generation as eg
 
 from tnreason.contraction import core_contractor as coc
 from tnreason.contraction import expression_evaluation as ee
-#from tnreason.contraction import contraction_generation as cg
 
-from tnreason.model import infer_mln as imln
+from tnreason.model import logic_model as lm
 
 import numpy as np
 import pandas as pd
@@ -24,9 +20,9 @@ class TensorMLN:
     def infer_on_evidenceDict(self, evidenceDict={}):
         inferedExpressionsDict = {}
         for key in self.expressionsDict:
-            inferedFormula = imln.infer_expression(self.expressionsDict[key][0], evidenceDict)
+            inferedFormula = lm.infer_expression(self.expressionsDict[key][0], evidenceDict)
             if inferedFormula not in ["Thing", "Nothing"]:
-                inferedFormula = eg.remove_double_not(inferedFormula)
+                inferedFormula = lm.reduce_double_not(inferedFormula)
                 inferedExpressionsDict[key] = [inferedFormula, self.expressionsDict[key][1]]
         return TensorMLN(inferedExpressionsDict)
 
@@ -38,7 +34,7 @@ class TensorMLN:
                 checkedKeys.append(key)
                 keyFormula, keyWeight = self.expressionsDict[key]
                 for otherKey in self.expressionsDict:
-                    if otherKey not in checkedKeys and eg.equality_check(keyFormula, self.expressionsDict[otherKey][0]):
+                    if otherKey not in checkedKeys and lm.equality_check(keyFormula, self.expressionsDict[otherKey][0]):
                         checkedKeys.append(otherKey)
                         keyWeight = keyWeight + self.expressionsDict[otherKey][1]
                 reducedExpressionDict[key] = [keyFormula, keyWeight]

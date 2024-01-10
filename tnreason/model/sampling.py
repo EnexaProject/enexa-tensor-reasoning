@@ -1,5 +1,4 @@
 from tnreason.logic import expression_utils as eu
-from tnreason.logic import expression_generation as eg
 from tnreason.logic import coordinate_calculus as cc
 
 from tnreason.model import tensor_model as tm
@@ -31,7 +30,7 @@ class SamplerBase:
         for key in self.expressionsDict:
             inferedFormula = lm.infer_expression(self.expressionsDict[key][0], evidenceDict)
             if inferedFormula not in ["Thing", "Nothing"]:
-                inferedFormula = eg.remove_double_not(inferedFormula)
+                inferedFormula = lm.reduce_double_not(inferedFormula)
                 inferedExpressionsDict[key] = [inferedFormula, self.expressionsDict[key][1]]
         return inferedExpressionsDict
 

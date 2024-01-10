@@ -45,21 +45,6 @@ def generate_from_generic_expression(expression):
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 
-
-def remove_double_not(expression):
-    if type(expression) == str:
-        return expression
-    elif expression[0] == "not":
-        if expression[1][0] == "not":
-            return remove_double_not(expression[1][1])
-        else:
-            return ["not", remove_double_not(expression[1])]
-    elif expression[1] == "and":
-        return [remove_double_not(expression[0]), "and", remove_double_not(expression[2])]
-    else:
-        raise ValueError("Expression {} not understood!".format(expression))
-
-
 def replace_atoms(expression, atomDict):
     if type(expression) == str:
         return atomDict[expression]
@@ -68,26 +53,6 @@ def replace_atoms(expression, atomDict):
             return ["not", replace_atoms(expression[1], atomDict)]
         elif expression[1] == "and":
             return [replace_atoms(expression[0], atomDict), "and", replace_atoms(expression[2], atomDict)]
-
-
-def equality_check(expression1, expression2):
-    if type(expression1) == str:
-        if type(expression2) == str:
-            return expression1 == expression2
-        else:
-            return False
-    elif expression1[0] == "not":
-        if expression2[0] == "not":
-            return equality_check(expression1[1], expression2[1])
-        else:
-            return False
-    elif expression1[1] == "and":
-        if expression2[1] == "and":
-            return (equality_check(expression1[0], expression2[0]) and equality_check(expression1[2],
-                                                                                      expression2[2])) or (
-                        equality_check(expression1[0], expression2[2]) and equality_check(expression1[2],
-                                                                                          expression2[0]))
-
 
 def generate_pracmln_string(expression, weight):
     return str(weight) + " " + generate_pracmln_formulastring(expression)

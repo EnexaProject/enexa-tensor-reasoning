@@ -1,34 +1,60 @@
-from tnreason.logic import expression_generation as eg
-
-
 class LogicRepresentation:
     def __init__(self, expressionsDict):
         self.expressionsDict = expressionsDict
 
-    def infer(self, evidenceDict, removeRedundancy=True):
+    def infer(self, evidenceDict, simplify=True):
         self.expressionsDict = {
             key: [infer_expression(self.expressionsDict[key][0], evidenceDict), self.expressionsDict[key][1]] for key in
             self.expressionsDict
         }
-        if removeRedundancy:
-            self.remove_redundancy()
+        if simplify:
+            self.simplify()
 
-    def remove_redundancy(self):
-        # Removes Expressions which are Thing or Nothing
+    def forward_chaining(self, hardLogicLimit=100):
+        ## Synthetic algorithm: Formulas with weights crossing the hardLogicLimit are taking for hard logical inference
+        newEvidenceDict = find_new_evidence(self.expressionsDict, hardLogicLimit)
+        evidenceDict = newEvidenceDict.copy()
+        while not len(newEvidenceDict)==0:
+            self.infer({atomKey : bool(newEvidenceDict[atomKey]/abs(newEvidenceDict[atomKey])) for atomKey in newEvidenceDict})
+            newEvidenceDict = find_new_evidence(self.expressionsDict, hardLogicLimit)
+            evidenceDict = {**evidenceDict, **newEvidenceDict}
+        self.expressionsDict = {**self.expressionsDict, **{atomKey+"_evidence" : [atomKey, evidenceDict[atomKey]] for atomKey in evidenceDict}}
+
+    def simplify(self):
+        self.remove_thing_nothing()
+        self.expressionsDict = {key: [reduce_double_not(self.expressionsDict[key][0]), self.expressionsDict[key][1]] for key in self.expressionsDict}
+        self.remove_doubles()
+        self.expressionsDict = {key: posify_weight(self.expressionsDict[key][0], self.expressionsDict[key][1]) for key in self.expressionsDict
+                                if self.expressionsDict[key][1]!=0 and self.expressionsDict[key][0] not in ["Thing","Nothing"]}
+
+    def remove_thing_nothing(self):
+        newExpressionsDict = {}
+        for key in self.expressionsDict:
+            newExpression = reduce_thing_nothing(self.expressionsDict[key][0])
+            if newExpression not in ["Thing","Nothing"]:
+                newExpressionsDict[key] = [newExpression, self.expressionsDict[key][1]]
+        self.expressionsDict = newExpressionsDict
+
+    def remove_doubles(self):
+        # Removes Expressions which are the same or negations of each other
         checkedKeys = []
         reducedExpressionDict = {}
         for key in self.expressionsDict:
-            if key not in checkedKeys and self.expressionsDict[key][0] not in ["Thing", "Nothing"]:
+            if key not in checkedKeys and self.expressionsDict[key][0]:
                 checkedKeys.append(key)
                 keyFormula, keyWeight = self.expressionsDict[key]
                 for otherKey in self.expressionsDict:
-                    if otherKey not in checkedKeys and eg.equality_check(keyFormula, self.expressionsDict[otherKey][0]):
-                        checkedKeys.append(otherKey)
-                        keyWeight = keyWeight + self.expressionsDict[otherKey][1]
+                    if otherKey not in checkedKeys:
+                        result =equality_contradiction_check(keyFormula, self.expressionsDict[otherKey][0])
+                        if result == "equal":
+                            checkedKeys.append(otherKey)
+                            keyWeight += self.expressionsDict[otherKey][1]
+                        elif result == "negequal":
+                            checkedKeys.append(otherKey)
+                            keyWeight += - self.expressionsDict[otherKey][1]
                 if keyWeight != 0:
                     reducedExpressionDict[key] = [keyFormula, keyWeight]
         self.expressionsDict = reducedExpressionDict
-
 
 def infer_expression(expression, evidenceDict):
     return reduce_thing_nothing(replace_evidence_variables(expression, evidenceDict))
@@ -72,21 +98,105 @@ def reduce_thing_nothing(expression):
             return "Nothing"
         return [leftExpression, "and", rightExpression]
 
+def reduce_double_not(expression):
+    if type(expression) == str:
+        return expression
+    elif expression[0] == "not":
+        if expression[1][0] == "not":
+            return reduce_double_not(expression[1][1])
+        else:
+            return ["not", reduce_double_not(expression[1])]
+    elif expression[1] == "and":
+        return [reduce_double_not(expression[0]), "and", reduce_double_not(expression[2])]
+    else:
+        raise ValueError("Expression {} not understood!".format(expression))
+
+def equality_contradiction_check(expression1, expression2):
+    if equality_check(expression1, expression2):
+        return "equal"
+    if len(expression1) > 1:
+        if expression1[0] == "not":
+            if equality_check(expression1[1], expression2):
+                return "negequal"
+    if len(expression2) > 1:
+        if expression2[0] == "not":
+            if equality_check(expression2[1], expression1):
+                return "negequal"
+    return "neither"
+
+## Copied from logic/expression_generation
+def equality_check(expression1, expression2):
+    if type(expression1) == str:
+        if type(expression2) == str:
+            return expression1 == expression2
+        else:
+            return False
+    elif expression1[0] == "not":
+        if expression2[0] == "not":
+            return equality_check(expression1[1], expression2[1])
+        else:
+            return False
+    elif expression1[1] == "and":
+        if expression2[1] == "and":
+            return (equality_check(expression1[0], expression2[0]) and equality_check(expression1[2],
+                                                                                      expression2[2])) or (
+                    equality_check(expression1[0], expression2[2]) and equality_check(expression1[2],
+                                                                                      expression2[0]))
+
+def find_new_evidence(expressionsDict, hardLogicLimit=100):
+    newEvidenceDict = {}
+    for key in expressionsDict:
+       if abs(expressionsDict[key][1]) > hardLogicLimit:
+            if type(expressionsDict[key][0]):
+                if expressionsDict[key][0] in newEvidenceDict:
+                    newEvidenceDict[expressionsDict[key][0]] += expressionsDict[key][1]
+                else:
+                    newEvidenceDict[expressionsDict[key][0]] = expressionsDict[key][1]
+            elif len(expressionsDict[key][0])==2:
+                if type(expressionsDict[key][0][1]) == str:
+                    if expressionsDict[key][0][1] in newEvidenceDict:
+                        newEvidenceDict[expressionsDict[key][0][1]] += -expressionsDict[key][1]
+                    else:
+                        newEvidenceDict[expressionsDict[key][0][1]] = -expressionsDict[key][1]
+    return newEvidenceDict
+
+def posify_weight(expression, weight):
+    if weight<0:
+        if type(expression) == str:
+            return [["not",expression], -weight]
+        elif expression[0] == "not":
+            return [expression, -weight]
+        else:
+            return [["not",expression], -weight]
+    return [expression, weight]
+
+
+
 
 if __name__ == "__main__":
     redundantDict = {
-        "f0": ["A1", 1],
+        "f0": ["A1", 101.2312312],
         "f1": [["not", ["A2", "and", "A3"]], 1],
-        "f2": ["A2", -1],
-        "f3": ["A2", 1.1],
-        "f4": ["Thing", 1]
+        "f2": ["A2", 90],
+        "f3": [["not","A2"], 90],
+        "f4": ["Thing", 1],
+        "f5": ["A3", -10]
     }
+
 
     # print(infer_expression(["not", ["A2", "and", "A3"]], {"A2":1}))
 
     lRep = LogicRepresentation(redundantDict)
-    lRep.infer({"A2": 1}, removeRedundancy=False)
+    lRep.simplify()
     print(lRep.expressionsDict)
 
-    lRep.remove_redundancy()
+
+    lRep.forward_chaining()
+    print(lRep.expressionsDict)
+
+
+    lRep.infer({"A2": 1},simplify=True)
+    print(lRep.expressionsDict)
+
+    lRep.remove_doubles()
     print(lRep.expressionsDict)
