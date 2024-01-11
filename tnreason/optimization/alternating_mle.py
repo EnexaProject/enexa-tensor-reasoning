@@ -6,20 +6,27 @@ import tnreason.model.tensor_model as tm
 import tnreason.model.entropies as ent
 
 import tnreason.logic.coordinate_calculus as cc
+import tnreason.logic.expression_generation as eg
 
 import numpy as np
 
 
 class MLEBase:
-    def __init__(self, skeletonExpression, candidatesDict, variableCoresDict, learnedFormulaDict={}, sampleDf=None):
+    def __init__(self, skeletonExpression, candidatesDict, variableCoresDict=None, learnedFormulaDict={},
+                 sampleDf=None):
+        if variableCoresDict is None:
+            variableCoresDict = {
+                key: cc.CoordinateCore(np.random.random(size=len(candidatesDict[key])), [key], key + "_varCore") for key
+                in candidatesDict}
         self.superposedFormulaTensor = ft.SuperposedFormulaTensor(skeletonExpression, candidatesDict,
                                                                   parameterCoresDict=variableCoresDict)
         if sampleDf is not None:
             self.dataNum = sampleDf.values.shape[0]
             self.superposedFormulaTensor.create_atomDataCores(sampleDf)
         self.fixedFormulaTensors = tm.TensorRepresentation(learnedFormulaDict, headType="expFactor")
-        self.learnedFormulaDict = learnedFormulaDict
 
+        self.learnedFormulaDict = learnedFormulaDict
+        self.skeletonExpression = skeletonExpression
         self.candidatesDict = candidatesDict
         self.candidatesAtomsList = []
         for candidatesKey in self.candidatesDict:
@@ -89,9 +96,10 @@ class MLEBase:
     def random_initialize_variableCoresDict(self):
         self.superposedFormulaTensor.random_initialize_parameterCoresDict()
 
-    def project_variableCoresDict(self):
-        contractedParameterCores = coc.CoreContractor(self.superposedFormulaTensor.parameterCoresDict,
-                                                      openColors=self.superposedFormulaTensor.candidatesDict.keys())
+    ## Output of the solution
+    def get_solution_expression(self):
+        return eg.replace_atoms(self.skeletonExpression,
+                                self.superposedFormulaTensor.get_largest_weight_as_solutionMap())
 
 
 class GradientDescentMLE(MLEBase):

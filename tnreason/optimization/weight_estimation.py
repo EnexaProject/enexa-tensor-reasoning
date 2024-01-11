@@ -11,10 +11,15 @@ import numpy as np
 
 
 class WeightEstimator:
-    def __init__(self, formulaList):
+    def __init__(self, formulaList, startWeightsDict={}):
         self.formulaDict = {"f" + str(i): [formula, 0, 0, 0] for i, formula in enumerate(formulaList)}
+        for key in startWeightsDict:
+            self.formulaDict[key][1] = startWeightsDict[key]
         self.coreDict = {}  ## CoordinateCores of each formula -> Calculated in self.calculate_independent_satRates, to initialize the alternating optimization
         self.rawCoreDict = None
+
+    def add_formula(self, key, expression, weight):
+        pass
 
     ## OLD and not used
     def calculate_independent_satRates(self):
