@@ -89,8 +89,9 @@ class MLEBase:
     def random_initialize_variableCoresDict(self):
         self.superposedFormulaTensor.random_initialize_parameterCoresDict()
 
-    # def project_variableCoresDict(self):
-    #    contractedParameterCores = coc.CoreContractor(self.superposedFormulaTensor.parameterCoresDict, **self.p)
+    def project_variableCoresDict(self):
+        contractedParameterCores = coc.CoreContractor(self.superposedFormulaTensor.parameterCoresDict,
+                                                      openColors=self.superposedFormulaTensor.candidatesDict.keys())
 
 
 class GradientDescentMLE(MLEBase):

@@ -56,7 +56,8 @@ class FormulaTensor:
             openColors=[atomKey for atomKey in self.atoms if atomKey not in evidenceDict]).contract()
 
     def get_all_cores(self):
-        return {**self.subExpressionCoresDict, self.formulaKey+"_head": self.headCore}
+        return {**self.subExpressionCoresDict, self.formulaKey + "_head": self.headCore}
+
 
 class SuperposedFormulaTensor:
     ## Shall be the central object to be optimized during MLE
@@ -66,7 +67,8 @@ class SuperposedFormulaTensor:
         self.skeletonExpression = skeletonExpression
         self.candidatesDict = candidatesDict
 
-        self.parameterCoresDict = parameterCoresDict  # former variableCoresDict
+        if parameterCoresDict is not None:  # former variableCoresDict
+            self.set_parameterCoresDict(parameterCoresDict)
         self.create_selectorCoresDict()
         self.create_skeletonCoreDict()
 
@@ -74,10 +76,25 @@ class SuperposedFormulaTensor:
 
     def set_parameterCoresDict(self, parameterCoresDict):
         self.parameterCoresDict = parameterCoresDict
+        ## Check for consistency with the candidatesDict
+        check_colorShapes([parameterCoresDict],
+                          knownShapesDict={key: len(self.candidatesDict[key]) for key in self.candidatesDict})
 
     def random_initialize_parameterCoresDict(self):
         for coreKey in self.parameterCoresDict:
-            self.parameterCoresDict[coreKey].values = np.random.random(size=self.parameterCoresDict[coreKey].values.shape)
+            self.parameterCoresDict[coreKey].values = np.random.random(
+                size=self.parameterCoresDict[coreKey].values.shape)
+
+    def get_largest_weight_as_solutionMap(self):
+        ## Choose formula Tensor by maximal entry
+        contractedParameters = coc.CoreContractor(self.parameterCoresDict,
+                                                  openColors=self.candidatesDict.keys()).contract()
+        maxPos = np.argmax(contractedParameters.values)
+        maxIndices = np.unravel_index(maxPos, contractedParameters.values.shape)
+        solutionMap = {
+            str(contractedParameters.colors[i]): self.candidatesDict[str(contractedParameters.colors[i])][maxIndices[i]]
+            for i in range(len(maxIndices))}
+        return solutionMap
 
     def create_selectorCoresDict(self):
         ## incolors: placeHolderKey
@@ -113,6 +130,19 @@ class SuperposedFormulaTensor:
                    key not in parameterExceptionKeys},
                 **self.selectorCoresDict,
                 **self.skeletonCoresDict}
+
+
+## Check whether the colors in all coreDicts match wrt each other and the knownShapesDict
+def check_colorShapes(coresDicts, knownShapesDict={}):
+    for coresDict in coresDicts:
+        for coreKey in coresDict:
+            for i, color in enumerate(coresDict[coreKey].colors):
+                coreColorShape = coresDict[coreKey].values.shape[i]
+                if color not in knownShapesDict:
+                    knownShapesDict[color] = coreColorShape
+                else:
+                    if knownShapesDict[color] != coreColorShape:
+                        raise ValueError("Core {} has unexpected shape of color {}.".format(coreKey, color))
 
 
 def dataCore_from_sampleDf(sampleDf, atomKey):
