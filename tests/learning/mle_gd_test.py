@@ -1,4 +1,4 @@
-from tnreason.learning import alternating_mle as amle
+from tnreason.optimization import alternating_mle as amle
 
 from tnreason.logic import coordinate_calculus as cc
 

@@ -1,9 +1,6 @@
-from tnreason.learning import alternating_mle as amle
+from tnreason.optimization import alternating_mle as amle
 from tnreason.model import generate_test_data as gtd
 from tnreason.logic import coordinate_calculus as cc
-
-from tnreason.contraction import contraction_visualization as cv
-from tnreason.contraction import bc_contraction_generation as bcg
 
 import numpy as np
 
@@ -49,21 +46,4 @@ optimizer.create_exponentiated_variables()
 
 print("Likelihood",optimizer.compute_likelihood())
 print(optimizer.contract_partition())
-print(optimizer.formulaCoreDict)
 
-exit()
-
-coreDict = bcg.generate_formulaCoreDict(learnedFormulaDict)
-print(coreDict.keys())
-for key in coreDict:
-    print(key)
-    print(coreDict[key].values)
-    print(coreDict[key].colors)
-exit()
-
-fDict = bcg.generate_factor_dict(["a1","and","a2"])
-print(list(fDict.keys()))
-for key in coreDict:
-    print(key)
-    print(fDict[key].values)
-exit()
