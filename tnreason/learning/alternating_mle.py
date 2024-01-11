@@ -1,13 +1,9 @@
-import tnreason.logic.expression_utils as eu
-
-import tnreason.representation.sampledf_to_cores as stoc
-
 import tnreason.contraction.bc_contraction_generation as bcg
-import tnreason.contraction.expression_evaluation as ee
 import tnreason.contraction.core_contractor as coc
 
 import tnreason.model.formula_tensors as ft
 import tnreason.model.tensor_model as tm
+import tnreason.model.entropies as ent
 
 import tnreason.logic.coordinate_calculus as cc
 
@@ -67,7 +63,7 @@ class MLEBase:
                 tboVariableKey].colors)
         return contractor.contract(optimizationMethod="GreedyHeuristic").multiply(1 / self.dataNum)
 
-    ## Compute Estimation Metric: Log likelihood
+    ## Compute Estimation Metric: Log likelihood (= negative empirical cross entropy)
     def compute_likelihood(self, visualize=False):
         contractor = coc.CoreContractor({**self.superposedFormulaTensor.get_all_fTensor_cores(),
                                          **self.superposedFormulaTensor.dataCoresDict})
@@ -86,9 +82,15 @@ class MLEBase:
         return contractor.contract(optimizationMethod="GreedyHeuristic").values / (self.dataNum) - np.log(
             self.contract_partition()) + formulaCorrectionTerm
 
+    def compute_empirical_KL_divergence(self, sampleDf):
+        return -self.compute_likelihood() - ent.empirical_shannon_entropy(sampleDf, self.candidatesAtomsList)
+
     ## Optimization preparation
     def random_initialize_variableCoresDict(self):
         self.superposedFormulaTensor.random_initialize_parameterCoresDict()
+
+    # def project_variableCoresDict(self):
+    #    contractedParameterCores = coc.CoreContractor(self.superposedFormulaTensor.parameterCoresDict, **self.p)
 
 
 class GradientDescentMLE(MLEBase):

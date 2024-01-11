@@ -1,6 +1,7 @@
 from tnreason.model import tensor_model as tm
 
 from tnreason.model import entropies as ent
+import tnreason.model.generate_test_data as gtd
 
 testDict = {
     "t0": ["a", 2],
@@ -10,6 +11,9 @@ testDict = {
 genDict = {
     "g0": [["a", "and", "b"], 2]
 }
+
+sampleDf = gtd.generate_sampleDf(genDict, 100)
+print(ent.empirical_shannon_entropy(sampleDf))
 
 print(ent.expected_cross_entropy(testDict, genDict))
 

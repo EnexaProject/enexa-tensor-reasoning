@@ -37,3 +37,5 @@ optimizer = amle.GradientDescentMLE(skeletonExpression, candidatesDict, variable
 
 optimizer.random_initialize_variableCoresDict()
 print(optimizer.alternating_gradient_descent(10, 1))
+
+print(optimizer.compute_empirical_KL_divergence(sampleDf))
