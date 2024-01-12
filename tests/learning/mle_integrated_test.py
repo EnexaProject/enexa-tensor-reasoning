@@ -8,7 +8,7 @@ learnedFormulaDict = {
 }
 sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
 
-learner = mlel.FormulaLearner(learnedFormulaDict={},  # {"fun":[["a3","and","a3"],2]},
+learner = mlel.FormulaLearner(learnedFormulaDict={"fun":[["a3","and","a3"],2]},
                               sampleDf=sampleDf)
 
 skeletonExpression = ["P1", "and", "P2"]

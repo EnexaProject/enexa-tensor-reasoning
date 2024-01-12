@@ -11,7 +11,11 @@ class CoordinateCore:
         self.name = name
 
         if len(core_colors) != len(core_values.shape):
-            raise TypeError("Number of Colors provided does not match the Value Shape!")
+            raise TypeError("Number of Colors does not match the Value Shape in Core {}!".format(name))
+
+        ## We allow multiple colors for now, although there might be problems
+        #if len(core_colors) != len(set(core_colors)):
+        #    raise TypeError("There are duplicate colors in Core {}!".format(name))
 
     def clone(self):
         return CoordinateCore(np.copy(self.values), self.colors.copy(), self.name)
@@ -42,10 +46,16 @@ class CoordinateCore:
         core1_string = "".join([colorDict[color] for color in core1.colors])
         premise_string = ",".join([core0_string, core1_string])
 
-        head_string = core0_string
-        out_colors = core0.colors
+        ## Modified to handle multiply colors in a core
+        head_string = ""
+        out_colors = []
+        for color in core0.colors:
+            if colorDict[color] not in head_string:
+                head_string += colorDict[color]
+                out_colors.append(color)
+
         for color in core1.colors:
-            if color not in core0.colors:
+            if colorDict[color] not in head_string:
                 head_string += colorDict[color]
                 out_colors.append(color)
         contraction_string = "->".join([premise_string, head_string])
