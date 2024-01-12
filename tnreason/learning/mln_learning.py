@@ -1,10 +1,4 @@
-# import tnreason.logic.expression_calculus as ec
-import tnreason.logic.coordinate_calculus as cc
 import tnreason.logic.expression_generation as eg
-
-import tnreason.representation.factdf_to_cores as ftoc
-import tnreason.representation.sampledf_to_cores as stoc
-import tnreason.representation.pairdf_to_cores as ptoc
 
 import tnreason.optimization.weight_estimation as wees
 import tnreason.optimization.expression_refinement as er
@@ -15,8 +9,6 @@ import tnreason.learning.expression_learning as el
 
 from tnreason.model import tensor_network_mln as mln
 
-import numpy as np
-
 
 class SampleBasedMLNLearner:
     def __init__(self, sampleDf=None):
@@ -26,14 +18,6 @@ class SampleBasedMLNLearner:
 
     def load_sampleDf(self, sampleDf):
         self.sampleDf = sampleDf
-        self.create_atomDict()
-
-    def create_atomDict(self):
-        atoms = list(self.sampleDf.columns)
-        self.atomDict = {
-            atom: cc.CoordinateCore(stoc.sampleDf_to_universal_core(self.sampleDf, [atom]).flatten(), ["j"])
-            for atom in atoms
-        }
 
     def learn_implication(self, positiveExpression, skeletonExpression, candidatesDict,
                           refinementNum=0, refinementCriterion="weight>1", acceptanceCriterion="weight>0"):
@@ -118,7 +102,9 @@ class SampleBasedMLNLearner:
             print("# Solution is {} #".format(solutionExpression))
             return solutionExpression
 
-    def optimize_formula(self, skeletonExpression, candidatesDict, positiveCore, negativeCore, optimizationInstructions = ["als2","project","als2","project","als2","project"], balance=True):
+    def optimize_formula(self, skeletonExpression, candidatesDict, positiveCore, negativeCore,
+                         optimizationInstructions=["als2", "project", "als2", "project", "als2", "project"],
+                         balance=True):
         exLearner = el.SampleBasedOptimizer(skeletonExpression, candidatesDict)
 
         exLearner.generate_fixedCores_sampleDf(self.sampleDf)
@@ -146,11 +132,12 @@ class SampleBasedMLNLearner:
                 "Expression {} with weight {} does not satisfy the criterion {}.".format(expression, weight, criterion))
 
     def learn_independent_weight(self, expression, verbose=False):
-        return wees.calculate_weight(expression, self.atomDict, verbose=verbose)
+        return wees.calculate_weight(expression, self.sampleDf, verbose=verbose)
 
     def alternating_weight_optimization(self, sweepNum):
-        estimator = wees.WeightEstimator([weightedFormula[0] for weightedFormula in self.weightedFormulas])
-        estimator.alternating_optimization(self.atomDict, sweepNum)
+        estimator = wees.WeightEstimator([weightedFormula[0] for weightedFormula in self.weightedFormulas],
+                                         sampleDf=self.sampleDf)
+        estimator.alternating_optimization(sweepNum)
         self.weightedFormulas = [[estimator.formulaDict[formulaKey][0], estimator.formulaDict[formulaKey][3]] for
                                  formulaKey in estimator.formulaDict]
 
@@ -159,8 +146,10 @@ class SampleBasedMLNLearner:
                              {str(i): [self.weightedFormulas[i][0], self.weightedFormulas[i][1]]
                               for i in range(len(self.weightedFormulas))})
 
+
 ## Older name of the class
 AtomicMLNLearner = SampleBasedMLNLearner
+
 
 def criterion_satisfied(empRate, satRate, weight, criterion):
     criteria = criterion.split(",")

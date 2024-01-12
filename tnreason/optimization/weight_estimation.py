@@ -9,17 +9,30 @@ from tnreason.contraction import bc_contraction_generation as bcg
 
 import numpy as np
 
+from tnreason.logic import coordinate_calculus as cc
+from tnreason.representation import sampledf_to_cores as stoc
+
 
 class WeightEstimator:
-    def __init__(self, formulaList, startWeightsDict={}):
+    def __init__(self, formulaList, startWeightsDict={}, sampleDf=None):
         self.formulaDict = {"f" + str(i): [formula, 0, 0, 0] for i, formula in enumerate(formulaList)}
         for key in startWeightsDict:
             self.formulaDict[key][1] = startWeightsDict[key]
         self.coreDict = {}  ## CoordinateCores of each formula -> Calculated in self.calculate_independent_satRates, to initialize the alternating optimization
-        self.rawCoreDict = None
+        self.generate_rawCoreDict()
+
+        self.sampleDf = sampleDf
 
     def add_formula(self, key, expression, weight):
-        pass
+        empRate = calculate_empRate(expression, {
+            atom: cc.CoordinateCore(stoc.sampleDf_to_universal_core(self.sampleDf, [atom]).flatten(), ["j"])
+            for atom in eu.get_variables(expression)
+        })
+        satRate = ee.ExpressionEvaluator(expression,
+                                         initializeBasisCores=True).create_formula_factor().count_satisfaction()
+        self.formulaDict[key] = [expression, satRate, empRate, weight]
+        self.rawCoreDict = {**self.rawCoreDict,
+                            **bcg.generate_factor_dict(expression, formulaKey=key, headType="empty")}
 
     ## OLD and not used
     def calculate_independent_satRates(self):
@@ -29,13 +42,21 @@ class WeightEstimator:
             self.formulaDict[formulaKey][1] = basis_core.count_satisfaction()
             self.coreDict[formulaKey] = basis_core
 
+    def calculate_empRates_on_sampleDf(self, sampleDf):
+        atoms = eu.get_all_variables(self.formulaDict[key][0] for key in self.formulaDict)
+        atomDict = {
+            atom: cc.CoordinateCore(stoc.sampleDf_to_universal_core(sampleDf, [atom]).flatten(), ["j"])
+            for atom in atoms
+        }
+        self.calculate_empRates(sampleDf)
+
     def calculate_empRates(self, atomDict):
         for formulaKey in self.formulaDict:
             self.formulaDict[formulaKey][2] = calculate_empRate(self.formulaDict[formulaKey][0], atomDict)
 
-    def independent_estimation(self, atomDict, calculateEmp=True, calculateSat=True, cut=100):
+    def independent_estimation(self, sampleDf, calculateEmp=True, calculateSat=True, cut=100):
         if calculateEmp:
-            self.calculate_empRates(atomDict)
+            self.calculate_empRates_on_sampleDf(sampleDf)
         if calculateSat:
             self.calculate_independent_satRates()
 
@@ -43,11 +64,9 @@ class WeightEstimator:
             self.formulaDict[formulaKey][3] = cutoff_weight(
                 solve_rate_equation(self.formulaDict[formulaKey][1], self.formulaDict[formulaKey][2]), cut)
 
-    def alternating_optimization(self, atomDict, sweepNum):
-        if self.rawCoreDict is None:
-            self.generate_rawCoreDict()
+    def alternating_optimization(self, sweepNum):
         weightTracker = np.empty((sweepNum + 1, len(self.formulaDict)))
-        self.independent_estimation(atomDict)
+        self.independent_estimation(self.sampleDf)
         weightTracker[0] = [self.formulaDict[formulaKey][3] for formulaKey in self.formulaDict]
         for sweepPos in range(sweepNum):
             for i, formulaKey in enumerate(self.formulaDict):
@@ -124,7 +143,12 @@ def calculate_satRate(expression):
     return satNum / modelNum
 
 
-def calculate_weight(expression, atomDict, filterCore=None, regFactor=1, verbose=False, check=True, cut=20):
+def calculate_weight(expression, sampleDf, filterCore=None, regFactor=1, verbose=False, check=True, cut=20):
+    atoms = eu.get_variables(expression)
+    atomDict = {
+        atom: cc.CoordinateCore(stoc.sampleDf_to_universal_core(sampleDf, [atom]).flatten(), ["j"])
+        for atom in atoms
+    }
     satRate = calculate_satRate(expression)
 
     if check:

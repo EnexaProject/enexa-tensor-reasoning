@@ -11,13 +11,6 @@ from tnreason.logic import coordinate_calculus as cc
 import numpy as np
 import pandas as pd
 
-def compare_atomDicts(adic1, adic2):
-    for key in adic1.keys():
-        if key not in adic2.keys():
-            print("Not in dic2: ",key)
-        else:
-            assert np.linalg.norm(adic1[key].values-adic2[key].values)==0, "Difference in Key {}".format(key)
-
 example_rule_dict = {
     "r0": [["Unterschrank(z)"], "Moebel(z)", 15],
     "r1": [["hatLeistungserbringer(x,y)", "versandterBeleg(y,x)"], "Ausgangsrechnung(x)", 15],
@@ -29,7 +22,7 @@ sampleNum = 100
 generator = tmln.TensorMLN(example_expression_dict)
 sampleDf = generator.generate_sampleDf(sampleNum)
 
-learner = lmln.AtomicMLNLearner()
+learner = lmln.SampleBasedMLNLearner()
 learner.load_sampleDf(sampleDf)
 
 atomDict = {
@@ -37,13 +30,9 @@ atomDict = {
     for col in list(sampleDf.columns)
 }
 
-compare_atomDicts(atomDict, learner.atomDict)
-
-
 for key in example_expression_dict.keys():
     rule = example_expression_dict[key][0]
     calculated_rate = wees.calculate_empRate(rule, atomDict)
 
     print("Rule {}  is satisfied in {} cases.".format(rule, calculated_rate))
     assert np.sum(ec.evaluate_expression_on_sampleDf(sampleDf,rule).values)/sampleNum == calculated_rate
-    assert wees.calculate_empRate(rule, learner.atomDict) == wees.calculate_empRate(rule, atomDict)
