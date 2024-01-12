@@ -10,12 +10,16 @@ import numpy as np
 
 class TensorRepresentation:
     def __init__(self, expressionsDict, headType="expFactor"):
-        self.formulaTensorsDict = {formulaKey: ft.FormulaTensor(expressionsDict[formulaKey][0]) for formulaKey in
-                                   expressionsDict}
+        self.formulaTensorsDict = {formulaKey: ft.FormulaTensor(expression=expressionsDict[formulaKey][0],
+                                                                headType=headType,
+                                                                weight=expressionsDict[formulaKey][1]
+                                                                ) for formulaKey in expressionsDict}
+        self.expressionsDict = expressionsDict
+        self.headType = headType ## To prevent resetting of headCores
+
         for formulaKey in expressionsDict:
             self.formulaTensorsDict[formulaKey].set_head(headType, weight=expressionsDict[formulaKey][1])
 
-        self.headsDict = {}
         self.atoms = np.unique(eu.get_all_variables([expressionsDict[formulaKey][0] for formulaKey in expressionsDict]))
 
     def all_cores(self):
@@ -25,6 +29,23 @@ class TensorRepresentation:
                             formulaKey + "_head": self.formulaTensorsDict[formulaKey].headCore}
         return allCoresDict
 
+    def get_cores(self, formulaKeys = None, headType="expFactor"):
+        if formulaKeys is None:
+            formulaKeys = self.formulaTensorsDict.keys()
+        if self.headType != headType:
+            self.set_heads(headType)
+        retCoresDict = {}
+        for formulaKey in formulaKeys:
+            retCoresDict = {**retCoresDict, **self.formulaTensorsDict[formulaKey].get_cores()}
+        return retCoresDict
+
+    def set_heads(self, headType):
+        if self.headType != headType:
+            print("Setting to {}".format(headType))
+            for formulaKey in self.formulaTensorsDict.keys():
+                self.formulaTensorsDict[formulaKey].set_head(headType, weight=self.expressionsDict[formulaKey][1])
+            self.headType = headType
+
     def marginalized_contraction(self, atomList):
         marginalizationDict = {atomKey + "_marg": cc.CoordinateCore(np.ones(shape=(2)), [atomKey]) for atomKey in
                                self.atoms if atomKey not in atomList}
@@ -32,6 +53,8 @@ class TensorRepresentation:
         return margContractor.contract()
 
     def contract_partition(self):
+        if self.headType != "expFactor":
+            print("Warning: Partition of Tensor Model computed, but headtype expFactor!")
         return self.marginalized_contraction([]).values
 
     def evidence_contraction(self, evidenceDict):

@@ -6,15 +6,17 @@ from tnreason.model import formula_tensors as ft
 
 
 def expected_cross_entropy(testExpressionsDict, generativeExpressionsDict):
-    expTestTensorModel = tm.TensorRepresentation(testExpressionsDict, headType="expFactor")
-    nonexpTestTensorModel = tm.TensorRepresentation(testExpressionsDict, headType="truthEvaluation")
+    testTensorModel = tm.TensorRepresentation(testExpressionsDict, headType="expFactor")
     expGenerativeTensorModel = tm.TensorRepresentation(generativeExpressionsDict, headType="expFactor")
 
-    testPartition = expTestTensorModel.contract_partition()
+    testPartition = testTensorModel.contract_partition()
     generativePartition = expGenerativeTensorModel.contract_partition()
 
-    crossTerm = coc.CoreContractor({**nonexpTestTensorModel.all_cores(),
-                                    **expGenerativeTensorModel.all_cores()}).contract().values
+    crossTerm = np.sum(
+        coc.CoreContractor({**testTensorModel.get_cores([formulaKey], headType="weightedTruthEvaluation"),
+            **expGenerativeTensorModel.all_cores()}).contract().values
+        for formulaKey in testExpressionsDict
+    )
 
     return np.log(testPartition) - crossTerm / generativePartition
 

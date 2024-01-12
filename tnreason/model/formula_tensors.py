@@ -15,7 +15,7 @@ class FormulaTensor:
     weight: Factor on the formulaTensor
     '''
 
-    def __init__(self, expression, formulaKey=None, headType="truthEvaluation", weight=1):
+    def __init__(self, expression, formulaKey=None, headType="weightedTruthEvaluation", weight=1):
         if formulaKey is not None:
             self.formulaKey = formulaKey
         else:
@@ -32,6 +32,9 @@ class FormulaTensor:
 
     def set_head(self, headType, weight=1):
         if headType == "truthEvaluation":
+            headValues = np.zeros(shape=(2))
+            headValues[1] = 1 #weight
+        elif headType == "weightedTruthEvaluation":
             headValues = np.zeros(shape=(2))
             headValues[1] = weight
         elif headType == "expFactor":
@@ -55,7 +58,7 @@ class FormulaTensor:
             {**self.subExpressionCoresDict, self.formulaKey + "_head": self.headCore, **evidenceCoresDict},
             openColors=[atomKey for atomKey in self.atoms if atomKey not in evidenceDict]).contract()
 
-    def get_all_cores(self):
+    def get_cores(self):
         return {**self.subExpressionCoresDict, self.formulaKey + "_head": self.headCore}
 
 
@@ -131,6 +134,14 @@ class SuperposedFormulaTensor:
                 **self.selectorCoresDict,
                 **self.skeletonCoresDict}
 
+class DataTensor:
+    def __init__(self, sampleDf, atoms):
+        self.dataNum = sampleDf.values.shape[0]
+        self.dataCores = {
+            atomKey + "_data": dataCore_from_sampleDf(sampleDf, atomKey)
+            for atomKey in atoms
+        }
+    
 
 ## Check whether the colors in all coreDicts match wrt each other and the knownShapesDict
 def check_colorShapes(coresDicts, knownShapesDict={}):

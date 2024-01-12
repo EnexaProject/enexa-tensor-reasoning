@@ -22,8 +22,8 @@ variableCoresDict = {
 }
 
 learnedFormulaDict = {
-    "f0": ["a2", 1.2],
     "f1": [["a1", "and", "a2"], 1.3],
+    "f0": ["a2", 1.2],
     "f2": ["a3", 2]
 }
 

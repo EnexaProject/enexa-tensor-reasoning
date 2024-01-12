@@ -23,9 +23,11 @@ class MLEBase:
         if sampleDf is not None:
             self.dataNum = sampleDf.values.shape[0]
             self.superposedFormulaTensor.create_atomDataCores(sampleDf)
-        self.fixedFormulaTensors = tm.TensorRepresentation(learnedFormulaDict, headType="expFactor")
 
         self.learnedFormulaDict = learnedFormulaDict
+        self.fixedFormulaTensors = tm.TensorRepresentation(learnedFormulaDict, headType="weightedTruthEvaluation")
+        self.compute_fixedCores_likelihoodCorrection()
+
         self.skeletonExpression = skeletonExpression
         self.candidatesDict = candidatesDict
         self.candidatesAtomsList = []
@@ -55,8 +57,9 @@ class MLEBase:
     def contract_partition(self, visualize=False, reDoExpVariables=True):
         if reDoExpVariables:
             self.create_exponentiated_variables()
-        contractor = coc.CoreContractor({**self.fixedFormulaTensors.all_cores(),
-                                         "variablesExpFactor": self.variablesExpFactor})
+        contractor = coc.CoreContractor({  # **self.fixedFormulaTensors.all_cores(),
+            **self.fixedFormulaTensors.get_cores(headType="expFactor"),
+            "variablesExpFactor": self.variablesExpFactor})
         if visualize:
             contractor.visualize(title="Partition Function")
         return contractor.contract().values
@@ -74,20 +77,17 @@ class MLEBase:
     def compute_likelihood(self, visualize=False):
         contractor = coc.CoreContractor({**self.superposedFormulaTensor.get_all_fTensor_cores(),
                                          **self.superposedFormulaTensor.dataCoresDict})
-
-        formulaCorrectionTerm = 0
         if visualize:
             contractor.visualize(title="Likelihood VariableCores")
-        ## ! Formulas have to be on truthEvaluation, while they are on expFactor in self.fixedFormulaTensors
-        for formulaKey in self.learnedFormulaDict:
-            fTensor = ft.FormulaTensor(self.learnedFormulaDict[formulaKey][0],
-                                       weight=self.learnedFormulaDict[formulaKey][1])
-            formulaCorrectionTerm += coc.CoreContractor({**fTensor.get_all_cores(),
-                                                         **self.superposedFormulaTensor.dataCoresDict}).contract().values / (
-                                         self.dataNum)
 
-        return contractor.contract(optimizationMethod="GreedyHeuristic").values / (self.dataNum) - np.log(
-            self.contract_partition()) + formulaCorrectionTerm
+        return contractor.contract().values / (self.dataNum) - np.log(
+            self.contract_partition()) + self.formulaCorrectionTerm
+
+    def compute_fixedCores_likelihoodCorrection(self):
+        self.formulaCorrectionTerm = np.sum(
+            [coc.CoreContractor({**self.fixedFormulaTensors.get_cores([formulaKey], headType="weightedTruthEvaluation"),
+                                 **self.superposedFormulaTensor.dataCoresDict}).contract().values
+             for formulaKey in self.learnedFormulaDict]) / self.dataNum
 
     def compute_empirical_KL_divergence(self, sampleDf):
         return -self.compute_likelihood() - ent.empirical_shannon_entropy(sampleDf, self.candidatesAtomsList)
