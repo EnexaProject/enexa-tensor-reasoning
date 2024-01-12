@@ -14,10 +14,13 @@ from tnreason.representation import sampledf_to_cores as stoc
 
 
 class WeightEstimator:
-    def __init__(self, formulaList, startWeightsDict={}, sampleDf=None):
+    '''
+    formulaDict: formulaKey: [expression, satRate, empRate, weight]
+    '''
+    def __init__(self, formulaList=[], startWeightsDict={}, sampleDf=None):
         self.formulaDict = {"f" + str(i): [formula, 0, 0, 0] for i, formula in enumerate(formulaList)}
         for key in startWeightsDict:
-            self.formulaDict[key][1] = startWeightsDict[key]
+            self.formulaDict[key][3] = startWeightsDict[key]
         self.coreDict = {}  ## CoordinateCores of each formula -> Calculated in self.calculate_independent_satRates, to initialize the alternating optimization
         self.generate_rawCoreDict()
 
@@ -48,7 +51,7 @@ class WeightEstimator:
             atom: cc.CoordinateCore(stoc.sampleDf_to_universal_core(sampleDf, [atom]).flatten(), ["j"])
             for atom in atoms
         }
-        self.calculate_empRates(sampleDf)
+        self.calculate_empRates(atomDict)
 
     def calculate_empRates(self, atomDict):
         for formulaKey in self.formulaDict:
@@ -104,7 +107,6 @@ class WeightEstimator:
 
 
 def calculate_satRate_bc(expression):
-    # return ec.calculate_expressionCore(expression).count_satisfaction()
     return ee.ExpressionEvaluator(expression, initializeBasisCores=True).create_formula_factor().count_satisfaction()
 
 
