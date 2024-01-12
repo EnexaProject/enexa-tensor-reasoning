@@ -119,16 +119,7 @@ class SuperposedFormulaTensor:
             self.skeletonCoresDict[atomKey + "_skeletonHeadCore"] = create_deltaCore(
                 [str(self.skeletonExpression) + "_" + atomKey, atomKey], atomKey + "_skeletonHeadCore")
 
-    ## WorldCoresDict Generation: CandidatesDict required for interpretation of the
-    # candidatesDict gives interpretation of placeholder axes
-    def create_atomDataCores(self, sampleDf):
-        self.dataCoresDict = {
-            atomKey + "_data": dataCore_from_sampleDf(sampleDf, atomKey)
-            for atomKey in self.atoms
-        }
-
-    ## All without Datacores!
-    def get_all_fTensor_cores(self, parameterExceptionKeys=[]):
+    def get_cores(self, parameterExceptionKeys=[]):
         return {**{key: self.parameterCoresDict[key] for key in self.parameterCoresDict if
                    key not in parameterExceptionKeys},
                 **self.selectorCoresDict,

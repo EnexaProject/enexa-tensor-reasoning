@@ -21,8 +21,7 @@ class MLEBase:
         self.superposedFormulaTensor = ft.SuperposedFormulaTensor(skeletonExpression, candidatesDict,
                                                                   parameterCoresDict=variableCoresDict)
         if sampleDf is not None:
-            self.dataNum = sampleDf.values.shape[0]
-            self.superposedFormulaTensor.create_atomDataCores(sampleDf)
+            self.load_sampleDf(sampleDf)
 
         self.learnedFormulaDict = learnedFormulaDict
         self.fixedFormulaTensors = tm.TensorRepresentation(learnedFormulaDict, headType="weightedTruthEvaluation")
@@ -36,9 +35,12 @@ class MLEBase:
                 if atom not in self.candidatesAtomsList:
                     self.candidatesAtomsList.append(atom)
 
+    def load_sampleDf(self, sampleDf):
+        self.dataTensor = ft.DataTensor(sampleDf)
+
     def create_exponentiated_variables(self):
         ## Creates exponentiated factor to the variables tbo
-        self.variablesExpFactor = coc.CoreContractor(self.superposedFormulaTensor.get_all_fTensor_cores(),
+        self.variablesExpFactor = coc.CoreContractor(self.superposedFormulaTensor.get_cores(),
                                                      openColors=self.candidatesAtomsList).contract(
             optimizationMethod="GreedyHeuristic").exponentiate()
 
@@ -48,7 +50,7 @@ class MLEBase:
         self.create_exponentiated_variables()
         contractionDict = {**self.fixedFormulaTensors.all_cores(),
                            "variablesExpFactor": self.variablesExpFactor,
-                           **self.superposedFormulaTensor.get_all_fTensor_cores(
+                           **self.superposedFormulaTensor.get_cores(
                                parameterExceptionKeys=[tboVariableKey])}
         return coc.CoreContractor(contractionDict, openColors=self.superposedFormulaTensor.parameterCoresDict[
             tboVariableKey].colors).contract(optimizationMethod="GreedyHeuristic").multiply(
@@ -66,28 +68,28 @@ class MLEBase:
 
     def contract_data_gradient(self, tboVariableKey):
         contractor = coc.CoreContractor(
-            {**self.superposedFormulaTensor.get_all_fTensor_cores(parameterExceptionKeys=[tboVariableKey]),
-             **self.superposedFormulaTensor.dataCoresDict
+            {**self.superposedFormulaTensor.get_cores(parameterExceptionKeys=[tboVariableKey]),
+             **self.dataTensor.get_cores()
              },
             openColors=self.superposedFormulaTensor.parameterCoresDict[
                 tboVariableKey].colors)
-        return contractor.contract(optimizationMethod="GreedyHeuristic").multiply(1 / self.dataNum)
+        return contractor.contract().multiply(1 / self.dataTensor.dataNum)
 
     ## Compute Estimation Metric: Log likelihood (= negative empirical cross entropy)
     def compute_likelihood(self, visualize=False):
-        contractor = coc.CoreContractor({**self.superposedFormulaTensor.get_all_fTensor_cores(),
-                                         **self.superposedFormulaTensor.dataCoresDict})
+        contractor = coc.CoreContractor({**self.superposedFormulaTensor.get_cores(),
+                                         **self.dataTensor.get_cores()})
         if visualize:
             contractor.visualize(title="Likelihood VariableCores")
 
-        return contractor.contract().values / (self.dataNum) - np.log(
+        return contractor.contract().values / (self.dataTensor.dataNum) - np.log(
             self.contract_partition()) + self.formulaCorrectionTerm
 
     def compute_fixedCores_likelihoodCorrection(self):
         self.formulaCorrectionTerm = np.sum(
             [coc.CoreContractor({**self.fixedFormulaTensors.get_cores([formulaKey], headType="weightedTruthEvaluation"),
-                                 **self.superposedFormulaTensor.dataCoresDict}).contract().values
-             for formulaKey in self.learnedFormulaDict]) / self.dataNum
+                                 **self.dataTensor.get_cores()}).contract().values
+             for formulaKey in self.learnedFormulaDict]) / self.dataTensor.dataNum
 
     def compute_empirical_KL_divergence(self, sampleDf):
         return -self.compute_likelihood() - ent.empirical_shannon_entropy(sampleDf, self.candidatesAtomsList)

@@ -23,8 +23,6 @@ parameterCoresDict = {
     }
 
 supFtensor = ft.SuperposedFormulaTensor(skeletonExpression, candidatesDict, parameterCoresDict)
-supFtensor.create_atomDataCores(sampleDf)
-
 supFtensor.random_initialize_parameterCoresDict()
 print(supFtensor.get_largest_weight_as_solutionMap())
 
