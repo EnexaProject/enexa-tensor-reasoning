@@ -33,7 +33,7 @@ class FormulaTensor:
     def set_head(self, headType, weight=1):
         if headType == "truthEvaluation":
             headValues = np.zeros(shape=(2))
-            headValues[1] = 1 #weight
+            headValues[1] = 1  # weight
         elif headType == "weightedTruthEvaluation":
             headValues = np.zeros(shape=(2))
             headValues[1] = weight
@@ -134,14 +134,29 @@ class SuperposedFormulaTensor:
                 **self.selectorCoresDict,
                 **self.skeletonCoresDict}
 
+
 class DataTensor:
-    def __init__(self, sampleDf, atoms):
+    def __init__(self, sampleDf, atoms=None):
+        if atoms is None:
+            self.atoms = sampleDf.columns
+        else:
+            self.atoms = atoms
         self.dataNum = sampleDf.values.shape[0]
         self.dataCores = {
             atomKey + "_data": dataCore_from_sampleDf(sampleDf, atomKey)
-            for atomKey in atoms
+            for atomKey in self.atoms
         }
-    
+
+    def get_cores(self):
+        return self.dataCores
+
+    def compute_shannon_entropy(self):
+        contractedData = coc.CoreContractor(self.dataCores,
+                                            openColors=self.atoms).contract().values.flatten() / self.dataNum
+        logContractedData = np.log(np.copy(contractedData))
+        logContractedData[logContractedData < -1e308] = 0
+        return -np.dot(logContractedData, contractedData)
+
 
 ## Check whether the colors in all coreDicts match wrt each other and the knownShapesDict
 def check_colorShapes(coresDicts, knownShapesDict={}):

@@ -32,22 +32,8 @@ def expected_KL_divergence(testExpressionsDict, generativeExpressionsDict):
 
 ## Further entropies:
 # empirical_cross_entropy: computed by the likelihood in MLE Base
+# empirical_shannon_entropy: in ft.DataTensor
 # empirical_KL_divergence: difference of likelihood with empirical shannon entropy (also done in MLE Base)
 
 def empirical_shannon_entropy(sampleDf, atoms=None):
-    ## The Shannon entropy of the empirical distribution
-    dataNum = sampleDf.values.shape[0]
-    if atoms is None:
-        atoms = sampleDf.columns
-
-    dataCores = {atomKey: ft.dataCore_from_sampleDf(sampleDf, atomKey) for atomKey in atoms}
-    contracted = coc.CoreContractor(dataCores, openColors=atoms).contract().multiply(1 / dataNum)
-    ## Again suffering from the curse of dimensionality!
-
-    logContracted = contracted.clone()
-    logContracted.values = np.log(contracted.values)
-    ## Remove -infty, since causing problems
-    # but just appearing on zero data coordinates (thus not contributing in contraction)
-    logContracted.values[logContracted.values < -1e308] = 0
-
-    return -coc.CoreContractor({"data": contracted, "log": logContracted}).contract().values
+    return ft.DataTensor(sampleDf,atoms).compute_shannon_entropy()

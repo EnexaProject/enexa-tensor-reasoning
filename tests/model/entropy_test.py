@@ -16,6 +16,5 @@ sampleDf = gtd.generate_sampleDf(genDict, 100)
 print(ent.empirical_shannon_entropy(sampleDf))
 
 print(ent.expected_cross_entropy(testDict, genDict))
-
 print(ent.expected_KL_divergence(testDict, genDict))
 print(ent.expected_KL_divergence(genDict,genDict))
