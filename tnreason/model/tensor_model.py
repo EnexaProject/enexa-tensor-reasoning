@@ -15,12 +15,20 @@ class TensorRepresentation:
                                                                 weight=expressionsDict[formulaKey][1]
                                                                 ) for formulaKey in expressionsDict}
         self.expressionsDict = expressionsDict
-        self.headType = headType ## To prevent resetting of headCores
+        self.headType = headType  ## To prevent resetting of headCores
 
         for formulaKey in expressionsDict:
             self.formulaTensorsDict[formulaKey].set_head(headType, weight=expressionsDict[formulaKey][1])
 
         self.atoms = np.unique(eu.get_all_variables([expressionsDict[formulaKey][0] for formulaKey in expressionsDict]))
+
+    def add_expression(self, expression, weight=1, formulaKey=None):
+        if formulaKey is None:
+            formulaKey = str(expression)
+        self.formulaTensorsDict[formulaKey] = ft.FormulaTensor(expression=expression, headType=self.headType,
+                                                               weight=weight)
+        self.expressionsDict[formulaKey] = [expression, weight]
+        self.atoms = np.unique(self.atoms, eu.get_variables(expression))
 
     def all_cores(self):
         allCoresDict = {}
@@ -29,7 +37,7 @@ class TensorRepresentation:
                             formulaKey + "_head": self.formulaTensorsDict[formulaKey].headCore}
         return allCoresDict
 
-    def get_cores(self, formulaKeys = None, headType="expFactor"):
+    def get_cores(self, formulaKeys=None, headType="expFactor"):
         if formulaKeys is None:
             formulaKeys = self.formulaTensorsDict.keys()
         if self.headType != headType:
