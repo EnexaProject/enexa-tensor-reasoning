@@ -16,11 +16,19 @@ class TensorKB:
     def tell(self, formula):
         assert self.formulaTensors.headType == "truthEvaluation"
 
-        self.formulaList.append(formula)
-        self.formulaTensors.add_expression(formula, formulaKey="f" + str(len(self.formulaList)))
+        answer = self.ask(formula)
+        if answer == "entailed":
+            print("{} is redundant to the Knowledge Base and has not been added.".format(formula))
+            return "not added"
+        elif answer == "contradicting":
+            print("{} would make the Knowledge Base inconsistent and has not been added.".format(formula))
+            return "not added"
+        else:
+            self.formulaList.append(formula)
+            self.formulaTensors.add_expression(formula, formulaKey="f" + str(len(self.formulaList)))
 
-        print("{} has been added to the Knowledge Base.".format(formula))
-
+            print("{} has been added to the Knowledge Base.".format(formula))
+            return "added"
     def ask(self, formula):
         if coc.CoreContractor({**self.formulaTensors.get_cores(headType="truthEvaluation"),
                                **ft.FormulaTensor(expression=["not", formula],

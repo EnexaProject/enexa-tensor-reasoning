@@ -5,6 +5,8 @@ if __name__ == "__main__":
     assert tensorKB.ask("a1") == "contingent"
 
     tensorKB.tell("a2")
+    tensorKB.tell(["not","a2"])
+    tensorKB.tell("a2")
     assert tensorKB.ask("a1") == "entailed"
 
     assert tensorKB.ask("a4") == "contingent"
