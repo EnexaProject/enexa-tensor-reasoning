@@ -26,9 +26,8 @@ supFtensor = ft.SuperposedFormulaTensor(skeletonExpression, candidatesDict, para
 supFtensor.random_initialize_parameterCoresDict()
 print(supFtensor.get_largest_weight_as_solutionMap())
 
-exit()
 
 cv.draw_contractionDiagram({**supFtensor.parameterCoresDict,
                                 **supFtensor.skeletonCoresDict,
                                 **supFtensor.selectorCoresDict,
-                                **supFtensor.dataCoresDict})
+                                **supFtensor.dataCoresDict},title="SuperposedFormulaTensor")

@@ -73,7 +73,7 @@ class SuperposedFormulaTensor:
         if parameterCoresDict is not None:  # former variableCoresDict
             self.set_parameterCoresDict(parameterCoresDict)
         self.create_selectorCoresDict()
-        self.create_skeletonCoreDict()
+        self.create_skeletonCoresDict()
 
         self.dataCoresDict = {}
 
@@ -111,7 +111,7 @@ class SuperposedFormulaTensor:
                     coreValues, [placeHolderKey, placeHolderKey + "_" + atomKey],
                     placeHolderKey + "_" + atomKey + "_selector")
 
-    def create_skeletonCoreDict(self):
+    def create_skeletonCoresDict(self):
         ## incolors: placeHolderKey + "_" + atomKey
         ## outcolors: atomKey
         self.skeletonCoresDict, self.atoms = skeleton_recursion(self.skeletonExpression, self.candidatesDict)
@@ -184,37 +184,37 @@ def skeleton_recursion(headExpression, candidatesDict):
             return create_negationCoreDict(candidatesDict[headExpression[1]], inprefix=str(headExpression[1]) + "_",
                                            outprefix=str(headExpression) + "_"), candidatesDict[headExpression[1]]
         else:
-            skeletonCoreDict, atoms = skeleton_recursion(headExpression[1], candidatesDict)
-            return {**skeletonCoreDict,
+            skeletonCoresDict, atoms = skeleton_recursion(headExpression[1], candidatesDict)
+            return {**skeletonCoresDict,
                     **create_negationCoreDict(atoms, inprefix=str(headExpression[1]) + "_",
                                               outprefix=str(headExpression)) + "_"}, atoms
     elif headExpression[1] == "and":
         if type(headExpression[0]) == str:
-            leftSkeletonCoreDict = {headExpression[0] + "_" + atomKey + "_l": create_deltaCore(
+            leftskeletonCoresDict = {headExpression[0] + "_" + atomKey + "_l": create_deltaCore(
                 colors=[headExpression[0] + "_" + atomKey, str(headExpression) + "_" + atomKey])
                 for atomKey in candidatesDict[headExpression[0]]}
             leftatoms = candidatesDict[headExpression[0]]
         else:
-            leftSkeletonCoreDict, leftatoms = skeleton_recursion(headExpression[0], candidatesDict)
+            leftskeletonCoresDict, leftatoms = skeleton_recursion(headExpression[0], candidatesDict)
 
-            leftSkeletonCoreDict = {**leftSkeletonCoreDict,
+            leftskeletonCoresDict = {**leftskeletonCoresDict,
                                     **{str(headExpression[0]) + "_" + atomKey + "_lPass": create_deltaCore(
                                         [str(headExpression[0]) + "_" + atomKey, str(headExpression) + "_" + atomKey])
                                         for atomKey in leftatoms}
                                     }
         if type(headExpression[2]) == str:
-            rightSkeletonCoreDict = {headExpression[2] + "_" + atomKey + "_r": create_deltaCore(
+            rightskeletonCoresDict = {headExpression[2] + "_" + atomKey + "_r": create_deltaCore(
                 colors=[headExpression[2] + "_" + atomKey, str(headExpression) + "_" + atomKey])
                 for atomKey in candidatesDict[headExpression[2]]}
             rightatoms = candidatesDict[headExpression[2]]
         else:
-            rightSkeletonCoreDict, rightatoms = skeleton_recursion(headExpression[2], candidatesDict)
-            rightSkeletonCoreDict = {**rightSkeletonCoreDict,
+            rightskeletonCoresDict, rightatoms = skeleton_recursion(headExpression[2], candidatesDict)
+            rightskeletonCoresDict = {**rightskeletonCoresDict,
                                      **{str(headExpression[2]) + "_" + atomKey + "_rPass": create_deltaCore(
                                          [str(headExpression[2]) + "_" + atomKey, str(headExpression) + "_" + atomKey])
                                          for atomKey in rightatoms}
                                      }
-        return {**leftSkeletonCoreDict, **rightSkeletonCoreDict}, leftatoms + rightatoms
+        return {**leftskeletonCoresDict, **rightskeletonCoresDict}, leftatoms + rightatoms
 
 
 def create_negationCoreDict(atoms, inprefix, outprefix):

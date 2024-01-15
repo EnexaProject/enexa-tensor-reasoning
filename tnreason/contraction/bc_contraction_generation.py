@@ -56,7 +56,7 @@ def generate_factor_dict(expression, formulaKey="f0", weight=0, headType="truthE
 
 ## For the generation of Basis Calculus Instructions
 def create_formulaProcedure(expression, formulaKey):
-    addCoreKey = str(formulaKey) + "_" + str(expression) + "_"
+    addCoreKey = str(formulaKey) + "_" + str(expression) + "_subCore"
     if type(expression) == str:
         return {addCoreKey: cc.CoordinateCore(np.eye(2), [expression, formulaKey + "_" + expression], expression)}
     elif expression[0] == "not":
@@ -79,34 +79,34 @@ def create_formulaProcedure(expression, formulaKey):
             leftColor = formulaKey + "_" + str(expression[0])
 
         if type(expression[2]) == str:
-            prePartsDict2 = {}
+            partsDict2 = {}
             rightColor = expression[2]
         else:
-            prePartsDict2 = create_formulaProcedure(expression[2], formulaKey)
+            partsDict2 = create_formulaProcedure(expression[2], formulaKey)
             rightColor = formulaKey + "_" + str(expression[2])
 
+        return {**partsDict0, **partsDict2,
+                addCoreKey: cc.CoordinateCore(bc.create_and_tensor(),
+                                              [leftColor, rightColor, formulaKey + "_" + str(expression)],
+                                              str(expression))}
+        ## OLD: Resolving key conflicts in the dictionary
+        # NOT NEEDED! If colliding, then same binary core
+
         ## Renaming cores of the right hand side to avoid key collision
-        partsDict2 = {}
-        for key in prePartsDict2:
-            if key in partsDict0:
-                partsDict2[key + "0"] = prePartsDict2[key]
-            else:
-                partsDict2[key + "0"] = prePartsDict2[key]
+        # partsDict2 = {}
+        # for key in prePartsDict2:
+        #    if key in partsDict0:
+        #        partsDict2[key + "0"] = prePartsDict2[key]
+        #    else:
+        #        partsDict2[key + "0"] = prePartsDict2[key]
 
         ## Renaming colors of the right hand side to avoid duplicates (except for atoms)
-        colors0 = get_colors_from_coreDict(partsDict0)
-        preColors2 = get_colors_from_coreDict(partsDict2)
-        replaceColorDict = create_newColorDict(colors0, preColors2)
-        partsDict2 = replace_colors_in_coreDict(partsDict2, replaceColorDict)
-
-        if rightColor in replaceColorDict:
-            rightColor = replaceColorDict[rightColor]
-
-        partsDict = {**partsDict0, **partsDict2}
-        partsDict[addCoreKey] = cc.CoordinateCore(bc.create_and_tensor(),
-                                                  [leftColor, rightColor, formulaKey + "_" + str(expression)],
-                                                  str(expression))
-        return partsDict
+        # colors0 = get_colors_from_coreDict(partsDict0)
+        # preColors2 = get_colors_from_coreDict(partsDict2)
+        # replaceColorDict = create_newColorDict(colors0, preColors2)
+        # partsDict2 = replace_colors_in_coreDict(partsDict2, replaceColorDict)
+        # if rightColor in replaceColorDict:
+        #    rightColor = replaceColorDict[rightColor]
 
 
 def get_colors_from_coreDict(coreDict):
