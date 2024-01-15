@@ -25,11 +25,13 @@ class FormulaTensor:
         ## Build the Cores
         self.create_subExpressionCores()
         self.set_head(headType=headType, weight=weight)
+        self.weight = weight
 
     def create_subExpressionCores(self):
         self.subExpressionCoresDict = crc.create_subExpressionCores(self.expression, str(self.formulaKey))
 
     def set_head(self, headType, weight=1):
+        self.weight = weight
         self.headCore = crc.create_headCore(headType, weight, headColor=self.formulaKey + "_" + str(self.expression))
 
     def infer_on_evidenceDict(self, evidenceDict):

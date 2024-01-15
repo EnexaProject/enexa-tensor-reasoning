@@ -38,8 +38,9 @@ class FormulaLearner:
 
     def adjust_weights(self, sweepNum=10):
         self.weightEstimator.alternating_optimization(sweepNum)
+        weightDict = self.weightEstimator.get_weights()
         for key in self.learnedFormulaDict:
-            self.learnedFormulaDict[key][1] = self.weightEstimator.formulaDict[key][3]
+            self.learnedFormulaDict[key][1] = weightDict[key]
 
     def get_learned_formulas(self):
         return self.learnedFormulaDict

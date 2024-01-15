@@ -11,6 +11,7 @@ import numpy as np
 class TensorRepresentation:
     def __init__(self, expressionsDict, headType="expFactor"):
         self.formulaTensorsDict = {formulaKey: ft.FormulaTensor(expression=expressionsDict[formulaKey][0],
+                                                                formulaKey=formulaKey,
                                                                 headType=headType,
                                                                 weight=expressionsDict[formulaKey][1]
                                                                 ) for formulaKey in expressionsDict}
@@ -25,7 +26,8 @@ class TensorRepresentation:
     def add_expression(self, expression, weight=1, formulaKey=None):
         if formulaKey is None:
             formulaKey = str(expression)
-        self.formulaTensorsDict[formulaKey] = ft.FormulaTensor(expression=expression, headType=self.headType,
+        self.formulaTensorsDict[formulaKey] = ft.FormulaTensor(expression=expression, formulaKey=formulaKey,
+                                                               headType=self.headType,
                                                                weight=weight)
         self.expressionsDict[formulaKey] = [expression, weight]
         self.atoms = np.unique(self.atoms, eu.get_variables(expression))
@@ -53,6 +55,16 @@ class TensorRepresentation:
             for formulaKey in self.formulaTensorsDict.keys():
                 self.formulaTensorsDict[formulaKey].set_head(headType, weight=self.expressionsDict[formulaKey][1])
             self.headType = headType
+
+    def update_heads(self, updateDict, headType=None):
+        if headType is None:
+            headType = self.headType
+        for formulaKey in updateDict:
+            self.expressionsDict[formulaKey][1] = updateDict[formulaKey]
+            self.formulaTensorsDict[formulaKey].set_head(headType, weight=updateDict[formulaKey])
+
+    def get_weights(self):
+        return {formulaKey: self.formulaTensorsDict[formulaKey].weight for formulaKey in self.formulaTensorsDict}
 
     def marginalized_contraction(self, atomList):
         marginalizationDict = {atomKey + "_marg": cc.CoordinateCore(np.ones(shape=(2)), [atomKey]) for atomKey in
