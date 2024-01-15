@@ -109,32 +109,32 @@ def create_formulaProcedure(expression, formulaKey):
         #    rightColor = replaceColorDict[rightColor]
 
 
-def get_colors_from_coreDict(coreDict):
-    colors = []
-    for coreKey in coreDict:
-        for color in coreDict[coreKey].colors:
-            if color not in colors:
-                colors.append(color)
-    return colors
-
-
-def create_newColorDict(colorsLeft, colorsRight):
-    newColorDict = {}
-    for color in colorsRight:
-        if color in colorsLeft and "_h" in color:
-            newColor = color
-            while newColor in colorsLeft:
-                newColor = newColor + "0"
-            newColorDict[color] = newColor
-    return newColorDict
-
-
-def replace_colors_in_coreDict(coreDict, newColorDict):
-    for coreKey in coreDict:
-        for i, color in enumerate(coreDict[coreKey].colors):
-            if color in newColorDict:
-                coreDict[coreKey].colors[i] = newColorDict[color]
-    return coreDict
+# def get_colors_from_coreDict(coreDict):
+#     colors = []
+#     for coreKey in coreDict:
+#         for color in coreDict[coreKey].colors:
+#             if color not in colors:
+#                 colors.append(color)
+#     return colors
+#
+#
+# def create_newColorDict(colorsLeft, colorsRight):
+#     newColorDict = {}
+#     for color in colorsRight:
+#         if color in colorsLeft and "_h" in color:
+#             newColor = color
+#             while newColor in colorsLeft:
+#                 newColor = newColor + "0"
+#             newColorDict[color] = newColor
+#     return newColorDict
+#
+#
+# def replace_colors_in_coreDict(coreDict, newColorDict):
+#     for coreKey in coreDict:
+#         for i, color in enumerate(coreDict[coreKey].colors):
+#             if color in newColorDict:
+#                 coreDict[coreKey].colors[i] = newColorDict[color]
+#     return coreDict
 
 
 if __name__ == "__main__":
