@@ -1,5 +1,8 @@
 import networkx as nx
+
+import os
 from matplotlib import pyplot as plt
+from matplotlib import animation as animation
 
 from tnreason.logic import expression_utils as eu
 
@@ -10,7 +13,10 @@ def visualize_model(expressionsDict,
                     fontsize=10,
                     showFormula=False,
                     evidenceDict={},
-                    pos=None):
+                    pos=None,
+                    savePath=None,
+                    show=True,
+                    title="Visualization of the MLN"):
     expressionsList = [expressionsDict[key][0] for key in expressionsDict]
     atomsList = eu.get_all_variables(expressionsList)
 
@@ -24,7 +30,7 @@ def visualize_model(expressionsDict,
     graph.add_nodes_from(expressionsDict.keys())
     graph.add_edges_from(edges)
     if pos is None:
-        pos = nx.spring_layout(graph)
+        pos = nx.spring_layout(graph, k=0.8)
 
     ## Draw Nodes
     trueColor = "blue"
@@ -70,15 +76,34 @@ def visualize_model(expressionsDict,
                                width=strengthMultiplier * strength,
                                alpha=0.2,
                                edge_color=colorList[i])
-
-    plt.show()
+    plt.title(title, fontsize=15)
+    if savePath is not None:
+        plt.savefig(savePath)
+    if show:
+        plt.show()
     return pos
 
 
+def create_animation(pngDirPath, savePath):
+    images = []
+    for filename in os.listdir(pngDirPath):
+        if filename.endswith('.png'):
+            images.append(plt.imread(os.path.join(pngDirPath, filename)))
+    # Create an animation
+    fig = plt.figure()
+    im = plt.imshow(images[0])
+    ani = animation.FuncAnimation(fig, lambda i: im.set_array(images[i]), frames=len(images))
+
+    # Save the animation as an MP4 file
+    ani.save(savePath, writer='ffmpeg', fps=0.5)
+
+
 if __name__ == "__main__":
+    #create_animation("./demonstration/visualizations/",savePath="./animation.mp4")
+
     exDict = {
         "e0": ["a2", 1],
-        "e1": [[["a2", "and", ["not", "a3"]], "and", ["a6", "and", ["not", "a7"]]], 10],
+        "e1": [[["a2", "and", ["not", "a3"]], "and", ["a6", "and", ["not", "a7"]]], 5],
         "e2": [["a4", "and", ["not", "a2"]], 2],
         "e4": ["a5", 1],
         "e5": ["a5", 2]
@@ -87,6 +112,25 @@ if __name__ == "__main__":
     visualize_model(exDict, evidenceDict={"a2": 1, "a3": 0})
 
     exit()
+    import matplotlib.pyplot as plt
+    import matplotlib.cm as cm
+    import matplotlib.animation as animation
+
+    img = []  # some array of images
+    frames = []  # for storing the generated images
+    fig = plt.figure()
+    for i in range(6):
+        frames.append([plt.imshow(img[i], cmap=cm.Greys_r, animated=True)])
+
+    ani = animation.ArtistAnimation(fig, frames, interval=50, blit=True,
+                                    repeat_delay=1000)
+    # ani.save('movie.mp4')
+    plt.show()
+
+
+
+
+
 
     G = nx.Graph()
     G.add_edges_from([(12, 2)])  # , (2, 3), (3, 4), (4, 1)])

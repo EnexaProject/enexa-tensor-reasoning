@@ -32,14 +32,16 @@ class SamplerBase:
         return logRep.expressionsDict
 
     def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
-                  pos=None):
+                  pos=None, savePath=None):
         return mv.visualize_model(self.expressionsDict,
                                   strengthMultiplier=strengthMultiplier,
                                   strengthCutoff=strengthCutoff,
                                   fontsize=fontsize,
                                   showFormula=showFormula,
                                   evidenceDict=evidenceDict,
-                                  pos=pos)
+                                  pos=pos,
+                                  savePath=savePath,
+                                  show=False)
 
 
 class GibbsSampler(SamplerBase):
@@ -91,7 +93,7 @@ if __name__ == "__main__":
     pos = None
     for rep in range(10):
         sample = sampler.gibbs_sample(chainLength=10)
-        pos = sampler.visualize(evidenceDict=sample, pos=pos)
+        pos = sampler.visualize(evidenceDict=sample, pos=pos, savePath=None)#"./demonstration/visualizations/gibbs{}.png".format(rep))
 
     sampler.compute_marginalized_distributions()
     print(sampler.create_sampleDf(100, 20))
