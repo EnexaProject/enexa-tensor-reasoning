@@ -1,4 +1,5 @@
 from tnreason.model import formula_tensors as ft
+from tnreason.model import model_visualization as mv
 
 from tnreason.logic import expression_utils as eu
 from tnreason.logic import coordinate_calculus as cc
@@ -84,6 +85,16 @@ class TensorRepresentation:
                                                                                  atomKey not in evidenceDict])
         return resContractor.contract()
 
+    def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
+                  pos=None):
+        return mv.visualize_model(self.expressionsDict,
+                                  strengthMultiplier=strengthMultiplier,
+                                  strengthCutoff=strengthCutoff,
+                                  fontsize=fontsize,
+                                  showFormula=showFormula,
+                                  evidenceDict=evidenceDict,
+                                  pos=pos)
+
 
 if __name__ == "__main__":
     learnedFormulaDict = {
@@ -92,6 +103,8 @@ if __name__ == "__main__":
         "f2": ["A2", 2.1]
     }
     tRep = TensorRepresentation(learnedFormulaDict)
+
+    tRep.visualize(evidenceDict={"A2": 1, "A3": False})
     print(tRep.evidence_contraction({"A2": 1, "A3": False}).values)
     print(tRep.marginalized_contraction(["A2", "A3"]).values)
 

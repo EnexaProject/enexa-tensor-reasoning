@@ -1,3 +1,6 @@
+from tnreason.model import model_visualization as mv
+
+
 class LogicRepresentation:
     def __init__(self, expressionsDict):
         self.expressionsDict = expressionsDict
@@ -66,6 +69,16 @@ class LogicRepresentation:
         self.expressionsDict = {key: posify_weight(self.expressionsDict[key][0], self.expressionsDict[key][1]) for key
                                 in self.expressionsDict
                                 if self.expressionsDict[key][1] != 0}
+
+    def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
+                  pos=None):
+        return mv.visualize_model(self.expressionsDict,
+                                  strengthMultiplier=strengthMultiplier,
+                                  strengthCutoff=strengthCutoff,
+                                  fontsize=fontsize,
+                                  showFormula=showFormula,
+                                  evidenceDict=evidenceDict,
+                                  pos=pos)
 
 
 def infer_expression(expression, evidenceDict):
@@ -202,6 +215,9 @@ if __name__ == "__main__":
 
     lRep = LogicRepresentation(redundantDict)
     lRep.simplify()
+
+    lRep.visualize(strengthCutoff=3)
+
     print(lRep.expressionsDict)
 
     lRep.forward_chaining()

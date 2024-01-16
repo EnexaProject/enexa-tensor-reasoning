@@ -3,6 +3,7 @@ from tnreason.logic import coordinate_calculus as cc
 
 from tnreason.model import tensor_model as tm
 from tnreason.model import logic_model as lm
+from tnreason.model import model_visualization as mv
 
 import numpy as np
 import pandas as pd
@@ -29,6 +30,16 @@ class SamplerBase:
         logRep = lm.LogicRepresentation(self.expressionsDict)
         logRep.infer(evidenceDict=evidenceDict, simplify=True)
         return logRep.expressionsDict
+
+    def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
+                  pos=None):
+        return mv.visualize_model(self.expressionsDict,
+                                  strengthMultiplier=strengthMultiplier,
+                                  strengthCutoff=strengthCutoff,
+                                  fontsize=fontsize,
+                                  showFormula=showFormula,
+                                  evidenceDict=evidenceDict,
+                                  pos=pos)
 
 
 class GibbsSampler(SamplerBase):
@@ -77,6 +88,11 @@ if __name__ == "__main__":
     }
 
     sampler = GibbsSampler(learnedFormulaDict)
+    pos = None
+    for rep in range(10):
+        sample = sampler.gibbs_sample(chainLength=10)
+        pos = sampler.visualize(evidenceDict=sample, pos=pos)
+
     sampler.compute_marginalized_distributions()
     print(sampler.create_sampleDf(100, 20))
 
