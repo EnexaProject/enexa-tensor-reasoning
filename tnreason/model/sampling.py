@@ -32,7 +32,7 @@ class SamplerBase:
         return logRep.expressionsDict
 
     def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
-                  pos=None, savePath=None):
+                  pos=None, savePath=None, show=False):
         return mv.visualize_model(self.expressionsDict,
                                   strengthMultiplier=strengthMultiplier,
                                   strengthCutoff=strengthCutoff,
@@ -41,7 +41,7 @@ class SamplerBase:
                                   evidenceDict=evidenceDict,
                                   pos=pos,
                                   savePath=savePath,
-                                  show=False)
+                                  show=show)
 
 
 class GibbsSampler(SamplerBase):
@@ -52,15 +52,24 @@ class GibbsSampler(SamplerBase):
                 [sampleDf, pd.DataFrame(self.gibbs_sample(chainLength=chainLength), index=[samplePos])])
         return sampleDf.astype(outType)
 
+    def gibbs_step(self, evidenceDict, updateAtomKey):
+        stepSampler = SamplerBase(self.infer_expressionsDict(
+            {atomKey: evidenceDict[atomKey] for atomKey in self.atoms if atomKey != updateAtomKey}
+        ))
+        if updateAtomKey not in stepSampler.atoms:
+            stepSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]})
+        return stepSampler.create_independent_sample()[updateAtomKey]
+
     def gibbs_sample(self, chainLength):
         sampleDict = self.create_independent_sample()
         for sweep in range(chainLength):
             for updateAtomKey in self.atoms:
-                miniSampler = SamplerBase(self.infer_expressionsDict(
-                    {atomKey: sampleDict[atomKey] for atomKey in self.atoms if atomKey != updateAtomKey}))
-                if updateAtomKey not in miniSampler.atoms:
-                    miniSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]})
-                sampleDict[updateAtomKey] = miniSampler.create_independent_sample()[updateAtomKey]
+                sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, updateAtomKey)
+#                miniSampler = SamplerBase(self.infer_expressionsDict(
+#                    {atomKey: sampleDict[atomKey] for atomKey in self.atoms if atomKey != updateAtomKey}))
+#                if updateAtomKey not in miniSampler.atoms:
+#                    miniSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]})
+#                sampleDict[updateAtomKey] = miniSampler.create_independent_sample()[updateAtomKey]
         return sampleDict
 
 
@@ -90,6 +99,11 @@ if __name__ == "__main__":
     }
 
     sampler = GibbsSampler(learnedFormulaDict)
+    evidenceDict = sampler.gibbs_sample(10)
+    sampler.visualize(evidenceDict = evidenceDict, show=True)
+
+    exit()
+
     pos = None
     for rep in range(10):
         sample = sampler.gibbs_sample(chainLength=10)
