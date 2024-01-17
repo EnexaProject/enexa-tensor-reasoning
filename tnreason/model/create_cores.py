@@ -100,6 +100,7 @@ def create_evidenceCoresDict(evidenceDict):
 
 ## When Placeholders in Expression (SuperposedFormulaTensor)
 def skeleton_recursion(headExpression, candidatesDict):
+    print(headExpression)
     if type(headExpression) == str:
         return {}, candidatesDict[headExpression]
     elif headExpression[0] == "not":
@@ -110,7 +111,7 @@ def skeleton_recursion(headExpression, candidatesDict):
             skeletonCoresDict, atoms = skeleton_recursion(headExpression[1], candidatesDict)
             return {**skeletonCoresDict,
                     **create_negationCoreDict(atoms, inprefix=str(headExpression[1]) + "_",
-                                              outprefix=str(headExpression)) + "_"}, atoms
+                                              outprefix=str(headExpression) + "_")}, atoms
     elif headExpression[1] == "and":
         if type(headExpression[0]) == str:
             leftskeletonCoresDict = {headExpression[0] + "_" + atomKey + "_l": create_deltaCore(
@@ -188,7 +189,6 @@ def dataCore_from_sampleDf(sampleDf, atomKey, dataColor):
         else:
             values[i, 1] = 1
     return cc.CoordinateCore(values, [dataColor, atomKey])
-
 
 
 ## Analysis

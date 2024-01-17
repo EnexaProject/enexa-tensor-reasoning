@@ -13,9 +13,8 @@ learnedFormulaDict = {
     }
 
 sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 10)
-print(sampleDf)
 
-skeletonExpression = ["P1","and",["not","P2"]]
+skeletonExpression = ["not",["P1","and",["not","P2"]]]
 candidatesDict = {"P1": ["A1", "A2"], "P2": ["A2"]}
 parameterCoresDict = {
         "vCore1": cc.CoordinateCore(np.zeros(shape=(2, 2)), ["P1", "H1"]),
@@ -26,7 +25,7 @@ supFtensor = ft.SuperposedFormulaTensor(skeletonExpression, candidatesDict, para
 supFtensor.random_initialize_parameterCoresDict()
 print(supFtensor.get_largest_weight_as_solutionMap())
 
-
+exit()
 cv.draw_contractionDiagram({**supFtensor.parameterCoresDict,
                                 **supFtensor.skeletonCoresDict,
                                 **supFtensor.selectorCoresDict,

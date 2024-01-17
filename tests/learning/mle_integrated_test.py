@@ -11,7 +11,8 @@ sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
 learner = mlel.FormulaLearner(learnedFormulaDict={"fun":[["a3","and","a3"],2]},
                               sampleDf=sampleDf)
 
-skeletonExpression = ["P1", "and", "P2"]
+skeletonExpression = ["not",["P1", "and", ["not","P2"]]]
+
 candidatesDict = {"P1": ["a1", "a2", "a3"],
                   "P2": ["a1", "a2", "a3"],
                   }
