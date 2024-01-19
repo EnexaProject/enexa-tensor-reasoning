@@ -129,9 +129,10 @@ class DataTensor:
 
 
 if __name__ == "__main__":
-    from tnreason.contraction import contraction_visualization as cv
-
     expression = ["A1", "and", ["not", "A2"]]
     fTensor = FormulaTensor(expression, "f1", headType="truthEvaluation", weight=1)
-    print(fTensor.infer_on_evidenceDict({"A1": 1}).values)
-    cv.draw_contractionDiagram({**fTensor.subExpressionCoresDict, "head": fTensor.headCore})
+
+    contractor = coc.CoreContractor(fTensor.get_cores())
+    contractor.optimize_coreList()
+    contractor.create_instructionList_from_coreList()
+    contractor.visualize()

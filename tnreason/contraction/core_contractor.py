@@ -103,8 +103,13 @@ class CoreContractor:
 
         return sizeList, shapeList, colorList
 
-    def visualize(self, title="Contraction Diagram"):
-        cv.draw_contractionDiagram(self.coreDict, title=title)
+    def visualize(self, title="Contraction Diagram", useInstructionList=True):
+        pos = None
+        if useInstructionList and self.instructionList is not None:
+            pos = cv.get_positions_from_instructions(self.instructionList, self.openColors)
+        elif useInstructionList and self.instructionList is None:
+            print("Warning: Cannot use InstructionList for visualization, since not initialized!")
+        cv.draw_contractionDiagram(self.coreDict, title=title, pos=pos)
 
     def contract(self, optimizationMethod=None, verbose=False):
         if optimizationMethod is None:
@@ -287,6 +292,31 @@ if __name__ == "__main__":
         "b": 1.72345
     }
 
+
+
+    contractor = CoreContractor(coordinateDict,
+                                None,
+                                [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"]],
+                                ["q"]
+                                )
+
+    contractor.optimize_coreList()
+    contractor.create_instructionList_from_coreList()
+    contractor.visualize()
+    exit()
+
+    contractor.create_instructionList_from_coreList()
+    print(contractor.instructionList)  ## Hast to reduce colors only after last usage.
+
+    contractorWithOpen = CoreContractor(coordinateDict, instructionList=None, coreList=None, openColors=["x"])
+    contractorWithOpen.create_instructionList_from_coreList()
+    print(contractorWithOpen.instructionList)  ## Has to be without openColor Reduction, i.e. "x".
+    # contractorWithOpen.evaluate_sizes_instructionList(show=True)
+
+    print(contractor.create_contraction_subscripts())
+    print(contractor.numpy_einsum_contract().values)
+
+
     contractor = NegationTolerantCoreContractor(
         coreDict={
             "a": [
@@ -305,21 +335,3 @@ if __name__ == "__main__":
     print(result)
 
     exit()
-
-    contractor = CoreContractor(coordinateDict,
-                                None,
-                                [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"]],
-                                ["q"]
-                                )
-
-    contractor.optimize_coreList()
-    contractor.create_instructionList_from_coreList()
-    print(contractor.instructionList)  ## Hast to reduce colors only after last usage.
-
-    contractorWithOpen = CoreContractor(coordinateDict, instructionList=None, coreList=None, openColors=["x"])
-    contractorWithOpen.create_instructionList_from_coreList()
-    print(contractorWithOpen.instructionList)  ## Has to be without openColor Reduction, i.e. "x".
-    # contractorWithOpen.evaluate_sizes_instructionList(show=True)
-
-    print(contractor.create_contraction_subscripts())
-    print(contractor.numpy_einsum_contract().values)

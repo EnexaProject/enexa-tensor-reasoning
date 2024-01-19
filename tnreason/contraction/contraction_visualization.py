@@ -2,7 +2,28 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
-def draw_contractionDiagram(coreDict, fontsize=10, title="Contraction Diagram"):
+def get_positions_from_instructions(instructionsList, openColors=[]):
+    yPosDict = {}
+    xPosDict = {}
+    curColorY = 0
+    for i, [instruction, node] in enumerate(instructionsList):
+        if instruction == "reduce":
+            xPosDict[node] = i
+            yPosDict[node] = curColorY
+            curColorY += 1
+        elif instruction == "add":
+            xPosDict[node] = i
+            yPosDict[node] = i
+
+    for i, colorNode in enumerate(openColors):
+        xPosDict[colorNode] = len(instructionsList)
+        yPosDict[colorNode] = curColorY
+        curColorY += 1
+
+    return {key: (xPosDict[key], yPosDict[key]) for key in yPosDict}
+
+
+def draw_contractionDiagram(coreDict, fontsize=10, title="Contraction Diagram", pos=None):
     ##
 
     coreNodes = list(coreDict.keys())
@@ -20,7 +41,8 @@ def draw_contractionDiagram(coreDict, fontsize=10, title="Contraction Diagram"):
     graph.add_nodes_from(colorNodes)
     graph.add_edges_from(ccEdges)
 
-    pos = nx.spring_layout(graph)
+    if pos is None:
+        pos = nx.spring_layout(graph)
 
     labels = {atom: atom for atom in coreNodes + colorNodes}
     nx.draw_networkx_labels(graph, pos, labels, font_size=fontsize)
