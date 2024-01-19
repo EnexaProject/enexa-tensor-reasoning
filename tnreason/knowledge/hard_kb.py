@@ -4,7 +4,7 @@ from tnreason.model import formula_tensors as ft
 from tnreason.contraction import core_contractor as coc
 
 
-class TensorKB:
+class HardKnowledgeBase:
     def __init__(self, formulaList):
         self.formulaList = formulaList
         self.formulaTensors = tm.TensorRepresentation(
@@ -29,6 +29,7 @@ class TensorKB:
 
             print("{} has been added to the Knowledge Base.".format(formula))
             return "added"
+
     def ask(self, formula):
         if coc.CoreContractor({**self.formulaTensors.get_cores(headType="truthEvaluation"),
                                **ft.FormulaTensor(expression=["not", formula],

@@ -1,7 +1,9 @@
-from tnreason.model import tensor_kb as tkb
+#from tnreason.knowledge import tensor_kb as tkb
+
+from tnreason import knowledge as know
 
 if __name__ == "__main__":
-    tensorKB = tkb.TensorKB(["a3", ["not", [["not", "a1"], "and", "a2"]]])
+    tensorKB = know.HardKnowledgeBase(["a3", ["not", [["not", "a1"], "and", "a2"]]])
     assert tensorKB.ask("a1") == "contingent"
 
     tensorKB.tell("a2")

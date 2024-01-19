@@ -80,6 +80,9 @@ class LogicRepresentation:
                                   evidenceDict=evidenceDict,
                                   pos=pos)
 
+    def get_expressionsDict(self):
+        return self.expressionsDict
+
 
 def infer_expression(expression, evidenceDict):
     return es.reduce_thing_nothing(replace_evidence_variables(expression, evidenceDict))

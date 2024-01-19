@@ -4,7 +4,7 @@ from tnreason.model import generate_test_data as gtd
 learnedFormulaDict = {
     "f0": ["a2", 1.2],
     "f1": [["a1", "and", "a2"], 1.3],
-    "f2": ["a3", 2]
+    "f2": ["a3", 2],
 }
 sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
 
