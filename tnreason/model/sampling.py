@@ -23,6 +23,11 @@ class SamplerBase:
     def create_independent_sample(self):
         if self.marginalizedDict is None:
             self.compute_marginalized_distributions()
+
+        for atomKey in self.atoms:
+            assert len(self.marginalizedDict[atomKey].colors) == 1, "Marginalization failed for atom {}.".format(
+                atomKey)
+
         return {atomKey: np.random.multinomial(1, self.marginalizedDict[atomKey].values)[0] == 0 for atomKey in
                 self.atoms}
 
@@ -65,11 +70,11 @@ class GibbsSampler(SamplerBase):
         for sweep in range(chainLength):
             for updateAtomKey in self.atoms:
                 sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, updateAtomKey)
-#                miniSampler = SamplerBase(self.infer_expressionsDict(
-#                    {atomKey: sampleDict[atomKey] for atomKey in self.atoms if atomKey != updateAtomKey}))
-#                if updateAtomKey not in miniSampler.atoms:
-#                    miniSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]})
-#                sampleDict[updateAtomKey] = miniSampler.create_independent_sample()[updateAtomKey]
+        #                miniSampler = SamplerBase(self.infer_expressionsDict(
+        #                    {atomKey: sampleDict[atomKey] for atomKey in self.atoms if atomKey != updateAtomKey}))
+        #                if updateAtomKey not in miniSampler.atoms:
+        #                    miniSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]})
+        #                sampleDict[updateAtomKey] = miniSampler.create_independent_sample()[updateAtomKey]
         return sampleDict
 
 
@@ -100,14 +105,15 @@ if __name__ == "__main__":
 
     sampler = GibbsSampler(learnedFormulaDict)
     evidenceDict = sampler.gibbs_sample(10)
-    sampler.visualize(evidenceDict = evidenceDict, show=True)
+    sampler.visualize(evidenceDict=evidenceDict, show=True)
 
     exit()
 
     pos = None
     for rep in range(10):
         sample = sampler.gibbs_sample(chainLength=10)
-        pos = sampler.visualize(evidenceDict=sample, pos=pos, savePath=None)#"./demonstration/visualizations/gibbs{}.png".format(rep))
+        pos = sampler.visualize(evidenceDict=sample, pos=pos,
+                                savePath=None)  # "./demonstration/visualizations/gibbs{}.png".format(rep))
 
     sampler.compute_marginalized_distributions()
     print(sampler.create_sampleDf(100, 20))
