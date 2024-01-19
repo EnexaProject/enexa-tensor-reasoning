@@ -1,5 +1,5 @@
 from tnreason.model import model_visualization as mv
-
+from tnreason.logic import expression_simplification as es
 
 class LogicRepresentation:
     def __init__(self, expressionsDict):
@@ -35,13 +35,13 @@ class LogicRepresentation:
     def remove_thing_nothing(self):
         newExpressionsDict = {}
         for key in self.expressionsDict:
-            newExpression = reduce_thing_nothing(self.expressionsDict[key][0])
+            newExpression = es.reduce_thing_nothing(self.expressionsDict[key][0])
             if newExpression not in ["Thing", "Nothing"]:
                 newExpressionsDict[key] = [newExpression, self.expressionsDict[key][1]]
         self.expressionsDict = newExpressionsDict
 
     def remove_double_nots(self):
-        self.expressionsDict = {key: [reduce_double_not(self.expressionsDict[key][0]), self.expressionsDict[key][1]] for
+        self.expressionsDict = {key: [es.reduce_double_not(self.expressionsDict[key][0]), self.expressionsDict[key][1]] for
                                 key in self.expressionsDict}
 
     def remove_doubles(self):
@@ -82,12 +82,11 @@ class LogicRepresentation:
 
 
 def infer_expression(expression, evidenceDict):
-    return reduce_thing_nothing(replace_evidence_variables(expression, evidenceDict))
+    return es.reduce_thing_nothing(replace_evidence_variables(expression, evidenceDict))
 
 
 def replace_evidence_variables(expression, evidenceDict):
-    # print(expression, type(expression)==str, expression in list(evidenceDict.keys()))
-    if type(expression) == str:
+    if isinstance(expression, str):
         if expression in evidenceDict.keys():
             if bool(evidenceDict[expression]) == True:
                 return "Thing"
@@ -95,47 +94,16 @@ def replace_evidence_variables(expression, evidenceDict):
                 return "Nothing"
         else:
             return expression
-    elif expression[0] == "not":
-        return ["not", replace_evidence_variables(expression[1], evidenceDict)]
-    elif expression[1] == "and":
-        return [replace_evidence_variables(expression[0], evidenceDict), "and",
+    elif len(expression) == 2:
+        return [expression[0], replace_evidence_variables(expression[1], evidenceDict)]
+    elif len(expression) == 3:
+        return [replace_evidence_variables(expression[0], evidenceDict), expression[1],
                 replace_evidence_variables(expression[2], evidenceDict)]
-
-
-def reduce_thing_nothing(expression):
-    if type(expression) == str:
-        return expression
-    elif expression[0] == "not":
-        rightExpression = reduce_thing_nothing(expression[1])
-        if rightExpression == "Thing":
-            return "Nothing"
-        elif rightExpression == "Nothing":
-            return "Thing"
-        return ["not", rightExpression]
-    elif expression[1] == "and":
-        leftExpression = reduce_thing_nothing(expression[0])
-        rightExpression = reduce_thing_nothing(expression[2])
-        if leftExpression == "Thing":
-            return rightExpression
-        elif rightExpression == "Thing":
-            return leftExpression
-        elif leftExpression == "Nothing" or rightExpression == "Nothing":
-            return "Nothing"
-        return [leftExpression, "and", rightExpression]
-
-
-def reduce_double_not(expression):
-    if type(expression) == str:
-        return expression
-    elif expression[0] == "not":
-        if expression[1][0] == "not":
-            return reduce_double_not(expression[1][1])
-        else:
-            return ["not", reduce_double_not(expression[1])]
-    elif expression[1] == "and":
-        return [reduce_double_not(expression[0]), "and", reduce_double_not(expression[2])]
     else:
         raise ValueError("Expression {} not understood!".format(expression))
+
+
+
 
 
 def equality_contradiction_check(expression1, expression2):
@@ -170,6 +138,8 @@ def equality_check(expression1, expression2):
                                                                                       expression2[2])) or (
                     equality_check(expression1[0], expression2[2]) and equality_check(expression1[2],
                                                                                       expression2[0]))
+    else:
+        return expression1 == expression2
 
 
 def find_new_evidence(expressionsDict, hardLogicLimit=100):
@@ -231,7 +201,7 @@ if __name__ == "__main__":
 
     and_expression = ['not', [['not', 'jaszczur'], 'and',
                               ['not', ['not', [['not', 'sikorka'], 'and', ['not', ['not', 'sledz']]]]]]]
-    assert reduce_double_not(and_expression) == ['not',
+    assert es.reduce_double_not(and_expression) == ['not',
                                                  [['not', 'jaszczur'], 'and', [['not', 'sikorka'], 'and', 'sledz']]], \
         "Generate from disjunctions or double not does not work"
-    assert reduce_double_not(["not", ["not", "sledz"]]) == "sledz", "Removing double not does not work"
+    assert es.reduce_double_not(["not", ["not", "sledz"]]) == "sledz", "Removing double not does not work"

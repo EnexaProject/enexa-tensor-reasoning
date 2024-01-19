@@ -70,11 +70,6 @@ class GibbsSampler(SamplerBase):
         for sweep in range(chainLength):
             for updateAtomKey in self.atoms:
                 sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, updateAtomKey)
-        #                miniSampler = SamplerBase(self.infer_expressionsDict(
-        #                    {atomKey: sampleDict[atomKey] for atomKey in self.atoms if atomKey != updateAtomKey}))
-        #                if updateAtomKey not in miniSampler.atoms:
-        #                    miniSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]})
-        #                sampleDict[updateAtomKey] = miniSampler.create_independent_sample()[updateAtomKey]
         return sampleDict
 
 
