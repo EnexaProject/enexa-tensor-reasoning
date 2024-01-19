@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def get_all_variables(expressionList):
     variables = []
     for expression in expressionList:
@@ -8,16 +9,16 @@ def get_all_variables(expressionList):
 
 
 def get_variables(expression):
-    if type(expression) == str:
+    if isinstance(expression, str):
         return [expression]
-    elif expression[0] == "not":
+    elif len(expression) == 2:  # First entry is connective, second the subexpression
         return get_variables(expression[1])
-    elif expression[1] == "and":
-        if type(expression[0]) == str:
+    elif len(expression) == 3:  # Second entry is connective, first and last the subexpression
+        if isinstance(expression[0], str):
             left_variables = [expression[0]]
         else:
             left_variables = get_variables(expression[0])
-        if type(expression[2]) == str:
+        if isinstance(expression[2], str):
             right_variables = [expression[2]]
         else:
             right_variables = get_variables(expression[2])
@@ -25,6 +26,8 @@ def get_variables(expression):
     else:
         raise ValueError("Expression {} not understood.".format(expression))
 
+
+## Only used in Variable Learner, which has not been maintained!
 def get_individuals(expression):
     if type(expression) == str:
         arguments = expression.split("(")[1][:-1]

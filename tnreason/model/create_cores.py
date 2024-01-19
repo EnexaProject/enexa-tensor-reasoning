@@ -5,32 +5,32 @@ import numpy as np
 
 ## When only atoms in expressions (FormulaTensor)
 def create_subExpressionCores(expression, formulaKey):
-    expressionLength = len(expression)
-
     addCoreKey = str(formulaKey) + "_" + str(expression) + "_subCore"
     headColor = str(formulaKey) + "_" + str(expression)
 
-    if expressionLength == 1:
+    if isinstance(expression, str):
         return {addCoreKey: cc.CoordinateCore(np.eye(2), [expression, headColor], addCoreKey)}
-    elif expressionLength == 2:
-        if type(expression[1]) == str:
+    elif len(expression) == 2:
+        if expression[0] != "not":
+            raise ValueError("Expression {} not understood!".format(expression))
+        if isinstance(expression[1], str):
             return {addCoreKey: cc.CoordinateCore(create_negation_tensor(),
                                                   [expression[1], headColor],
-                                                  expression)}
+                                                  addCoreKey)}
         else:
             partsDict = create_subExpressionCores(expression[1], formulaKey)
-            partsDict[addCoreKey] = cc.CoordinateCore(create_negation_tensor(),
-                                                      [formulaKey + "_" + str(expression[1]), headColor], addCoreKey)
-            return partsDict
-    elif expressionLength == 3:
-        if type(expression[0]) == str:
+            addCore = cc.CoordinateCore(create_negation_tensor(),
+                                        [formulaKey + "_" + str(expression[1]), headColor], addCoreKey)
+            return {**partsDict, addCoreKey: addCore}
+    elif len(expression) == 3:
+        if isinstance(expression[0], str):
             partsDict0 = {}
             leftColor = expression[0]
         else:
             partsDict0 = create_subExpressionCores(expression[0], formulaKey)
             leftColor = formulaKey + "_" + str(expression[0])
 
-        if type(expression[2]) == str:
+        if isinstance(expression[2], str):
             partsDict2 = {}
             rightColor = expression[2]
         else:
@@ -38,10 +38,19 @@ def create_subExpressionCores(expression, formulaKey):
             rightColor = formulaKey + "_" + str(expression[2])
 
         if expression[1] == "and":
-            addCore = cc.CoordinateCore(create_and_tensor(), [leftColor, rightColor, headColor], addCoreKey)
-
+            addCoreValue = create_conjunction_tensor()
+        elif expression[1] == "or":
+            addCoreValue = create_disjunction_tensor()
+        elif expression[1] == "xor":
+            addCoreValue = create_xor_tensor()
+        elif expression[1] == "imp":
+            addCoreValue = create_implication_tensor()
+        elif expression[1] == "eq":
+            addCoreValue = create_biconditional_tensor()
+        else:
+            raise ValueError("Expression {} not understood!")
         return {**partsDict0, **partsDict2,
-                addCoreKey: addCore}
+                addCoreKey: cc.CoordinateCore(addCoreValue, [leftColor, rightColor, headColor], addCoreKey)}
 
     else:
         raise ValueError("Expression {} has wrong length!".format(expression))
@@ -60,13 +69,49 @@ def create_negation_tensor():
     return negation_tensor
 
 
-def create_and_tensor():
+def create_conjunction_tensor():
     and_tensor = np.zeros((2, 2, 2))
     and_tensor[0, 0, 0] = 1
     and_tensor[0, 1, 0] = 1
     and_tensor[1, 0, 0] = 1
     and_tensor[1, 1, 1] = 1
     return and_tensor
+
+
+def create_disjunction_tensor():
+    dis_tensor = np.zeros((2, 2, 2))
+    dis_tensor[0, 0, 0] = 1
+    dis_tensor[0, 1, 1] = 1
+    dis_tensor[1, 0, 1] = 1
+    dis_tensor[1, 1, 1] = 1
+    return dis_tensor
+
+
+def create_xor_tensor():
+    xor_tensor = np.zeros((2, 2, 2))
+    xor_tensor[0, 0, 0] = 1
+    xor_tensor[0, 1, 1] = 1
+    xor_tensor[1, 0, 1] = 1
+    xor_tensor[1, 1, 0] = 1
+    return xor_tensor
+
+
+def create_implication_tensor():
+    imp_tensor = np.zeros((2, 2, 2))
+    imp_tensor[0, 0, 1] = 1
+    imp_tensor[0, 1, 1] = 1
+    imp_tensor[1, 0, 0] = 1
+    imp_tensor[1, 1, 1] = 1
+    return imp_tensor
+
+
+def create_biconditional_tensor():
+    bic_tensor = np.zeros((2, 2, 2))
+    bic_tensor[0, 0, 1] = 1
+    bic_tensor[0, 1, 0] = 1
+    bic_tensor[1, 0, 0] = 1
+    bic_tensor[1, 1, 1] = 1
+    return bic_tensor
 
 
 def create_headCore(headType, weight, headColor):
