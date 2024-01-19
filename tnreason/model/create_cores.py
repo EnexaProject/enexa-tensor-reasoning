@@ -5,21 +5,24 @@ import numpy as np
 
 ## When only atoms in expressions (FormulaTensor)
 def create_subExpressionCores(expression, formulaKey):
+    expressionLength = len(expression)
+
     addCoreKey = str(formulaKey) + "_" + str(expression) + "_subCore"
-    if type(expression) == str:
-        return {addCoreKey: cc.CoordinateCore(np.eye(2), [expression, formulaKey + "_" + expression], expression)}
-    elif expression[0] == "not":
+    headColor = str(formulaKey) + "_" + str(expression)
+
+    if expressionLength == 1:
+        return {addCoreKey: cc.CoordinateCore(np.eye(2), [expression, headColor], addCoreKey)}
+    elif expressionLength == 2:
         if type(expression[1]) == str:
             return {addCoreKey: cc.CoordinateCore(create_negation_tensor(),
-                                                  [expression[1], formulaKey + "_" + str(expression)],
+                                                  [expression[1], headColor],
                                                   expression)}
         else:
             partsDict = create_subExpressionCores(expression[1], formulaKey)
             partsDict[addCoreKey] = cc.CoordinateCore(create_negation_tensor(),
-                                                      [formulaKey + "_" + str(expression[1]),
-                                                       formulaKey + "_" + str(expression)], expression)
+                                                      [formulaKey + "_" + str(expression[1]), headColor], addCoreKey)
             return partsDict
-    elif expression[1] == "and":
+    elif expressionLength == 3:
         if type(expression[0]) == str:
             partsDict0 = {}
             leftColor = expression[0]
@@ -34,10 +37,14 @@ def create_subExpressionCores(expression, formulaKey):
             partsDict2 = create_subExpressionCores(expression[2], formulaKey)
             rightColor = formulaKey + "_" + str(expression[2])
 
+        if expression[1] == "and":
+            addCore = cc.CoordinateCore(create_and_tensor(), [leftColor, rightColor, headColor], addCoreKey)
+
         return {**partsDict0, **partsDict2,
-                addCoreKey: cc.CoordinateCore(create_and_tensor(),
-                                              [leftColor, rightColor, formulaKey + "_" + str(expression)],
-                                              str(expression))}
+                addCoreKey: addCore}
+
+    else:
+        raise ValueError("Expression {} has wrong length!".format(expression))
 
 
 def create_truth_vec():

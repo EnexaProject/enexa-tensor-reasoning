@@ -3,6 +3,7 @@ import tnreason.model.generate_test_data as gtd
 from tnreason.logic import coordinate_calculus as cc
 
 from tnreason.contraction import contraction_visualization as cv
+from tnreason.contraction import core_contractor as coc
 
 import numpy as np
 
@@ -25,7 +26,17 @@ supFtensor = ft.SuperposedFormulaTensor(skeletonExpression, candidatesDict, para
 supFtensor.random_initialize_parameterCoresDict()
 print(supFtensor.get_largest_weight_as_solutionMap())
 
+supFcontractor = coc.CoreContractor({**supFtensor.parameterCoresDict,
+                                **supFtensor.skeletonCoresDict,
+                                **supFtensor.selectorCoresDict,
+                                **supFtensor.dataCoresDict},
+                                    openColors=["A1","A2","A3"])
+supFcontractor.optimize_coreList()
+supFcontractor.create_instructionList_from_coreList()
+supFcontractor.visualize()
+
 exit()
+
 cv.draw_contractionDiagram({**supFtensor.parameterCoresDict,
                                 **supFtensor.skeletonCoresDict,
                                 **supFtensor.selectorCoresDict,

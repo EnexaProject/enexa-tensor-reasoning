@@ -1,9 +1,16 @@
 from tnreason.model import formula_tensors as ft
 
-from tnreason.contraction import contraction_visualization as cv
+from tnreason.contraction import core_contractor as coc
 
-expression = ["A1", "and", ["not", ["A2","and","A1"]]]
+expression = ["A1", "and", ["not", ["A2","and",["not","A1"]]]]
 fTensor = ft.FormulaTensor(expression, "f1", headType="expFactor", weight=1)
 
-cv.draw_contractionDiagram(fTensor.get_cores(), title="FormulaTensor")
+
+contractor = coc.CoreContractor(fTensor.get_cores())
+contractor.optimize_coreList()
+contractor.create_instructionList_from_coreList()
+contractor.visualize()
+
+
+#cv.draw_contractionDiagram(fTensor.get_cores(), title="FormulaTensor")
 #cv.draw_contractionDiagram({**fTensor.subExpressionCoresDict, "head": fTensor.headCore},title="FormulaTensor")

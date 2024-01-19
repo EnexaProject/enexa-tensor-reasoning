@@ -69,7 +69,7 @@ class TensorRepresentation:
 
     def marginalized_contraction(self, atomList):
         marginalizationDict = {atomKey + "_marg": cc.CoordinateCore(np.ones(shape=(2)), [atomKey]) for atomKey in
-                               self.atoms}  # To make sure, that all atoms appear in colors
+                               atomList}  # To make sure, that all atoms appear in colors
         margContractor = coc.CoreContractor({**self.all_cores(), **marginalizationDict}, openColors=atomList)
         return margContractor.contract()
 
