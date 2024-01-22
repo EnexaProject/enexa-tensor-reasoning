@@ -20,12 +20,11 @@ class MLEBase:
                 in candidatesDict}
         self.superposedFormulaTensor = ft.SuperposedFormulaTensor(skeletonExpression, candidatesDict,
                                                                   parameterCoresDict=variableCoresDict)
-        if sampleDf is not None:
-            self.load_sampleDf(sampleDf)
 
         self.learnedFormulaDict = learnedFormulaDict
         self.fixedFormulaTensors = tm.TensorRepresentation(learnedFormulaDict, headType="weightedTruthEvaluation")
-        self.compute_fixedCores_likelihoodCorrection()
+        if sampleDf is not None:
+            self.load_sampleDf(sampleDf)
 
         self.skeletonExpression = skeletonExpression
         self.candidatesDict = candidatesDict
@@ -37,6 +36,7 @@ class MLEBase:
 
     def load_sampleDf(self, sampleDf):
         self.dataTensor = ft.DataTensor(sampleDf)
+        self.compute_fixedCores_likelihoodCorrection()
 
     def create_exponentiated_variables(self):
         ## Creates exponentiated factor to the variables tbo
