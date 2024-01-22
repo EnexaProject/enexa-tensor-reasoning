@@ -24,7 +24,7 @@ class TreeContractorBase:
         cv.draw_contractionDiagram(self.coreDict)
 
 
-class TreeTensorCoreContractor(TreeContractorBase):
+class TreeTensorContractor(TreeContractorBase):
     def contract(self):
         return self.contraction_step(self.contractionTree)
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         key: gc.change_type(coreDict[key]) for key in coreDict
     }
 
-    contractor = TreeTensorCoreContractor(tensorCoreDict, contree, ["c", "a"])
+    contractor = TreeTensorContractor(tensorCoreDict, contree, ["c", "a"])
     contractor.get_reductionDict()
     print(contractor.contract().values)
     contractor.visualize()

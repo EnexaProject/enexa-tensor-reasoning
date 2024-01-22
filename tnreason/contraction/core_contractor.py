@@ -61,7 +61,7 @@ class ChainContractorBase:
         return reduceDict
 
 
-class TensorCoreContractor(ChainContractorBase):
+class ChainTensorContractor(ChainContractorBase):
     ## When NumpyTensorCores in coreDict
     def contract(self):
         reduceDict = self.get_reduceDict_from_coreList()

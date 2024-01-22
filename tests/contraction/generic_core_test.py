@@ -17,7 +17,7 @@ tensorCoreDict = {
 ccContractor = coc.CoreContractor(coreDict,
                                   openColors=["a", "b"])
 
-tcContractor = coc.TensorCoreContractor(tensorCoreDict,
+tcContractor = coc.ChainTensorContractor(tensorCoreDict,
                                         openColors=["a", "b"]
                                         )
 
