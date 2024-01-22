@@ -3,24 +3,19 @@ from matplotlib import pyplot as plt
 from tnreason.contraction import contraction_optimization as co
 from tnreason.contraction import bc_contraction_generation as cg
 from tnreason.contraction import contraction_visualization as cv
+from tnreason.contraction import generic_cores as gc
 
-
-class CoreContractor:
+class LinearContractorBase:
     """
     coreDict: Dictionary of CoordinateCores
     coreList: Order of coreDict keys for contraction
     instructionList: list of contraction instructions: either "and" with additional core or "reduce" with a color. First entry must be add to start with.
     """
-
     def __init__(self, coreDict={}, coreList=None, instructionList=None, openColors=[]):
         self.coreDict = coreDict
         self.coreList = coreList
         self.instructionList = instructionList
         self.openColors = openColors
-
-    def generate_coreDict_from_formulaList(self, formulaList):
-        for formula in formulaList:
-            self.coreDict = {**self.coreDict, **cg.generate_factor_dict(formula)}
 
     def optimize_coreList(self, method="GreedyHeuristic"):
         # Generate the coreColorDict and colorDimDict for ContractionOptimizer
@@ -38,9 +33,11 @@ class CoreContractor:
         elif method == "Dijkstra":
             optimizer = co.DijkstraOptimizer(coreColorDict, colorDimDict, globallyOpenColors=self.openColors)
             optimizer.optimize()
+        else:
+            raise ValueError("Optimization Method {} not understood!".format(method))
         self.coreList = optimizer.coreList
 
-    def create_instructionList_from_coreList(self, verbose=False):
+    def get_reduceDict_from_coreList(self):
         if self.coreList is None:
             self.coreList = list(self.coreDict.keys())
         # Find all colors
@@ -60,6 +57,20 @@ class CoreContractor:
                         reduceDict[key].append(color)
                         break
         self.coreList.reverse()
+        return reduceDict
+
+class TensorCoreContractor(LinearContractorBase):
+    ## When NumpyTensorCores in coreDict
+    def contract(self):
+        reduceDict = self.get_reduceDict_from_coreList()
+        contracted = self.coreDict[self.coreList[0]].reduce_colors(reduceDict[self.coreList[0]])
+        for coreKey in self.coreList[1:]:
+            contracted = contracted.reduced_contraction(self.coreDict[coreKey], reduceDict[coreKey])
+        return contracted
+
+class CoreContractor(LinearContractorBase):
+    def create_instructionList_from_coreList(self, verbose=False):
+        reduceDict = self.get_reduceDict_from_coreList()
         # Create the instructionList
         self.instructionList = []
         for key in self.coreList:
@@ -112,10 +123,7 @@ class CoreContractor:
         cv.draw_contractionDiagram(self.coreDict, title=title, pos=pos)
 
     def contract(self, optimizationMethod=None, verbose=False):
-        if optimizationMethod is None:
-            if self.instructionList is None:
-                self.create_instructionList_from_coreList()
-        elif optimizationMethod == "GreedyHeuristic":
+        if optimizationMethod is None or optimizationMethod == "GreedyHeuristic":
             self.optimize_coreList()
             self.create_instructionList_from_coreList()
         else:
@@ -137,6 +145,12 @@ class CoreContractor:
         return contracted
 
     ## Unused!
+
+    def generate_coreDict_from_formulaList(self, formulaList):
+        ## This should not be the job ob coreContractor, but of a representator!
+        for formula in formulaList:
+            self.coreDict = {**self.coreDict, **cg.generate_factor_dict(formula)}
+
     def contract_color(self, color):
         affectedCores, affectedKeys = find_affected(self.coreDict, color)
 
