@@ -52,3 +52,5 @@ class NumpyTensorCore(TensorCoreBase):
 def change_type(cCore, targetType="NumpyTensorCore"):
     if targetType == "NumpyTensorCore":
         return NumpyTensorCore(cCore.values, cCore.colors, cCore.name)
+    else:
+        raise TypeError("Type {} not understood!".format(targetType))

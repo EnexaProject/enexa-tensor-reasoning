@@ -3,14 +3,15 @@ from matplotlib import pyplot as plt
 from tnreason.contraction import contraction_optimization as co
 from tnreason.contraction import bc_contraction_generation as cg
 from tnreason.contraction import contraction_visualization as cv
-from tnreason.contraction import generic_cores as gc
 
-class LinearContractorBase:
+
+class ChainContractorBase:
     """
     coreDict: Dictionary of CoordinateCores
     coreList: Order of coreDict keys for contraction
     instructionList: list of contraction instructions: either "and" with additional core or "reduce" with a color. First entry must be add to start with.
     """
+
     def __init__(self, coreDict={}, coreList=None, instructionList=None, openColors=[]):
         self.coreDict = coreDict
         self.coreList = coreList
@@ -59,7 +60,8 @@ class LinearContractorBase:
         self.coreList.reverse()
         return reduceDict
 
-class TensorCoreContractor(LinearContractorBase):
+
+class TensorCoreContractor(ChainContractorBase):
     ## When NumpyTensorCores in coreDict
     def contract(self):
         reduceDict = self.get_reduceDict_from_coreList()
@@ -68,7 +70,8 @@ class TensorCoreContractor(LinearContractorBase):
             contracted = contracted.reduced_contraction(self.coreDict[coreKey], reduceDict[coreKey])
         return contracted
 
-class CoreContractor(LinearContractorBase):
+
+class CoreContractor(ChainContractorBase):
     def create_instructionList_from_coreList(self, verbose=False):
         reduceDict = self.get_reduceDict_from_coreList()
         # Create the instructionList
@@ -306,8 +309,6 @@ if __name__ == "__main__":
         "b": 1.72345
     }
 
-
-
     contractor = CoreContractor(coordinateDict,
                                 None,
                                 [["add", "a"], ["add", "b"], ["reduce", "x"], ["reduce", "y"]],
@@ -329,7 +330,6 @@ if __name__ == "__main__":
 
     print(contractor.create_contraction_subscripts())
     print(contractor.numpy_einsum_contract().values)
-
 
     contractor = NegationTolerantCoreContractor(
         coreDict={
