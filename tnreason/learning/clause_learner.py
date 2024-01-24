@@ -15,9 +15,10 @@ class ClauseLearnerMLE(amle.MLEBase):
         data_correction_contractor = coc.CoreContractor({key: self.superposedFormulaTensor.parameterCoresDict[key] for key in
                                                    self.superposedFormulaTensor.parameterCoresDict if
                                                    key != tboVariableKey})
+        ## PROBLEM WHEN VARIABLECORES ARE DISCONNECTED! General bug?
         data_correction_contractor.visualize()
         data_correction_core = data_correction_contractor.contract()
-        
+
         data_gradient = data_correction_core.sum_with(old_data_gradient.multiply(-1))
         partition_gradient = self.contract_clause_partition_gradient(tboVariableKey)  #
         return partition_gradient.sum_with(data_gradient.multiply(-1))

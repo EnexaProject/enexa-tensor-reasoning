@@ -6,6 +6,15 @@ def generate_list_from_rule(premises, head):
 
     return expression
 
+def generate_list_from_conjunctions(expression):
+    ## ! Outputs the atoms in nested listed ! But used in real data tests.
+    result = []
+    for subExpression in expression:
+        if isinstance(subExpression, list):
+            result.append(generate_list_from_conjunctions(subExpression))
+        elif not (subExpression in ["and","not"]):
+            result.append(subExpression)
+    return result
 
 def generate_conjunctions(atoms):
     expression = atoms[0]
@@ -72,4 +81,6 @@ def generate_pracmln_formulastring(expression):
 
 if __name__ == "__main__":
     and_expression = generate_from_generic_expression(["jaszczur", "or", ["sikorka", "or", ["not", "sledz"]]])
+
+    print(generate_list_from_conjunctions(["a","and",["b","and","c"]]))
     print(and_expression)
