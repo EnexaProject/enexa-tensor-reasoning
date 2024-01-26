@@ -27,6 +27,16 @@ class EntropyMaximizer:
         else:
             self.satisfactionDict = satisfactionDict
 
+    def add_formula(self, expression, weight=None, key=None, isFact=False):
+        if key is None:
+            key = "f"+str(len(self.formulaDict.keys())+len(self.factDict.keys()))
+        if isFact:
+            self.factDict[key] = expression
+            self.factTensors.add_expression(expression, weight, key)
+        else:
+            self.formulaDict[key] = [expression, weight]
+            self.formulaTensors.add_expression(expression, weight, key)
+
     def calculate_satisfaction(self, sampleDf):
         dataTensor = ft.DataTensor(sampleDf)
         self.satisfactionDict = {
