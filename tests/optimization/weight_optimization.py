@@ -29,14 +29,12 @@ formulaList = [
 ]
 
 estimator = wees.WeightEstimator(formulaList)
-estimator.generate_rawCoreDict()
-restCore = estimator.contract_restCore("f0")
-print(restCore.values, restCore.colors)
+
 
 estimator.calculate_independent_satRates()
-print(check_pos_neg_weight(estimator, "f0"))
+
 #print(estimator.formulaDict)
-#estimator.alternating_optimization()
+print(estimator.alternating_optimization(sweepNum=10))
 #print(estimator.formulaDict)
 
 

@@ -20,7 +20,7 @@ class HybridKnowledgeBase:
         self.atoms = list(
             eu.get_all_variables([weightedFormulasDict[key][0] for key in weightedFormulasDict] + factsList))
         if not self.is_satisfiable():
-            raise ValueError("The Knowledge Base is inconsistent!")
+            raise ValueError("The initialized Knowledge Base is inconsistent!")
 
     def is_satisfiable(self):
         return coc.CoreContractor(self.facts.get_cores(headType="truthEvaluation")).contract().values > 0

@@ -16,7 +16,7 @@ class TensorRepresentation:
                                                                 headType=headType,
                                                                 weight=expressionsDict[formulaKey][1]
                                                                 ) for formulaKey in expressionsDict}
-        self.expressionsDict = expressionsDict
+        self.expressionsDict = expressionsDict.copy()
         self.headType = headType  ## To prevent resetting of headCores
 
         for formulaKey in expressionsDict:
@@ -32,6 +32,11 @@ class TensorRepresentation:
                                                                weight=weight)
         self.expressionsDict[formulaKey] = [expression, weight]
         self.atoms = np.unique(self.atoms, eu.get_variables(expression))
+
+    def drop_expression(self, formulaKey):
+        self.formulaTensorsDict.pop(formulaKey)
+        self.expressionsDict.pop(formulaKey)
+        self.atoms = np.unique(eu.get_all_variables([self.expressionsDict[key][0] for key in self.expressionsDict]))
 
     def all_cores(self):
         allCoresDict = {}

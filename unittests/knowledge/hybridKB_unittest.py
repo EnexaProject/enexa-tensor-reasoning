@@ -10,7 +10,7 @@ class HybridKBTest(unittest.TestCase):
             factsList=["a1", ["a1", "imp", "a2"]]).is_satisfiable())
 
     def test_satisfiability2(self):
-        with self.assertRaises(ValueError, msg="The Knowledge Base is inconsistent!"):
+        with self.assertRaises(ValueError, msg="The initialized Knowledge Base is inconsistent!"):
             knowledge.HybridKnowledgeBase(factsList=["a1", ["not", "a1"]])
 
     def test_ask_constraint_entailed(self):

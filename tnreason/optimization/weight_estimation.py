@@ -88,7 +88,7 @@ class WeightEstimator:
                 weightTracker[sweepPos + 1, i] = self.formulaDict[formulaKey][3]
         return weightTracker
 
-    def formula_optimization(self, tboFormulaKey):
+    def formula_optimization(self, tboFormulaKey, maxWeight=100):
         conDict = self.formulaTensors.get_cores(headType="expFactor")
 
         oldLength = len(conDict)
@@ -101,11 +101,18 @@ class WeightEstimator:
 
         negativeExpWeight, positiveExpWeight = coc.CoreContractor(conDict, openColors=[
             tboFormulaKey + "_" + str(self.formulaDict[tboFormulaKey][0])]).contract().values
-        negPosQuotient = negativeExpWeight / positiveExpWeight
-        empRate = self.formulaDict[tboFormulaKey][2]
-        self.formulaDict[tboFormulaKey][3] = np.log(negPosQuotient * (empRate / (1 - empRate)))
 
-        self.formulaTensors.update_heads({tboFormulaKey: np.log(negPosQuotient * (empRate / (1 - empRate)))})
+        if positiveExpWeight == 0:
+            if negativeExpWeight > 0:
+                self.formulaDict[tboFormulaKey][3] = maxWeight
+            else:
+                self.formulaDict[tboFormulaKey][3] = 0
+        else:
+            negPosQuotient = negativeExpWeight / positiveExpWeight
+            empRate = self.formulaDict[tboFormulaKey][2]
+            self.formulaDict[tboFormulaKey][3] = min(np.log(negPosQuotient * (empRate / (1 - empRate))), maxWeight)
+
+        self.formulaTensors.update_heads({tboFormulaKey: self.formulaDict[tboFormulaKey][3]})
 
     def get_weights(self):
         return {key: self.formulaDict[key][3] for key in self.formulaDict}
