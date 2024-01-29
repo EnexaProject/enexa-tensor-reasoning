@@ -10,14 +10,12 @@ import numpy as np
 
 
 class FormulaSamplingBase:
-    def __init__(self, skeletonExpression, candidatesDict, knownFormulaDict={}, knownFactDict={}, sampleDf=None):
+    def __init__(self, skeletonExpression, candidatesDict, knownFormulasDict={}, knownFactsDict={}, sampleDf=None):
         self.skeletonExpression = skeletonExpression
         self.placeHolders = eu.get_variables(skeletonExpression)
         self.candidatesDict = candidatesDict
 
-        self.formulaTensors = tm.TensorRepresentation(knownFormulaDict, headType="expFactor")
-        self.factTensors = tm.TensorRepresentation({key: [knownFactDict[key], None] for key in knownFactDict},
-                                                   headType="truthEvaluation")
+        self.formulaTensors = tm.TensorRepresentation(knownFormulasDict, knownFactsDict, headType="expFactor")
         self.assignment = self.uniform_sample()
 
         if sampleDf is not None:
@@ -29,6 +27,9 @@ class FormulaSamplingBase:
             affectedAtoms.update(self.candidatesDict[placeHolder])
 
         self.dataTensor = ft.DataTensor(sampleDf[affectedAtoms])
+
+    def get_result(self):
+        return eg.replace_atoms(self.skeletonExpression, self.assignment)
 
     def uniform_sample(self, placeHolders=None):
         if placeHolders is None:
@@ -45,13 +46,13 @@ class FormulaSamplingBase:
                 headType="truthEvaluation")
 
             dataTerm = coc.CoreContractor({
+                **self.formulaTensors.get_cores(),
                 **self.dataTensor.get_cores(),
                 **candidateTensor.get_cores()
             }).contract().values / self.dataTensor.dataNum
 
             partition = coc.CoreContractor({
                 **self.formulaTensors.get_cores(),
-                **self.factTensors.get_cores(),
                 **candidateTensor.get_cores()
             }).contract().values
 
@@ -83,28 +84,3 @@ class GibbsFormulaSampler(FormulaSamplingBase):
             for chainPos in range(chainSize):
                 for key in self.placeHolders:
                     self.gibbs_step(key, temperature=temperature)
-
-
-if __name__ == "__main__":
-    skeleton = ["P0", "and", "P1"]
-    candidatesDict = {
-        "P0": ["sikorka", "sledz"],
-        "P1": ["jaszczur"]  # , "szczeniak", "piskle"]
-    }
-
-    from tnreason.model import generate_test_data as gtd
-
-    sampleDf = gtd.generate_sampleDf({
-        "f1": [["sikorka", "and", ["not", "piskle"]], 20],
-        "f2": [["sledz", "and", ["not", "szczeniak"]], 20],
-        "f3": [["jaszczur", "and", "sikorka"], 20],
-    }, 1000)
-
-    fSampler = GibbsFormulaSampler(skeleton, candidatesDict, sampleDf=sampleDf)
-    print(fSampler.assignment)
-
-    fSampler.gibbs(10)
-    print(fSampler.assignment)
-
-    fSampler.gibbs_simulated_annealing([(10, 1), (10, 2), (10, 5), (10, 100)])
-    print(fSampler.assignment)
