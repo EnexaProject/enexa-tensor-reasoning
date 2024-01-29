@@ -10,7 +10,7 @@ import numpy as np
 
 
 class FormulaSamplingBase:
-    def __init__(self, skeletonExpression, candidatesDict, knownFormulaDict={}, knownFactDict={}, sampleDf = None):
+    def __init__(self, skeletonExpression, candidatesDict, knownFormulaDict={}, knownFactDict={}, sampleDf=None):
         self.skeletonExpression = skeletonExpression
         self.placeHolders = eu.get_variables(skeletonExpression)
         self.candidatesDict = candidatesDict
@@ -35,12 +35,14 @@ class FormulaSamplingBase:
             placeHolders = self.placeHolders
         return {phKey: np.random.choice(self.candidatesDict[phKey]) for phKey in placeHolders}
 
-    def compute_local_probability(self, tboPlaceholderKey, temperature=1):
+    def compute_local_probability(self, tboPlaceholderKey, temperature=1, verbose=False):
         self.assignment.pop(tboPlaceholderKey)
 
         probabilities = np.empty(shape=len(self.candidatesDict[tboPlaceholderKey]))
         for i, candidate in enumerate(self.candidatesDict[tboPlaceholderKey]):
-            candidateTensor = ft.FormulaTensor(eg.replace_atoms(self.skeletonExpression, {**self.assignment, tboPlaceholderKey: candidate}), headType="truthEvaluation")
+            candidateTensor = ft.FormulaTensor(
+                eg.replace_atoms(self.skeletonExpression, {**self.assignment, tboPlaceholderKey: candidate}),
+                headType="truthEvaluation")
 
             dataTerm = coc.CoreContractor({
                 **self.dataTensor.get_cores(),
@@ -54,42 +56,55 @@ class FormulaSamplingBase:
             }).contract().values
 
             probabilities[i] = (dataTerm / partition) ** temperature
-            if dataTerm == 0:
+            if dataTerm == 0 and verbose:
                 print("Formula {} nether true!".format(candidateTensor.expression))
 
-        if np.linalg.norm(probabilities)>0:
-            return probabilities/np.sum(probabilities)
+        if np.linalg.norm(probabilities) > 0:
+            return probabilities / np.sum(probabilities)
         else:
-            return [1/len(probabilities) for i in range(len(probabilities))]
+            return [1 / len(probabilities) for i in range(len(probabilities))]
+
 
 class GibbsFormulaSampler(FormulaSamplingBase):
-    def gibbs_step(self, key):
-        localProb = self.compute_local_probability(key, temperature=1)
-        self.assignment[key] = self.candidatesDict[key][np.random.multinomial(1, localProb)[0]]
+    def gibbs_step(self, key, temperature=1):
+        localProb = self.compute_local_probability(key, temperature=temperature)
+        self.assignment[key] = self.candidatesDict[key][np.where(np.random.multinomial(1, localProb)==1)[0][0]]
 
     def gibbs(self, chainSize=10):
         for chainPos in range(chainSize):
             for key in self.placeHolders:
                 self.gibbs_step(key)
 
+    def gibbs_simulated_annealing(self, temperaturePattern, restart=True):
+        if restart:
+            self.assignment = self.uniform_sample()
+        ## temperaturePattern : List of tuples (chainSize, temperature)
+        for chainSize, temperature in temperaturePattern:
+            for chainPos in range(chainSize):
+                for key in self.placeHolders:
+                    self.gibbs_step(key, temperature=temperature)
 
 
 if __name__ == "__main__":
     skeleton = ["P0", "and", "P1"]
     candidatesDict = {
         "P0": ["sikorka", "sledz"],
-        "P1": ["jaszczur", "szczeniak", "piskle"]
+        "P1": ["jaszczur"]  # , "szczeniak", "piskle"]
     }
 
     from tnreason.model import generate_test_data as gtd
+
     sampleDf = gtd.generate_sampleDf({
-        "f1": [["sikorka", "and", ["not","piskle"]], 20],
-        "f2": [["sledz", "and", ["not","szczeniak"]], 20],
+        "f1": [["sikorka", "and", ["not", "piskle"]], 20],
+        "f2": [["sledz", "and", ["not", "szczeniak"]], 20],
         "f3": [["jaszczur", "and", "sikorka"], 20],
-    }, 10)
+    }, 1000)
 
     fSampler = GibbsFormulaSampler(skeleton, candidatesDict, sampleDf=sampleDf)
     print(fSampler.assignment)
 
     fSampler.gibbs(10)
+    print(fSampler.assignment)
+
+    fSampler.gibbs_simulated_annealing([(10, 1), (10, 2), (10, 5), (10, 100)])
     print(fSampler.assignment)
