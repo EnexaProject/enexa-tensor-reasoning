@@ -11,19 +11,27 @@ import pandas as pd
 
 class SamplerBase:
     def __init__(self, expressionsDict, factsDict={}):
-        self.expressionsDict = expressionsDict
-        self.factsDict = factsDict
+        self.expressionsDict = expressionsDict.copy()
+        self.factsDict = factsDict.copy()
 
         self.atoms = list(eu.get_all_variables([expressionsDict[formulaKey][0] for formulaKey in expressionsDict] +
                                                [factsDict[key] for key in factsDict]))
+
         self.marginalizedDict = None
+
+    def change_temperature(self, temperature):
+        self.expressionsDict = {key: [self.expressionsDict[key][0], self.expressionsDict[key][1] / temperature]
+                                for key in self.expressionsDict}
 
     def compute_marginalized_distributions(self):
         tensorRepresented = tm.TensorRepresentation(self.expressionsDict, self.factsDict, headType="expFactor")
         self.marginalizedDict = {atomKey: tensorRepresented.marginalized_contraction([atomKey]).normalize()
                                  for atomKey in self.atoms}
 
-    def create_independent_sample(self):
+    def create_independent_sample(self, variableList=None):
+        if variableList is None:
+            variableList = self.atoms
+
         if self.marginalizedDict is None:
             self.compute_marginalized_distributions()
 
@@ -32,7 +40,7 @@ class SamplerBase:
                 atomKey)
 
         return {atomKey: np.random.multinomial(1, self.marginalizedDict[atomKey].values)[0] == 0 for atomKey in
-                self.atoms}
+                variableList}
 
     def infer_formulas_and_facts(self, evidenceDict={}):
         logRep = lm.LogicRepresentation(self.expressionsDict, self.factsDict)
@@ -60,19 +68,30 @@ class GibbsSampler(SamplerBase):
                 [sampleDf, pd.DataFrame(self.gibbs_sample(chainLength=chainLength), index=[samplePos])])
         return sampleDf.astype(outType)
 
-    def gibbs_step(self, evidenceDict, updateAtomKey):
+    def gibbs_step(self, evidenceDict, updateAtomKey, temperature=1):
         stepSampler = SamplerBase(*self.infer_formulas_and_facts(
-            {atomKey: evidenceDict[atomKey] for atomKey in self.atoms if atomKey != updateAtomKey}
+            {atomKey: evidenceDict[atomKey] for atomKey in evidenceDict if atomKey != updateAtomKey}
         ))
+        stepSampler.change_temperature(temperature)
         if updateAtomKey not in stepSampler.atoms:
             stepSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]})
         return stepSampler.create_independent_sample()[updateAtomKey]
 
-    def gibbs_sample(self, chainLength):
-        sampleDict = self.create_independent_sample()
+    def gibbs_sample(self, chainLength, variableList=None, temperature=1):
+        if variableList is None:
+            variableList = self.atoms
+        sampleDict = self.create_independent_sample(variableList)
         for sweep in range(chainLength):
-            for updateAtomKey in self.atoms:
-                sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, updateAtomKey)
+            for updateAtomKey in variableList:
+                sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, updateAtomKey, temperature=temperature)
+        return sampleDict
+
+    def simulated_annealing_gibbs(self, variableList, annealingPattern):
+        sampleDict = self.create_independent_sample(variableList)
+        for chainLength, temperature in annealingPattern:
+            for sweep in range(chainLength):
+                for updateAtomKey in variableList:
+                    sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, updateAtomKey, temperature=temperature)
         return sampleDict
 
 

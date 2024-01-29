@@ -21,6 +21,5 @@ print(fSampler.assignment)
 fSampler.gibbs(10)
 print(fSampler.assignment)
 
-exit()
-fSampler.gibbs_simulated_annealing([(10,1),(10,2),(10,5),(10,100)])
+fSampler.gibbs_simulated_annealing([(10,1),(10,0.5),(10,0.2),(10,0.1)])
 print(fSampler.assignment)

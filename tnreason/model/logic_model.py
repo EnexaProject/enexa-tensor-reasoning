@@ -13,7 +13,7 @@ class LogicRepresentation:
             self.expressionsDict
         }
         self.factsDict = {
-            key: replace_evidence_variables(self.factsDict[key][0], evidenceDict) for key in self.factsDict
+            key: replace_evidence_variables(self.factsDict[key], evidenceDict) for key in self.factsDict
         }
         if simplify:
             self.simplify()
@@ -33,7 +33,7 @@ class LogicRepresentation:
     def simplify(self):
         self.remove_thing_nothing()
         self.remove_double_nots()
-        self.remove_doubles()
+        self.remove_doubles() # Not working on constraints, this can be done using entailment checks
         self.beautify_weights()
 
     def remove_thing_nothing(self):
@@ -43,10 +43,19 @@ class LogicRepresentation:
             if newExpression not in ["Thing", "Nothing"]:
                 newExpressionsDict[key] = [newExpression, self.expressionsDict[key][1]]
         self.expressionsDict = newExpressionsDict
+        newFactsDict = {}
+        for key in self.factsDict:
+            newExpression = es.reduce_thing_nothing(self.factsDict[key])
+            if newExpression not in ["Thing", "Nothing"]:
+                newFactsDict[key] = newExpression
+        self.factsDict = newFactsDict
+
 
     def remove_double_nots(self):
         self.expressionsDict = {key: [es.reduce_double_not(self.expressionsDict[key][0]), self.expressionsDict[key][1]] for
                                 key in self.expressionsDict}
+        self.factsDict = {key: es.reduce_double_not(self.factsDict[key]) for
+                                key in self.factsDict}
 
     def remove_doubles(self):
         # Removes Expressions which are the same or negations of each other

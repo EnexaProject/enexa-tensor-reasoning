@@ -11,6 +11,9 @@ import numpy as np
 
 class TensorRepresentation:
     def __init__(self, expressionsDict, factsDict={}, headType="expFactor"):
+        self.factsDict = factsDict.copy()
+        self.expressionsDict = expressionsDict.copy()
+
         self.formulaTensorsDict = {formulaKey: ft.FormulaTensor(expression=expressionsDict[formulaKey][0],
                                                                 formulaKey=formulaKey,
                                                                 headType=headType,
@@ -20,8 +23,7 @@ class TensorRepresentation:
                                                     formulaKey=factKey,
                                                     headType="truthEvaluation"
                                                     ) for factKey in factsDict}
-        self.factsDict = factsDict.copy()
-        self.expressionsDict = expressionsDict.copy()
+
         self.headType = headType  ## To prevent resetting of headCores
 
         for formulaKey in expressionsDict:

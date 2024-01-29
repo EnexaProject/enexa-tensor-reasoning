@@ -7,13 +7,14 @@ expressionsDict =     {
         "e3":  [["a6", "or", ["not", "a1"]], 2],
     }
 
-hybridKB = knowledge.HybridKnowledgeBase(expressionsDict, ["a2",["not","a2"]])
+hybridKB = knowledge.HybridKnowledgeBase(weightedFormulasDict=expressionsDict,
+                                         factsDict={"fact1":"a2", "fact2": ["not","a3"]})
 print(hybridKB.ask_constraint("a2"))
+print(hybridKB.annealed_map_query(variableList=["a3"],evidenceDict={"a1": 1, "a2":1}))
 
 
-exit()
-print(hybridKB.ask(["a2","or","a1"]))
-print(hybridKB.map_query(["a1","a2"], evidenceDict={"a2":1}))
+#print(hybridKB.ask(["a2","or","a1"]))
+#print(hybridKB.exact_map_query(["a1","a2"], evidenceDict={"a2":1}))
 
 #softKB.tell("a1",1)
 #print(softKB.ask(["a1","eq","a2"], evidenceDict={"a2":1}))
