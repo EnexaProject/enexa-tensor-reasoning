@@ -10,12 +10,17 @@ import numpy as np
 
 
 class TensorRepresentation:
-    def __init__(self, expressionsDict, headType="expFactor"):
+    def __init__(self, expressionsDict, factsDict={}, headType="expFactor"):
         self.formulaTensorsDict = {formulaKey: ft.FormulaTensor(expression=expressionsDict[formulaKey][0],
                                                                 formulaKey=formulaKey,
                                                                 headType=headType,
                                                                 weight=expressionsDict[formulaKey][1]
                                                                 ) for formulaKey in expressionsDict}
+        self.factsDict = {factKey: ft.FormulaTensor(expression=factsDict[factKey],
+                                                    formulaKey=factKey,
+                                                    headType="truthEvaluation"
+                                                    ) for factKey in factsDict}
+        self.factsDict = factsDict.copy()
         self.expressionsDict = expressionsDict.copy()
         self.headType = headType  ## To prevent resetting of headCores
 
@@ -39,21 +44,20 @@ class TensorRepresentation:
         self.atoms = np.unique(eu.get_all_variables([self.expressionsDict[key][0] for key in self.expressionsDict]))
 
     def all_cores(self):
-        allCoresDict = {}
-        for formulaKey in self.formulaTensorsDict:
-            allCoresDict = {**allCoresDict, **self.formulaTensorsDict[formulaKey].subExpressionCoresDict,
-                            formulaKey + "_head": self.formulaTensorsDict[formulaKey].headCore}
-        return allCoresDict
+        return self.get_cores()
 
     def get_cores(self, formulaKeys=None, headType="expFactor"):
         if formulaKeys is None:
-            formulaKeys = self.formulaTensorsDict.keys()
+            formulaKeys = list(self.formulaTensorsDict.keys()) + list(self.factsDict.keys())
         if self.headType != headType:
             self.set_heads(headType)
-        retCoresDict = {}
+        restCoresDict = {}
         for formulaKey in formulaKeys:
-            retCoresDict = {**retCoresDict, **self.formulaTensorsDict[formulaKey].get_cores()}
-        return retCoresDict
+            if formulaKey in self.expressionsDict:
+                restCoresDict = {**restCoresDict, **self.formulaTensorsDict[formulaKey].get_cores()}
+            elif formulaKey in self.factsDict:
+                restCoresDict = {**restCoresDict, **self.factsDict[formulaKey].get_cores()}
+        return restCoresDict
 
     def set_heads(self, headType):
         if self.headType != headType:

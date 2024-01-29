@@ -2,14 +2,18 @@ from tnreason.model import model_visualization as mv
 from tnreason.logic import expression_simplification as es
 
 class LogicRepresentation:
-    def __init__(self, expressionsDict):
+    def __init__(self, expressionsDict, factsDict = {}):
         self.expressionsDict = expressionsDict
+        self.factsDict = factsDict
 
     def infer(self, evidenceDict, simplify=True):
         self.expressionsDict = {
             key: [replace_evidence_variables(self.expressionsDict[key][0], evidenceDict), self.expressionsDict[key][1]]
             for key in
             self.expressionsDict
+        }
+        self.factsDict = {
+            key: replace_evidence_variables(self.factsDict[key][0], evidenceDict) for key in self.factsDict
         }
         if simplify:
             self.simplify()
@@ -83,6 +87,8 @@ class LogicRepresentation:
     def get_expressionsDict(self):
         return self.expressionsDict
 
+    def get_formulas_and_facts(self):
+        return self.expressionsDict, self.factsDict
 
 def infer_expression(expression, evidenceDict):
     return es.reduce_thing_nothing(replace_evidence_variables(expression, evidenceDict))

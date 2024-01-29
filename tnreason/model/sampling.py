@@ -10,13 +10,16 @@ import pandas as pd
 
 
 class SamplerBase:
-    def __init__(self, expressionsDict):
+    def __init__(self, expressionsDict, factsDict={}):
         self.expressionsDict = expressionsDict
-        self.atoms = eu.get_all_variables([self.expressionsDict[formulaKey][0] for formulaKey in self.expressionsDict])
+        self.factsDict = factsDict
+
+        self.atoms = list(eu.get_all_variables([expressionsDict[formulaKey][0] for formulaKey in expressionsDict] +
+                                               [factsDict[key] for key in factsDict]))
         self.marginalizedDict = None
 
     def compute_marginalized_distributions(self):
-        tensorRepresented = tm.TensorRepresentation(self.expressionsDict, headType="expFactor")
+        tensorRepresented = tm.TensorRepresentation(self.expressionsDict, self.factsDict, headType="expFactor")
         self.marginalizedDict = {atomKey: tensorRepresented.marginalized_contraction([atomKey]).normalize()
                                  for atomKey in self.atoms}
 
@@ -31,10 +34,10 @@ class SamplerBase:
         return {atomKey: np.random.multinomial(1, self.marginalizedDict[atomKey].values)[0] == 0 for atomKey in
                 self.atoms}
 
-    def infer_expressionsDict(self, evidenceDict={}):
-        logRep = lm.LogicRepresentation(self.expressionsDict)
+    def infer_formulas_and_facts(self, evidenceDict={}):
+        logRep = lm.LogicRepresentation(self.expressionsDict, self.factsDict)
         logRep.infer(evidenceDict=evidenceDict, simplify=True)
-        return logRep.expressionsDict
+        return logRep.get_formulas_and_facts()
 
     def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
                   pos=None, savePath=None, show=False):
@@ -58,7 +61,7 @@ class GibbsSampler(SamplerBase):
         return sampleDf.astype(outType)
 
     def gibbs_step(self, evidenceDict, updateAtomKey):
-        stepSampler = SamplerBase(self.infer_expressionsDict(
+        stepSampler = SamplerBase(*self.infer_formulas_and_facts(
             {atomKey: evidenceDict[atomKey] for atomKey in self.atoms if atomKey != updateAtomKey}
         ))
         if updateAtomKey not in stepSampler.atoms:
