@@ -18,6 +18,7 @@ def from_yaml(loadPath):
     modelSpec = storage.load_from_yaml(loadPath)
     return HybridKnowledgeBase(modelSpec["weightedFormulas"], factsDict=modelSpec["facts"])
 
+
 class HybridKnowledgeBase:
     def __init__(self, weightedFormulasDict={}, factsDict={}):
         self.weightedFormulasDict = weightedFormulasDict.copy()
@@ -29,7 +30,7 @@ class HybridKnowledgeBase:
         self.atoms = list(
             eu.get_all_variables([weightedFormulasDict[key][0] for key in weightedFormulasDict] +
                                  [factsDict[key] for key in factsDict]))
-        if not len(self.factsDict)==0:
+        if not len(self.factsDict) == 0:
             if not self.is_satisfiable():
                 raise ValueError("The initialized Knowledge Base is inconsistent!")
 
@@ -85,8 +86,12 @@ class HybridKnowledgeBase:
                     modelCores).contract().values * 2 ** overheadCount)
 
     def query(self, variableList, evidenceDict={}):
+        disconnectedVariables = [variable for variable in variableList if
+                                 variable not in self.atoms and variable not in evidenceDict]
+
         return coc.CoreContractor(
             {
+                **crc.create_emptyCoresDict(disconnectedVariables),
                 **self.formulaTensors.get_cores(),
                 **self.facts.get_cores(headType="truthEvaluation"),
                 **crc.create_evidenceCoresDict(evidenceDict)
@@ -107,17 +112,17 @@ class HybridKnowledgeBase:
 
     def to_yaml(self, savePath):
         storage.save_as_yaml({
-            "weightedFormulas" : self.weightedFormulasDict,
-            "facts" : self.factsDict
+            "weightedFormulas": self.weightedFormulasDict,
+            "facts": self.factsDict
         }, savePath)
 
     def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
                   pos=None):
         return mov.visualize_model(self.weightedFormulasDict,
                                    factsDict=self.factsDict,
-                                  strengthMultiplier=strengthMultiplier,
-                                  strengthCutoff=strengthCutoff,
-                                  fontsize=fontsize,
-                                  showFormula=showFormula,
-                                  evidenceDict=evidenceDict,
-                                  pos=pos)
+                                   strengthMultiplier=strengthMultiplier,
+                                   strengthCutoff=strengthCutoff,
+                                   fontsize=fontsize,
+                                   showFormula=showFormula,
+                                   evidenceDict=evidenceDict,
+                                   pos=pos)

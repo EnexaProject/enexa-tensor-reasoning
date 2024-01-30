@@ -1,6 +1,7 @@
 import unittest
 
 from tnreason import knowledge
+import numpy as np
 
 
 class HybridKBTest(unittest.TestCase):
@@ -35,6 +36,18 @@ class HybridKBTest(unittest.TestCase):
                               factsDict={"c1": "a1",
                                          "c2": ["not", "a2"]}).exact_map_query(["a1", "a2"], evidenceDict={"a3": 1})
                           )
+
+    def test_empty_dicts(self):
+        self.assertEquals(1,
+                          knowledge.HybridKnowledgeBase(
+                              weightedFormulasDict={}, factsDict={}).query(["a1"], evidenceDict={"a1": 1}).values[1])
+        self.assertEquals(0.5,
+                          knowledge.HybridKnowledgeBase(
+                              weightedFormulasDict={}, factsDict={}).query(["a1"], evidenceDict={}).values[1])
+        self.assertEquals(0.125,
+                          knowledge.HybridKnowledgeBase(
+                              weightedFormulasDict={}, factsDict={}).query(["a1", "a3", "a2"], evidenceDict={}).values[
+                              1, 0, 1])
 
 
 if __name__ == "__main__":

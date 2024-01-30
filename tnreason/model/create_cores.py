@@ -137,6 +137,9 @@ def create_expFactor_values(weight, differentiated):
     values[1] = np.exp(weight)
     return values
 
+def create_emptyCoresDict(variableList):
+    return {variableKey+"_trivialCore": cc.CoordinateCore(np.ones(2), [variableKey], variableKey + "_trivialCore")
+            for variableKey in variableList}
 
 def create_evidenceCoresDict(evidenceDict):
     evidenceCoresDict = {}
