@@ -77,6 +77,9 @@ class GibbsFormulaLearner(FormulaLearnerBase):
                                          knownFactsDict=self.knownFactsDict,
                                          sampleDf=self.sampleDf)
         learner.gibbs_simulated_annealing(annealingPattern)
-
         learnedFormula = learner.get_result()
+
+        if formulaKey is None:
+            formulaKey = str(learnedFormula)
+
         self.add_formula(learnedFormula, formulaKey)

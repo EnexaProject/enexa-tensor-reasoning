@@ -56,13 +56,14 @@ def generate_from_generic_expression(expression):
 
 
 def replace_atoms(expression, atomDict):
-    if type(expression) == str:
+    if isinstance(expression, str):
         return atomDict[expression]
+    elif len(expression) == 2:
+        return [expression[0], replace_atoms(expression[1], atomDict)]
+    elif len(expression) == 3:
+        return [replace_atoms(expression[0], atomDict), expression[1], replace_atoms(expression[2], atomDict)]
     else:
-        if expression[0] == "not":
-            return ["not", replace_atoms(expression[1], atomDict)]
-        elif expression[1] == "and":
-            return [replace_atoms(expression[0], atomDict), "and", replace_atoms(expression[2], atomDict)]
+        raise ValueError("Expression {} not understood!".format(expression))
 
 
 def generate_pracmln_string(expression, weight):
