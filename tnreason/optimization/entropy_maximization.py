@@ -8,7 +8,7 @@ import numpy as np
 
 class EntropyMaximizer:
     def __init__(self, formulaList=[], formulaDict=None,
-                 satisfactionDict={}, sampleDf=None,
+                 satisfactionDict={},
                  factDict={}):
         if formulaDict is not None:
             self.formulaDict = formulaDict
@@ -21,13 +21,9 @@ class EntropyMaximizer:
         self.factDict = factDict
         self.factTensors = tm.TensorRepresentation({key: [factDict[key], None] for key in factDict},
                                                    headType="truthEvaluation")
+        self.satisfactionDict = satisfactionDict
 
-        if sampleDf is not None:
-            self.calculate_satisfaction(sampleDf)
-        else:
-            self.satisfactionDict = satisfactionDict
-
-    def add_formula(self, expression, weight=0, key=None, isFact=False, satisfactionRate=None, sampleDf=None):
+    def add_formula(self, expression, empRate=None, weight=0, key=None, isFact=False):
         if key is None:
             key = "f" + str(len(self.formulaDict.keys()) + len(self.factDict.keys()))
         if isFact:
@@ -36,14 +32,8 @@ class EntropyMaximizer:
         else:
             self.formulaDict[key] = [expression, weight]
             self.formulaTensors.add_expression(expression, weight, key)
-        if satisfactionRate is not None:
-            self.satisfactionDict[key] = satisfactionRate
-        else:
-            assert sampleDf is not None, ValueError(
-                "Cannot estimate satisfaction of formula {}, since sampleDf is missing.".format(
-                    key))
-            dataTensor = ft.DataTensor(sampleDf)
-            self.satisfactionDict[key] = calculate_satisfaction(dataTensor, expression)
+
+        self.satisfactionDict[key] = empRate
 
     def drop_formula(self, formulaKey):
         if formulaKey in self.factDict:
@@ -57,13 +47,6 @@ class EntropyMaximizer:
         if formulaKeys is None:
             formulaKeys = self.formulaDict.keys()
         return {formulaKey: self.formulaDict[formulaKey][1] for formulaKey in formulaKeys}
-
-    def calculate_satisfaction(self, sampleDf):
-        dataTensor = ft.DataTensor(sampleDf)
-        self.satisfactionDict = {
-            key: calculate_satisfaction(dataTensor, self.formulaDict[key][0])
-            for key in self.formulaDict
-        }
 
     def fact_identification(self, thresholdWeight=100):
         for key in self.formulaDict.copy():
@@ -131,7 +114,12 @@ class EntropyMaximizer:
         self.formulaTensors.update_heads({tboFormulaKey: self.formulaDict[tboFormulaKey][1]})
 
 
-def calculate_satisfaction(dataTensor, formula):
-    return coc.CoreContractor({**dataTensor.get_cores(),
-                               **ft.FormulaTensor(formula,
-                                                  headType="truthEvaluation").get_cores()}).contract().values / dataTensor.dataNum
+class EmpiricalCounter:
+    def __init__(self, sampleDf):
+        self.dataTensor = ft.DataTensor(sampleDf)
+
+    def get_empirical_satisfaction(self, formula):
+        return coc.CoreContractor({
+            **self.dataTensor.get_cores(),
+            **ft.FormulaTensor(formula,
+                               headType="truthEvaluation").get_cores()}).contract().values / self.dataTensor.dataNum

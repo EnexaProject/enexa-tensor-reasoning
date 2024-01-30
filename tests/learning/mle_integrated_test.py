@@ -15,22 +15,23 @@ candidatesDict = {"P1": ["a1", "a2", "a3"],
 
 sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
 
-learner = mlel.GibbsFormulaLearner(learnedFormulaDict={"fun":[["a3","and","a3"],2]},
+learner = mlel.GibbsFormulaLearner(knownFormulasDict={"fun":[["a3","and","a3"],2]},
                               sampleDf=sampleDf)
 learner.learn(skeletonExpression, candidatesDict, "fun2")
 
-exit()
-learner = mlel.GDFormulaLearner(learnedFormulaDict={"fun":[["a3","and","a3"],2]},
+
+learner2 = mlel.GDFormulaLearner(knownFormulasDict={"fun":[["a3","and","a3"],2]},
                               sampleDf=sampleDf)
 
 
-learner.learn(skeletonExpression, candidatesDict, "learned1")
+learner2.learn(skeletonExpression, candidatesDict, "learned1")
 
 skeletonExpression = "P1"
 candidatesDict = {"P1": ["a1", "a2", "a3"]
                   }
-learner.learn(skeletonExpression, candidatesDict, "learned2")
-learner.learn(skeletonExpression, candidatesDict, "learned3")
+learner2.learn(skeletonExpression, candidatesDict, "learned2")
+learner2.learn(skeletonExpression, candidatesDict, "learned3")
 
-learner.adjust_weights()
-print(learner.get_learned_formulas())
+
+learner2.adjust_weights()
+print(learner2.get_learned_formulas())

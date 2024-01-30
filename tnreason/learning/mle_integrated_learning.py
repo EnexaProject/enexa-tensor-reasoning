@@ -11,16 +11,24 @@ class FormulaLearnerBase:
         self.learnedFormulaDict = knownFormulasDict.copy()
         self.knownFactsDict = knownFactsDict.copy()
 
+        empRates = self.load_sampleDf(sampleDf)
         self.entropyMaximizer = entm.EntropyMaximizer(formulaDict=knownFormulasDict.copy(),
-                                                      factDict=knownFactsDict.copy())
-        self.load_sampleDf(sampleDf)
+                                                      factDict=knownFactsDict.copy(),
+                                                      satisfactionDict=empRates)
 
     def load_sampleDf(self, sampleDf):
         self.sampleDf = sampleDf
-        self.entropyMaximizer.calculate_satisfaction(sampleDf)
+        self.empiricalCounter = entm.EmpiricalCounter(sampleDf)
+        return {**{key: self.empiricalCounter.get_empirical_satisfaction(self.learnedFormulaDict[key][0]) for key in
+                   self.learnedFormulaDict},
+                **{key: self.empiricalCounter.get_empirical_satisfaction(self.knownFactsDict[key]) for key in
+                   self.knownFactsDict}
+                }
 
     def add_formula(self, formula, formulaKey, verbose=True, weightThreshold=0, adjustSweeps=0):
-        self.entropyMaximizer.add_formula(formula, key=formulaKey, isFact=False, sampleDf=self.sampleDf)
+        self.entropyMaximizer.add_formula(formula,
+                                          empRate=self.empiricalCounter.get_empirical_satisfaction(formula),
+                                          key=formulaKey, isFact=False)
         self.entropyMaximizer.formula_optimization(formulaKey)
         if adjustSweeps > 0:
             self.adjust_weights(adjustSweeps)

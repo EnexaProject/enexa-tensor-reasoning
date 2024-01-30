@@ -152,7 +152,6 @@ def create_evidenceCoresDict(evidenceDict):
 
 ## When Placeholders in Expression (SuperposedFormulaTensor)
 def skeleton_recursion(headExpression, candidatesDict):
-    print(headExpression)
     if type(headExpression) == str:
         return {}, candidatesDict[headExpression]
     elif headExpression[0] == "not":
