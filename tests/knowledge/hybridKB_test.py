@@ -11,8 +11,11 @@ expressionsDict =     {
         "e4": ["a3", 100]
     }
 
+
+
 hybridKB = knowledge.HybridKnowledgeBase(weightedFormulasDict=expressionsDict,
-                                         factsDict={"fact1":"a2", "fact2": ["not","a4"]})
+                                         factsDict={})
+#                                         factsDict={"fact1":"a2", "fact2": ["not","a4"]})
 #hybridKB.tell_constraint("a2")
 print(hybridKB.ask_constraint("a2"))
 print(hybridKB.annealed_map_query(variableList=["a3"],evidenceDict={"a1": 1, "a2":1}))

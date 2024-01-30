@@ -4,6 +4,7 @@ from tnreason.contraction import contraction_optimization as co
 from tnreason.contraction import bc_contraction_generation as cg
 from tnreason.contraction import contraction_visualization as cv
 
+from tnreason.logic import coordinate_calculus as cc
 
 class ChainContractorBase:
     """
@@ -126,6 +127,8 @@ class CoreContractor(ChainContractorBase):
         cv.draw_contractionDiagram(self.coreDict, title=title, pos=pos)
 
     def contract(self, optimizationMethod=None, verbose=False):
+        if len(self.coreDict)==0:
+            return "EmptyCore"
         if optimizationMethod is None or optimizationMethod == "GreedyHeuristic":
             self.optimize_coreList()
             self.create_instructionList_from_coreList()
