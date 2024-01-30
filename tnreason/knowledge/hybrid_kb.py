@@ -17,7 +17,8 @@ class HybridKnowledgeBase:
         self.factsDict = factsDict.copy()
 
         self.formulaTensors = tm.TensorRepresentation(weightedFormulasDict, headType="expFactor")
-        self.facts = tm.TensorRepresentation(factsDict, headType="truthEvaluation")
+        self.facts = tm.TensorRepresentation(
+            {key: [factsDict[key], None] for key in factsDict}, headType="truthEvaluation")
         self.atoms = list(
             eu.get_all_variables([weightedFormulasDict[key][0] for key in weightedFormulasDict] +
                                  [factsDict[key] for key in factsDict]))
@@ -25,12 +26,11 @@ class HybridKnowledgeBase:
             raise ValueError("The initialized Knowledge Base is inconsistent!")
 
     def is_satisfiable(self):
-        return coc.CoreContractor(self.facts.get_cores(formulaKeys=self.factsDict.keys(),
-                                                       headType="truthEvaluation")).contract().values > 0
+        return coc.CoreContractor(self.facts.get_cores(headType="truthEvaluation")).contract().values > 0
 
     def ask_constraint(self, constraint):
         probability = self.ask(constraint, evidenceDict={})
-        if probability == 1:
+        if probability > 0.9999:
             return "entailed"
         elif probability == 0:
             return "contradicting"
@@ -69,7 +69,6 @@ class HybridKnowledgeBase:
         modelCores = {**self.formulaTensors.get_cores(),
                       **self.facts.get_cores(headType="truthEvaluation"),
                       **crc.create_evidenceCoresDict(evidenceDict)}
-
         return coc.CoreContractor(
             {**modelCores,
              **ft.FormulaTensor(queryFormula,
