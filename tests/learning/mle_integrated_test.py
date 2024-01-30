@@ -6,16 +6,24 @@ learnedFormulaDict = {
     "f1": [["a1", "and", "a2"], 1.3],
     "f2": ["a3", 2],
 }
-sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
-
-learner = mlel.FormulaLearner(learnedFormulaDict={"fun":[["a3","and","a3"],2]},
-                              sampleDf=sampleDf)
 
 skeletonExpression = ["not",["P1", "and", ["not","P2"]]]
 
 candidatesDict = {"P1": ["a1", "a2", "a3"],
                   "P2": ["a1", "a2", "a3"],
                   }
+
+sampleDf = gtd.generate_sampleDf(learnedFormulaDict, 100)
+
+learner = mlel.GibbsFormulaLearner(learnedFormulaDict={"fun":[["a3","and","a3"],2]},
+                              sampleDf=sampleDf)
+learner.learn(skeletonExpression, candidatesDict, "fun2")
+
+exit()
+learner = mlel.GDFormulaLearner(learnedFormulaDict={"fun":[["a3","and","a3"],2]},
+                              sampleDf=sampleDf)
+
+
 learner.learn(skeletonExpression, candidatesDict, "learned1")
 
 skeletonExpression = "P1"
