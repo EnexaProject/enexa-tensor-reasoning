@@ -102,10 +102,8 @@ class WeightEstimator:
         negativeExpWeight, positiveExpWeight = coc.CoreContractor(conDict, openColors=[
             tboFormulaKey + "_" + str(self.formulaDict[tboFormulaKey][0])]).contract().values
 
-        if positiveExpWeight == 0:
+        if positiveExpWeight == 0 or negativeExpWeight ==0:
             self.formulaDict[tboFormulaKey][3] = 0
-        elif negativeExpWeight == 0:
-            self.formulaDict[tboFormulaKey][3] = maxWeight
         else:
             negPosQuotient = negativeExpWeight / positiveExpWeight
             empRate = self.formulaDict[tboFormulaKey][2]
