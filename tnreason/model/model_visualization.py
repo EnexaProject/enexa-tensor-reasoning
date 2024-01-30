@@ -8,6 +8,7 @@ from tnreason.logic import expression_utils as eu
 
 
 def visualize_model(expressionsDict,
+                    factsDict={},
                     strengthMultiplier=4,
                     strengthCutoff=10,
                     fontsize=10,
@@ -18,17 +19,27 @@ def visualize_model(expressionsDict,
                     show=True,
                     title="Visualization of the MLN"):
     expressionsList = [expressionsDict[key][0] for key in expressionsDict]
-    atomsList = eu.get_all_variables(expressionsList)
+    constraintsList = [factsDict[key] for key in factsDict]
+
+    atomsList = list(set(eu.get_all_variables(expressionsList)) | set( eu.get_all_variables(constraintsList)))
 
     ## Collect edges for position optimization
     edges = []
     for expressionKey in expressionsDict:
         for atom in eu.get_variables(expressionsDict[expressionKey][0]):
             edges.append([atom, expressionKey])
+
+    constEdges = []
+    for factsKey in factsDict:
+        for atom in eu.get_variables(factsDict[factsKey]):
+            constEdges.append([atom, factsKey])
+
     graph = nx.Graph()
     graph.add_nodes_from(atomsList)
     graph.add_nodes_from(expressionsDict.keys())
+    graph.add_nodes_from(factsDict.keys())
     graph.add_edges_from(edges)
+    graph.add_edges_from(constEdges)
     if pos is None:
         pos = nx.spring_layout(graph, k=0.8)
 
@@ -59,13 +70,16 @@ def visualize_model(expressionsDict,
     nx.draw_networkx_labels(graph, pos, {atomKey: atomKey for atomKey in atomsList}, font_size=fontsize)
 
     if showFormula:
-        expressionLabels = {expressionKey: expressionsDict[expressionKey][0] for expressionKey in expressionsDict}
+        expressionLabels = {**{expressionKey: expressionsDict[expressionKey][0] for expressionKey in expressionsDict},
+        **{factKey: factsDict[factKey] for factKey in factsDict}}
     else:
-        expressionLabels = {expressionKey: expressionKey for expressionKey in expressionsDict}
+        expressionLabels = {**{expressionKey: expressionKey for expressionKey in expressionsDict},
+        **{factKey: factKey for factKey in factsDict}}
     nx.draw_networkx_labels(graph, pos, expressionLabels, font_size=fontsize)
 
     ## Draw Edges
-    colorList = ["r", "g", "b", "r", "g", "b", "r", "g", "b"]
+    colorList = ["red", "green", "blue", "purple", "orange", "yellow", "lime", "teal", "skyblue", "lightblue",
+"maroon", "navyblue", "black", "white"]
     for i, expressionKey in enumerate(expressionsDict.keys()):
         strength = min(expressionsDict[expressionKey][1], strengthCutoff)
         drawEdges = []
@@ -76,6 +90,18 @@ def visualize_model(expressionsDict,
                                width=strengthMultiplier * strength,
                                alpha=0.2,
                                edge_color=colorList[i])
+
+    for i, factKey in enumerate(factsDict.keys()):
+        strength = 0.8 * strengthMultiplier * strengthCutoff
+        drawEdges = []
+        for atom in eu.get_variables(factsDict[factKey]):
+            drawEdges.append([atom, factKey])
+        nx.draw_networkx_edges(graph, pos,
+                               edgelist=drawEdges,
+                               width = strength,
+                               alpha=0.2,
+                               edge_color="black")
+
     plt.title(title, fontsize=15)
     if savePath is not None:
         plt.savefig(savePath)
@@ -109,7 +135,11 @@ if __name__ == "__main__":
         "e5": ["a5", 2]
     }
 
-    visualize_model(exDict, evidenceDict={"a2": 1, "a3": 0})
+    facDict = {
+        "c1": ["a10","and","a2"]
+    }
+
+    visualize_model(exDict, facDict, evidenceDict={"a2": 1, "a3": 0})
 
     exit()
     import matplotlib.pyplot as plt

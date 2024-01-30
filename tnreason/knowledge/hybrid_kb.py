@@ -3,10 +3,12 @@ from tnreason.model import logic_model as lm
 from tnreason.model import formula_tensors as ft
 from tnreason.model import create_cores as crc
 from tnreason.model import sampling as samp
+from tnreason.model import model_visualization as mov
 
 from tnreason.contraction import core_contractor as coc
 
 from tnreason.logic import expression_utils as eu
+
 from tnreason.knowledge import storage
 
 import numpy as np
@@ -107,3 +109,14 @@ class HybridKnowledgeBase:
             "weightedFormulas" : self.weightedFormulasDict,
             "facts" : self.factsDict
         }, savePath)
+
+    def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
+                  pos=None):
+        return mov.visualize_model(self.weightedFormulasDict,
+                                   factsDict=self.factsDict,
+                                  strengthMultiplier=strengthMultiplier,
+                                  strengthCutoff=strengthCutoff,
+                                  fontsize=fontsize,
+                                  showFormula=showFormula,
+                                  evidenceDict=evidenceDict,
+                                  pos=pos)
