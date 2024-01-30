@@ -7,9 +7,14 @@ from tnreason.model import sampling as samp
 from tnreason.contraction import core_contractor as coc
 
 from tnreason.logic import expression_utils as eu
+from tnreason.knowledge import storage
 
 import numpy as np
 
+
+def from_yaml(loadPath):
+    modelSpec = storage.load_from_yaml(loadPath)
+    return HybridKnowledgeBase(modelSpec["weightedFormulas"], factsDict=modelSpec["facts"])
 
 class HybridKnowledgeBase:
     def __init__(self, weightedFormulasDict={}, factsDict={}):
@@ -96,3 +101,9 @@ class HybridKnowledgeBase:
 
         sampler = samp.GibbsSampler(*logRep.get_formulas_and_facts())
         return sampler.simulated_annealing_gibbs(variableList, annealingPattern)
+
+    def to_yaml(self, savePath):
+        storage.save_as_yaml({
+            "weightedFormulas" : self.weightedFormulasDict,
+            "facts" : self.factsDict
+        }, savePath)

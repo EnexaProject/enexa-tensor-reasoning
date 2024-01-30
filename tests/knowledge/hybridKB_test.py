@@ -1,5 +1,8 @@
 from tnreason import knowledge
 
+hKB = knowledge.from_yaml("./model.yaml")
+hKB.to_yaml("./model2.yaml")
+
 expressionsDict =     {
         "e0" : [["a1","imp","a2"], 2],
         "e1" : [["a4","eq",["not","a1"]], 2],
@@ -12,8 +15,6 @@ hybridKB = knowledge.HybridKnowledgeBase(weightedFormulasDict=expressionsDict,
 #hybridKB.tell_constraint("a2")
 print(hybridKB.ask_constraint("a2"))
 print(hybridKB.annealed_map_query(variableList=["a3"],evidenceDict={"a1": 1, "a2":1}))
-
-
-#print(hybridKB.ask(["a2","or","a1"]))
-#print(hybridKB.exact_map_query(["a1","a2"], evidenceDict={"a2":1}))
+print(hybridKB.ask(["a2","or","a1"]))
+print(hybridKB.exact_map_query(["a1","a2"], evidenceDict={"a2":1}))
 

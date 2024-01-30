@@ -22,8 +22,7 @@ setup(
         "numpy>=1.17", # was 1.23.4",
         "pandas>=1.0.0",
         "networkx",
-        #"pgmpy",
-        #"importlib-resources",
+        "pyyaml",
         "rdflib",
         "matplotlib"
     ],
