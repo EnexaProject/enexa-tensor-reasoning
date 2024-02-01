@@ -11,8 +11,20 @@ class PolynomialRepresentation:
                             **self.polynomialsDict[key].to_monomial_formulas()}
         return formulasDict
 
-#    def infer(self, evidenceDict):
-#        return {key : [[]] for key in self.formulasDict if }
+    def infer(self, evidenceDict):
+        inferedMonomials = {}
+        for key in self.monomialsDict:
+            monomialVariables, weight = self.monomialsDict[key]
+            for evidenceAtom in evidenceDict:
+                if evidenceAtom in monomialVariables:
+                    if evidenceDict[evidenceAtom]:
+                        monomialVariables.pop(monomialVariables.index(evidenceAtom))
+                    else:
+                        monomialVariables = []
+            if len(monomialVariables) > 0:
+                inferedMonomials[key] = monomialVariables, weight
+        return inferedMonomials
+
 
 class Polynomial:
     def __init__(self, monomialsDict={}, weightedFormula=None):
@@ -22,12 +34,13 @@ class Polynomial:
 
     def include_formula(self, weightedFormula, key=None):
         if key is None:
-            key = "f"+str(len(self.monomialsDict))
+            key = "f" + str(len(self.monomialsDict))
         self.monomialsDict = {**self.monomialsDict,
                               **formula_to_polynomial(weightedFormula[0], weightedFormula[1], key)}
 
     def to_monomial_formulas(self):
-        return {key : [monomial_to_formula(self.monomialsDict[key][0]), self.monomialsDict[key][1]] for key in self.monomialsDict}
+        return {key: [self.monomialsDict[key][0], self.monomialsDict[key][1]] for key in
+                self.monomialsDict}
 
 
 def formula_to_polynomial(formula, weight, key):
@@ -43,17 +56,17 @@ def formula_to_polynomial(formula, weight, key):
         monomialsDict = {}
         for rKey in rightDict:
             for lKey in leftDict:
-                if len(rightDict[rKey])>0:
+                if len(rightDict[rKey]) > 0:
                     rVariables = set(rightDict[rKey][0])
                 else:
                     rVariables = set()
-                if len(leftDict[lKey])>0:
+                if len(leftDict[lKey]) > 0:
                     lVariables = set(leftDict[lKey][0])
                 else:
                     lVariables = set()
                 monomialsDict[rKey + lKey] = [list(rVariables | lVariables),
-                                       weight * rightDict[rKey][1] * leftDict[lKey][1]]
-        return  monomialsDict
+                                              weight * rightDict[rKey][1] * leftDict[lKey][1]]
+        return monomialsDict
     else:
         raise ValueError("Formula {} not understood for polynomial transformation.".format(formula))
 
@@ -65,11 +78,9 @@ def monomial_to_formula(monomial):
     return formula
 
 
-
-
 if __name__ == "__main__":
-    poly = Polynomial(weightedFormula=[["a3","and",["not",["a1","and","a2"]]], 10])
-    print(poly.to_formulas())
+    poly = Polynomial(weightedFormula=[["a3", "and", ["not", ["a1", "and", "a2"]]], 10])
+    print(poly.to_monomial_formulas())
 
     poly = Polynomial({
         "m1": [["a1"], 1],
@@ -77,6 +88,8 @@ if __name__ == "__main__":
     })
 
     polyRep = PolynomialRepresentation({
-        "fun" : [["a3","and",["not",["a1","and","a2"]]], 10]
+        "fun": [["a3", "and", ["not", ["a1", "and", "a2"]]], 10]
     })
     print(polyRep.get_monomial_formulas())
+
+    print(polyRep.infer(evidenceDict={"a1": 1, "a2": 0}))
