@@ -14,7 +14,12 @@ expressionsDict =     {
 
 
 hybridKB = knowledge.HybridKnowledgeBase(weightedFormulasDict=expressionsDict,
-                                         factsDict={})
+                                         factsDict={"f2":["not","a2"]})
+hybridKB.include(
+    knowledge.HybridKnowledgeBase(weightedFormulasDict={},
+                                         factsDict={"f1":"a1"})
+)
+print(hybridKB.factsDict)
 #                                         factsDict={"fact1":"a2", "fact2": ["not","a4"]})
 #hybridKB.tell_constraint("a2")
 print(hybridKB.ask_constraint("a2"))

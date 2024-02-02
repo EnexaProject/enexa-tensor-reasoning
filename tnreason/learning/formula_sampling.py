@@ -25,7 +25,7 @@ class FormulaSamplingBase:
         affectedAtoms = set()
         for placeHolder in self.placeHolders:
             affectedAtoms.update(self.candidatesDict[placeHolder])
-
+        affectedAtoms = list(affectedAtoms)
         self.dataTensor = ft.DataTensor(sampleDf[affectedAtoms])
 
     def get_result(self):

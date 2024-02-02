@@ -34,6 +34,26 @@ class HybridKnowledgeBase:
             if not self.is_satisfiable():
                 raise ValueError("The initialized Knowledge Base is inconsistent!")
 
+    def include(self, secondHybridKB):
+        ## Cannot handle key conflicts!
+        for key in secondHybridKB.weightedFormulasDict:
+            self.formulaTensors.add_expression(secondHybridKB.weightedFormulasDict[key][0],
+                                               weight=secondHybridKB.weightedFormulasDict[key][1],
+                                               formulaKey=key)
+        for key in secondHybridKB.factsDict:
+            self.facts.add_expression(secondHybridKB.factsDict[key],
+                                      weight=None,
+                                      formulaKey=key)
+        if not len(self.factsDict) == 0:
+            if not self.is_satisfiable():
+                raise ValueError("By including additional facts, the Knowledge Base got inconsistent!")
+
+        self.weightedFormulasDict = {**self.weightedFormulasDict,
+                                     **secondHybridKB.weightedFormulasDict}
+        self.factsDict = {**self.factsDict,
+                          **secondHybridKB.factsDict}
+        self.atoms = list(set(self.atoms) | set(secondHybridKB.atoms))
+
     def is_satisfiable(self):
         return coc.CoreContractor(self.facts.get_cores(headType="truthEvaluation")).contract().values > 0
 
