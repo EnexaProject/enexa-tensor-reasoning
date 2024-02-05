@@ -6,6 +6,11 @@ def generate_list_from_rule(premises, head):
 
     return expression
 
+def combine_with_same_connective(atoms, connective="and"):
+    expression = atoms[0]
+    for atom in atoms[1:]:
+        expression = [atom, connective, expression]
+    return expression
 
 def generate_list_from_conjunctions(expression):
     ## ! Outputs the atoms in nested listed ! But used in real data tests.
