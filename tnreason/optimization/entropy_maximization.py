@@ -3,6 +3,8 @@ from tnreason.model import formula_tensors as ft
 
 from tnreason.contraction import core_contractor as coc
 
+from tnreason import knowledge
+
 import numpy as np
 
 
@@ -22,6 +24,10 @@ class EntropyMaximizer:
         self.factTensors = tm.TensorRepresentation({key: [factDict[key], None] for key in factDict},
                                                    headType="truthEvaluation")
         self.satisfactionDict = satisfactionDict
+
+    def to_hybrid_kb(self):
+        return knowledge.HybridKnowledgeBase(weightedFormulasDict=self.formulaDict,
+                                             factsDict=self.factDict)
 
     def add_formula(self, expression, empRate=None, weight=0, key=None, isFact=False):
         if key is None:

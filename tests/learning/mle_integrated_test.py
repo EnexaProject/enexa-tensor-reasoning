@@ -19,6 +19,9 @@ learner = mlel.GibbsFormulaLearner(knownFormulasDict={"fun":[["a3","and","a3"],2
                               sampleDf=sampleDf)
 learner.learn(skeletonExpression, candidatesDict, "fun2")
 
+hybridKB = learner.to_hybrid_kb()
+print(hybridKB.ask(["a1","and","a2"]))
+
 
 learner2 = mlel.GDFormulaLearner(knownFormulasDict={"fun":[["a3","and","a3"],2]},
                               sampleDf=sampleDf)

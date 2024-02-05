@@ -147,12 +147,14 @@ class HybridKBTest(unittest.TestCase):
             sample = hybridKB.exact_map_query(["a1", "a2"])
             self.assertEquals(0, int(sample["a1"]) - int(sample["a1"]) * int(sample["a2"]))
 
+    ##
     def test_unseen_atoms(self):
         hybridKB = knowledge.HybridKnowledgeBase(
             weightedFormulasDict={"f1": ["a1", 2]},
             factsDict={"constraint1": ["a1", "imp", "a2"]}
         )
         self.assertEquals(3, len(hybridKB.annealed_map_query(["a3", "a4", "a1"])))
+        self.assertEquals(3, len(hybridKB.annealed_map_query(["fun1", "fun4", "fun5"])))
 
 
 if __name__ == "__main__":

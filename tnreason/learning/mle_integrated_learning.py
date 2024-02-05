@@ -1,9 +1,9 @@
 ## Integrates the former separated weight and formula learning
+import knowledge
 from tnreason.optimization import alternating_mle as amle
 from tnreason.optimization import entropy_maximization as entm
 
 from tnreason.learning import formula_sampling as fs
-
 
 class FormulaLearnerBase:
     def __init__(self, knownFormulasDict={}, knownFactsDict={}, sampleDf=None):
@@ -15,6 +15,9 @@ class FormulaLearnerBase:
         self.entropyMaximizer = entm.EntropyMaximizer(formulaDict=knownFormulasDict.copy(),
                                                       factDict=knownFactsDict.copy(),
                                                       satisfactionDict=empRates)
+
+    def to_hybrid_kb(self):
+        return self.entropyMaximizer.to_hybrid_kb()
 
     def load_sampleDf(self, sampleDf):
         self.sampleDf = sampleDf

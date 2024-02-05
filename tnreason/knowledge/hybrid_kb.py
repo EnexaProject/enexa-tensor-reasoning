@@ -21,7 +21,8 @@ def from_yaml(loadPath):
 
 class HybridKnowledgeBase:
     def __init__(self, weightedFormulasDict={}, factsDict={}):
-        self.weightedFormulasDict = weightedFormulasDict.copy()
+        self.weightedFormulasDict = {key : [weightedFormulasDict[key][0], float(weightedFormulasDict[key][1])]
+                                     for key in weightedFormulasDict}
         self.factsDict = factsDict.copy()
 
         self.formulaTensors = tm.TensorRepresentation(weightedFormulasDict, headType="expFactor")
@@ -38,7 +39,7 @@ class HybridKnowledgeBase:
         ## Cannot handle key conflicts!
         for key in secondHybridKB.weightedFormulasDict:
             self.formulaTensors.add_expression(secondHybridKB.weightedFormulasDict[key][0],
-                                               weight=secondHybridKB.weightedFormulasDict[key][1],
+                                               weight=float(secondHybridKB.weightedFormulasDict[key][1]),
                                                formulaKey=key)
         for key in secondHybridKB.factsDict:
             self.facts.add_expression(secondHybridKB.factsDict[key],
