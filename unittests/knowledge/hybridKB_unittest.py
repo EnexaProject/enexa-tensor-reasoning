@@ -1,7 +1,8 @@
 import unittest
 
 from tnreason import knowledge
-import numpy as np
+
+sampleRepetition = 1
 
 
 class HybridKBTest(unittest.TestCase):
@@ -49,6 +50,55 @@ class HybridKBTest(unittest.TestCase):
                               weightedFormulasDict={}, factsDict={}).query(["a1", "a3", "a2"], evidenceDict={}).values[
                               1, 0, 1])
 
+    ## Sampling on facts tests
+    def test_not(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+            weightedFormulasDict={},
+            factsDict={"constraint1": ["not", "a1"]}
+        )
+        self.assertEquals(0,
+                          hybridKB.ask("a1"))
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.annealed_map_query(["a1"])
+            self.assertEquals(0, sample["a1"])
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.exact_map_query(["a1"])
+            self.assertEquals(0, sample["a1"])
+
+    def test_and(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+            weightedFormulasDict={"f1": ["a1", 1]},
+            factsDict={"constraint1": ["a1", "and", "a2"]}
+        )
+        self.assertEquals(0,
+                          hybridKB.ask(["not", "a1"]))
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            self.assertTrue((int(sample["a1"]) + int(sample["a2"])) == 2)
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.exact_map_query(["a1", "a2"])
+            self.assertTrue((int(sample["a1"]) + int(sample["a2"])) == 2)
+
+    def test_or(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+            weightedFormulasDict={},
+            factsDict={"constraint1": ["a1", "or", "a2"]}
+        )
+        self.assertEquals(0,
+                          hybridKB.ask([["not", "a1"], "and", ["not", "a2"]]))
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            self.assertTrue((int(sample["a1"]) + int(sample["a2"])) >= 1)
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.exact_map_query(["a1", "a2"])
+            self.assertTrue((int(sample["a1"]) + int(sample["a2"])) >= 1)
+
     def test_xor(self):
         hybridKB = knowledge.HybridKnowledgeBase(
             weightedFormulasDict={},
@@ -57,9 +107,52 @@ class HybridKBTest(unittest.TestCase):
         self.assertEquals(0,
                           hybridKB.ask(["a1", "and", "a2"]))
 
-        for rep in range(5):
-            sample = hybridKB.annealed_map_query(["a1","a2"])
-            self.assertEquals(1-sample["a1"], sample["a2"])
+        for rep in range(sampleRepetition):
+            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            self.assertEquals(1 - sample["a1"], sample["a2"])
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.exact_map_query(["a1", "a2"])
+            self.assertEquals(1 - sample["a1"], sample["a2"])
+
+    def test_eq(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+            weightedFormulasDict={},
+            factsDict={"constraint1": ["a1", "eq", "a2"]}
+        )
+        self.assertEquals(0,
+                          hybridKB.ask(["a1", "and", ["not", "a2"]]))
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            self.assertEquals(sample["a1"], sample["a2"])
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.exact_map_query(["a1", "a2"])
+            self.assertEquals(sample["a1"], sample["a2"])
+
+    def test_imp(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+            weightedFormulasDict={},
+            factsDict={"constraint1": ["a1", "imp", "a2"]}
+        )
+        self.assertEquals(0,
+                          hybridKB.ask(["a1", "and", ["not", "a2"]]))
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            self.assertEquals(0, int(sample["a1"]) - int(sample["a1"]) * int(sample["a2"]))
+
+        for rep in range(sampleRepetition):
+            sample = hybridKB.exact_map_query(["a1", "a2"])
+            self.assertEquals(0, int(sample["a1"]) - int(sample["a1"]) * int(sample["a2"]))
+
+    def test_unseen_atoms(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+            weightedFormulasDict={"f1": ["a1", 2]},
+            factsDict={"constraint1": ["a1", "imp", "a2"]}
+        )
+        self.assertEquals(3, len(hybridKB.annealed_map_query(["a3", "a4", "a1"])))
 
 
 if __name__ == "__main__":

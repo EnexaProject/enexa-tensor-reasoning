@@ -3,7 +3,8 @@ import numpy as np
 
 from tnreason.representation import sampledf_to_factdf as stof, sampledf_to_pairdf as stop
 
-from tnreason.learning import check_cores as checkcc, OLD_variable_learning as el
+from tnreason.learning import OLD_variable_learning as el
+from tests import check_cores as checkcc
 
 ## DATA LOADING ##
 

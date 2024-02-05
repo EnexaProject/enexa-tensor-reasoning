@@ -23,19 +23,20 @@ class SamplerBase:
         self.expressionsDict = {key: [self.expressionsDict[key][0], self.expressionsDict[key][1] / temperature]
                                 for key in self.expressionsDict}
 
-    def compute_marginalized_distributions(self):
+    def compute_marginalized_distributions(self, variablesList=[]):
+        marginalAtoms = list(set(self.atoms) | set(variablesList))
         tensorRepresented = tm.TensorRepresentation(self.expressionsDict, self.factsDict, headType="expFactor")
         self.marginalizedDict = {atomKey: tensorRepresented.marginalized_contraction([atomKey]).normalize()
-                                 for atomKey in self.atoms}
+                                 for atomKey in marginalAtoms}
 
-    def create_independent_sample(self, variableList=None):
-        if variableList is None:
+    def create_independent_sample(self, variableList=[]):
+        if len(variableList) == 0:
             variableList = self.atoms
 
         if self.marginalizedDict is None:
-            self.compute_marginalized_distributions()
+            self.compute_marginalized_distributions(variableList)
 
-        for atomKey in self.atoms:
+        for atomKey in variableList:
             assert len(self.marginalizedDict[atomKey].colors) == 1, "Marginalization failed for atom {}.".format(
                 atomKey)
 
@@ -87,6 +88,7 @@ class GibbsSampler(SamplerBase):
         return sampleDict
 
     def simulated_annealing_gibbs(self, variableList, annealingPattern):
+        self.compute_marginalized_distributions(variableList)
         sampleDict = self.create_independent_sample(variableList)
         for chainLength, temperature in annealingPattern:
             for sweep in range(chainLength):

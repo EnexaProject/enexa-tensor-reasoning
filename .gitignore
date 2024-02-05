@@ -4,3 +4,12 @@
 dist/*
 build/*
 tnreason/tensorreasoning.egg-info/*
+
+.idea/
+.ipynb_checkpoints/
+Untitled.ipynb
+benchmarking/SML-Bench-updates/
+demonstration/fig.png
+demonstration/visualizations/
+old_dist/
+tnreason.egg-info/

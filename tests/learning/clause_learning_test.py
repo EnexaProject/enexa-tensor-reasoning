@@ -1,4 +1,4 @@
-from tnreason.learning import clause_learner as cll
+from tnreason.learning import stub_clause_learner as cll
 
 
 skeletonExpression = cll.create_skeletonExpression(["P1","P2"],["P3"])
