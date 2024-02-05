@@ -1,10 +1,33 @@
 from tnreason.model import model_visualization as mv
 from tnreason.logic import expression_simplification as es
 
+
 class LogicRepresentation:
-    def __init__(self, expressionsDict, factsDict = {}):
+    def __init__(self, expressionsDict, factsDict={}):
         self.expressionsDict = expressionsDict
         self.factsDict = factsDict
+
+    def evaluate_evidence(self, evidenceDict):
+        entailedExpressions = []
+        contradictedExpressions = []
+        contingentExpressions = []
+        for key in self.expressionsDict:
+            evidenceReplaced = infer_expression(self.expressionsDict[key][0], evidenceDict)
+            if evidenceReplaced == "Thing":
+                entailedExpressions.append(key)
+            elif evidenceReplaced == "Nothing":
+                contradictedExpressions.append(key)
+            else:
+                contingentExpressions.append(key)
+        for key in self.factsDict:
+            evidenceReplaced = infer_expression(self.factsDict[key], evidenceDict)
+            if evidenceReplaced == "Thing":
+                entailedExpressions.append(key)
+            elif evidenceReplaced == "Nothing":
+                contradictedExpressions.append(key)
+            else:
+                contingentExpressions.append(key)
+        return entailedExpressions, contradictedExpressions, contingentExpressions
 
     def infer(self, evidenceDict, simplify=True):
         self.expressionsDict = {
@@ -33,7 +56,7 @@ class LogicRepresentation:
     def simplify(self):
         self.remove_thing_nothing()
         self.remove_double_nots()
-        self.remove_doubles() # Not working on constraints, this can be done using entailment checks
+        self.remove_doubles()  # Not working on constraints, this can be done using entailment checks
         self.beautify_weights()
 
     def remove_thing_nothing(self):
@@ -50,12 +73,12 @@ class LogicRepresentation:
                 newFactsDict[key] = newExpression
         self.factsDict = newFactsDict
 
-
     def remove_double_nots(self):
-        self.expressionsDict = {key: [es.reduce_double_not(self.expressionsDict[key][0]), self.expressionsDict[key][1]] for
+        self.expressionsDict = {key: [es.reduce_double_not(self.expressionsDict[key][0]), self.expressionsDict[key][1]]
+                                for
                                 key in self.expressionsDict}
         self.factsDict = {key: es.reduce_double_not(self.factsDict[key]) for
-                                key in self.factsDict}
+                          key in self.factsDict}
 
     def remove_doubles(self):
         # Removes Expressions which are the same or negations of each other
@@ -99,6 +122,7 @@ class LogicRepresentation:
     def get_formulas_and_facts(self):
         return self.expressionsDict, self.factsDict
 
+
 def infer_expression(expression, evidenceDict):
     return es.reduce_thing_nothing(replace_evidence_variables(expression, evidenceDict))
 
@@ -119,9 +143,6 @@ def replace_evidence_variables(expression, evidenceDict):
                 replace_evidence_variables(expression[2], evidenceDict)]
     else:
         raise ValueError("Expression {} not understood!".format(expression))
-
-
-
 
 
 def equality_contradiction_check(expression1, expression2):
@@ -220,6 +241,6 @@ if __name__ == "__main__":
     and_expression = ['not', [['not', 'jaszczur'], 'and',
                               ['not', ['not', [['not', 'sikorka'], 'and', ['not', ['not', 'sledz']]]]]]]
     assert es.reduce_double_not(and_expression) == ['not',
-                                                 [['not', 'jaszczur'], 'and', [['not', 'sikorka'], 'and', 'sledz']]], \
+                                                    [['not', 'jaszczur'], 'and', [['not', 'sikorka'], 'and', 'sledz']]], \
         "Generate from disjunctions or double not does not work"
     assert es.reduce_double_not(["not", ["not", "sledz"]]) == "sledz", "Removing double not does not work"

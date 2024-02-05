@@ -156,6 +156,16 @@ class HybridKBTest(unittest.TestCase):
         self.assertEquals(3, len(hybridKB.annealed_map_query(["a3", "a4", "a1"])))
         self.assertEquals(3, len(hybridKB.annealed_map_query(["fun1", "fun4", "fun5"])))
 
+    def test_evidence_evaluation(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+            weightedFormulasDict={"f1": ["a1", 2]},
+            factsDict={"constraint1": ["a1", "imp", "a2"]}
+        )
+        entailed, contradicted, contingent = hybridKB.evaluate_evidence({"a1":1, "a2":0})
+        self.assertEquals(entailed, ["f1"])
+        self.assertEquals(contradicted, ["constraint1"])
+        self.assertEquals(contingent, [])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -21,7 +21,7 @@ def from_yaml(loadPath):
 
 class HybridKnowledgeBase:
     def __init__(self, weightedFormulasDict={}, factsDict={}):
-        self.weightedFormulasDict = {key : [weightedFormulasDict[key][0], float(weightedFormulasDict[key][1])]
+        self.weightedFormulasDict = {key: [weightedFormulasDict[key][0], float(weightedFormulasDict[key][1])]
                                      for key in weightedFormulasDict}
         self.factsDict = factsDict.copy()
 
@@ -130,6 +130,9 @@ class HybridKnowledgeBase:
 
         sampler = samp.GibbsSampler(*logRep.get_formulas_and_facts())
         return sampler.simulated_annealing_gibbs(variableList, annealingPattern)
+
+    def evaluate_evidence(self, evidenceDict={}):
+        return lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict).evaluate_evidence(evidenceDict)
 
     def to_yaml(self, savePath):
         storage.save_as_yaml({
