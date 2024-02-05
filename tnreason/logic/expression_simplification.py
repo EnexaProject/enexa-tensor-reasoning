@@ -32,15 +32,26 @@ def reduce_thing_nothing(expression):
             return [leftExpression, "or", rightExpression]
 
         elif expression[1] == "xor":
-            if leftExpression == "Thing" and rightExpression == "Thing":
-                return "Nothing"
-            elif leftExpression == "Thing" or rightExpression == "Thing":
-                return "Thing"
-            elif rightExpression == "Nothing":
-                return leftExpression
+            ## If both are in Thing Nothing
+            if leftExpression in ["Thing","Nothing"] and rightExpression in ["Thing", "Nothing"]:
+                if leftExpression == "Thing" and rightExpression == "Nothing":
+                    return "Thing"
+                elif leftExpression == "Nothing" and rightExpression == "Thing":
+                    return "Thing"
+                else:
+                    return "Nothing"
+            ## If one is in Thing Nothing
+            elif leftExpression == "Thing":
+                return ["not", rightExpression]
             elif leftExpression == "Nothing":
                 return rightExpression
-            return [leftExpression, "xor", rightExpression]
+            elif rightExpression == "Thing":
+                return ["not", leftExpression]
+            elif rightExpression == "Nothing":
+                return leftExpression
+            ## If no one is in Thing Nothing
+            else:
+                return [leftExpression, "xor", rightExpression]
 
         elif expression[1] == "imp":
             if leftExpression == "Nothing" or rightExpression == "Thing":
@@ -52,13 +63,13 @@ def reduce_thing_nothing(expression):
             return [leftExpression, "imp", rightExpression]
 
         elif expression[1] == "eq":
-            # If both in Thing, Nothing
+            ## If both are in Thing Nothing
             if leftExpression in ["Thing", "Nothing"] and rightExpression in ["Thing", "Nothing"]:
                 if leftExpression == rightExpression:
                     return "Thing"
                 else:
                     return "Nothing"
-            # If one in Thing, Nothing
+            # If one in Thing Nothing
             elif leftExpression == "Thing":
                 return rightExpression
             elif rightExpression == "Thing":
@@ -67,8 +78,9 @@ def reduce_thing_nothing(expression):
                 return ["not",rightExpression]
             elif rightExpression == "Nothing":
                 return ["not", leftExpression]
-            # If None
-            return [leftExpression, "eq", rightExpression]
+            # If no one in Thing Nothing
+            else:
+                return [leftExpression, "eq", rightExpression]
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 

@@ -49,6 +49,18 @@ class HybridKBTest(unittest.TestCase):
                               weightedFormulasDict={}, factsDict={}).query(["a1", "a3", "a2"], evidenceDict={}).values[
                               1, 0, 1])
 
+    def test_xor(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+            weightedFormulasDict={},
+            factsDict={"constraint1": ["a1", "xor", "a2"]}
+        )
+        self.assertEquals(0,
+                          hybridKB.ask(["a1", "and", "a2"]))
+
+        for rep in range(5):
+            sample = hybridKB.annealed_map_query(["a1","a2"])
+            self.assertEquals(1-sample["a1"], sample["a2"])
+
 
 if __name__ == "__main__":
     unittest.main()
