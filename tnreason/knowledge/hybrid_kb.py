@@ -42,7 +42,7 @@ class HybridKnowledgeBase:
         self.weightedFormulasDict = {key: [weightedFormulasDict[key][0], float(weightedFormulasDict[key][1])]
                                      for key in weightedFormulasDict}
         self.factsDict = factsDict.copy()
-        self.categoricalConstraintsDict = categoricalConstraintsDict
+        self.categoricalConstraintsDict = categoricalConstraintsDict.copy()
 
         self.formulaTensors = tm.TensorRepresentation(weightedFormulasDict, headType="expFactor")
         self.facts = tm.TensorRepresentation(
@@ -149,7 +149,8 @@ class HybridKnowledgeBase:
         logRep = lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict)
         logRep.infer(evidenceDict=evidenceDict, simplify=True)
 
-        sampler = samp.GibbsSampler(*logRep.get_formulas_and_facts())
+        sampler = samp.GibbsSampler(*logRep.get_formulas_and_facts(),
+                                    categoricalConstraintsDict=self.categoricalConstraintsDict)
         return sampler.simulated_annealing_gibbs(variableList, annealingPattern)
 
     def evaluate_evidence(self, evidenceDict={}):

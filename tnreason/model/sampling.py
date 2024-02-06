@@ -4,15 +4,17 @@ from tnreason.logic import coordinate_calculus as cc
 from tnreason.model import tensor_model as tm
 from tnreason.model import logic_model as lm
 from tnreason.model import model_visualization as mv
+from tnreason.model import create_cores as crc
 
 import numpy as np
 import pandas as pd
 
 
 class SamplerBase:
-    def __init__(self, expressionsDict, factsDict={}):
+    def __init__(self, expressionsDict, factsDict={}, categoricalConstraintsDict={}):
         self.expressionsDict = expressionsDict.copy()
         self.factsDict = factsDict.copy()
+        self.categoricalConstraintsDict = categoricalConstraintsDict.copy()
 
         self.atoms = list(eu.get_all_variables([expressionsDict[formulaKey][0] for formulaKey in expressionsDict] +
                                                [factsDict[key] for key in factsDict]))
@@ -25,9 +27,19 @@ class SamplerBase:
 
     def compute_marginalized_distributions(self, variablesList=[]):
         marginalAtoms = list(set(self.atoms) | set(variablesList))
-        tensorRepresented = tm.TensorRepresentation(self.expressionsDict, self.factsDict, headType="expFactor")
+        tensorRepresented = tm.TensorRepresentation(self.expressionsDict, self.factsDict,
+                                                    categoricalConstraintsDict=self.categoricalConstraintsDict,
+                                                    headType="expFactor")
+
         self.marginalizedDict = {atomKey: tensorRepresented.marginalized_contraction([atomKey]).normalize()
                                  for atomKey in marginalAtoms}
+
+        for atomKey in marginalAtoms:
+            if np.sum(self.marginalizedDict[atomKey].values) != 1:
+                print("Marginalization failed in atom {}!".format(atomKey))
+                self.marginalizedDict[atomKey] = cc.CoordinateCore(np.array([0.5, 0.5]),
+                                                                   self.marginalizedDict[atomKey].colors,
+                                                                   self.marginalizedDict[atomKey].name)
 
     def create_independent_sample(self, variableList=[]):
         if len(variableList) == 0:
@@ -70,12 +82,24 @@ class GibbsSampler(SamplerBase):
         return sampleDf.astype(outType)
 
     def gibbs_step(self, evidenceDict, updateAtomKey, temperature=1):
-        stepSampler = SamplerBase(*self.infer_formulas_and_facts(
-            {atomKey: evidenceDict[atomKey] for atomKey in evidenceDict if atomKey != updateAtomKey}
-        ))
-        stepSampler.change_temperature(temperature)
+
+        inferedFormulas, inferedFacts = self.infer_formulas_and_facts(
+            {atomKey: evidenceDict[atomKey] for atomKey in evidenceDict if atomKey != updateAtomKey})
+        inferedFacts = {**inferedFacts,
+                        **{atomKey + "_posEvidence": atomKey for atomKey in evidenceDict if
+                           atomKey != updateAtomKey and bool(evidenceDict[atomKey])},
+                        **{atomKey + "_negEvidence": ["not", atomKey] for atomKey in evidenceDict if
+                           atomKey != updateAtomKey and not bool(evidenceDict[atomKey])}}
+        stepSampler = SamplerBase(inferedFormulas,
+                                  factsDict=inferedFacts,
+                                  categoricalConstraintsDict=self.categoricalConstraintsDict)
+
         if updateAtomKey not in stepSampler.atoms:
-            stepSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]})
+            stepSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]},
+                                      factsDict=inferedFacts,
+                                      categoricalConstraintsDict=self.categoricalConstraintsDict)
+        stepSampler.change_temperature(temperature)
+
         return stepSampler.create_independent_sample()[updateAtomKey]
 
     def gibbs_sample(self, chainLength, variableList=None, temperature=1):
@@ -88,8 +112,10 @@ class GibbsSampler(SamplerBase):
         return sampleDict
 
     def simulated_annealing_gibbs(self, variableList, annealingPattern):
+        print("Initialization")
         self.compute_marginalized_distributions(variableList)
         sampleDict = self.create_independent_sample(variableList)
+        print("Sweeping")
         for chainLength, temperature in annealingPattern:
             for sweep in range(chainLength):
                 for updateAtomKey in variableList:
