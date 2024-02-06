@@ -6,6 +6,8 @@ from tnreason.contraction import contraction_visualization as cv
 
 from tnreason.logic import coordinate_calculus as cc
 
+import numpy as np
+
 class ChainContractorBase:
     """
     coreDict: Dictionary of CoordinateCores

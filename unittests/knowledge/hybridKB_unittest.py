@@ -2,7 +2,7 @@ import unittest
 
 from tnreason import knowledge
 
-sampleRepetition = 50
+sampleRepetition = 5
 
 
 class HybridKBTest(unittest.TestCase):

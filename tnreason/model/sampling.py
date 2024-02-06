@@ -81,26 +81,25 @@ class GibbsSampler(SamplerBase):
                 [sampleDf, pd.DataFrame(self.gibbs_sample(chainLength=chainLength), index=[samplePos])])
         return sampleDf.astype(outType)
 
-    def gibbs_step(self, evidenceDict, updateAtomKey, temperature=1):
+    def gibbs_step(self, evidenceDict, updateAtomKeys, temperature=1):
 
         inferedFormulas, inferedFacts = self.infer_formulas_and_facts(
-            {atomKey: evidenceDict[atomKey] for atomKey in evidenceDict if atomKey != updateAtomKey})
+            {atomKey: evidenceDict[atomKey] for atomKey in evidenceDict if atomKey not in updateAtomKeys})
         inferedFacts = {**inferedFacts,
                         **{atomKey + "_posEvidence": atomKey for atomKey in evidenceDict if
-                           atomKey != updateAtomKey and bool(evidenceDict[atomKey])},
+                           atomKey not in updateAtomKeys and bool(evidenceDict[atomKey])},
                         **{atomKey + "_negEvidence": ["not", atomKey] for atomKey in evidenceDict if
-                           atomKey != updateAtomKey and not bool(evidenceDict[atomKey])}}
+                           atomKey not in updateAtomKeys and not bool(evidenceDict[atomKey])}}
+        inferedFormulas = {**inferedFormulas,
+                           **{updateAtomKey + "_ensure": [updateAtomKey, 0] for updateAtomKey in updateAtomKeys}}
+
         stepSampler = SamplerBase(inferedFormulas,
                                   factsDict=inferedFacts,
                                   categoricalConstraintsDict=self.categoricalConstraintsDict)
 
-        if updateAtomKey not in stepSampler.atoms:
-            stepSampler = SamplerBase({updateAtomKey: [str(updateAtomKey), 0]},
-                                      factsDict=inferedFacts,
-                                      categoricalConstraintsDict=self.categoricalConstraintsDict)
         stepSampler.change_temperature(temperature)
 
-        return stepSampler.create_independent_sample()[updateAtomKey]
+        return stepSampler.create_independent_sample(updateAtomKeys)
 
     def gibbs_sample(self, chainLength, variableList=None, temperature=1):
         if variableList is None:
@@ -108,18 +107,18 @@ class GibbsSampler(SamplerBase):
         sampleDict = self.create_independent_sample(variableList)
         for sweep in range(chainLength):
             for updateAtomKey in variableList:
-                sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, updateAtomKey, temperature=temperature)
+                sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, [updateAtomKey], temperature=temperature)[
+                    updateAtomKey]
         return sampleDict
 
     def simulated_annealing_gibbs(self, variableList, annealingPattern):
-        print("Initialization")
         self.compute_marginalized_distributions(variableList)
         sampleDict = self.create_independent_sample(variableList)
-        print("Sweeping")
         for chainLength, temperature in annealingPattern:
             for sweep in range(chainLength):
                 for updateAtomKey in variableList:
-                    sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, updateAtomKey, temperature=temperature)
+                    sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, [updateAtomKey], temperature=temperature)[
+                        updateAtomKey]
         return sampleDict
 
 
