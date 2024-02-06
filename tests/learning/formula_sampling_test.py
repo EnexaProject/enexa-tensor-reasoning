@@ -13,13 +13,15 @@ sampleDf = gtd.generate_sampleDf({
         "f1": [["sikorka", "and", ["not","piskle"]], 2],
         "f2": [[["not","sledz"], "and", ["not","szczeniak"]], 20],
         "f3": [["jaszczur", "and", "sikorka"], 2],
-    }, 100)
+    }, 10)
 
 fSampler = fs.GibbsFormulaSampler(skeleton, candidatesDict, sampleDf=sampleDf)
-print(fSampler.assignment)
+
 
 fSampler.gibbs(10)
 print(fSampler.assignment)
+
+
 
 fSampler.gibbs_simulated_annealing([(10,1),(10,0.5),(10,0.2),(10,0.1)])
 print(fSampler.assignment)

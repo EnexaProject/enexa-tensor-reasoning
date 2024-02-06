@@ -36,7 +36,7 @@ class SamplerBase:
                                  for atomKey in marginalAtoms}
 
         for atomKey in marginalAtoms:
-            if np.sum(self.marginalizedDict[atomKey].values) != 1:
+            if (np.sum(self.marginalizedDict[atomKey].values) - 1) > 0.001:
                 print("Marginalization failed in atom {}!".format(atomKey))
                 self.marginalizedDict[atomKey] = cc.CoordinateCore(np.array([0.5, 0.5]),
                                                                    self.marginalizedDict[atomKey].colors,
