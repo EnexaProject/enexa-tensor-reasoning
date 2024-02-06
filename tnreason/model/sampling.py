@@ -4,7 +4,8 @@ from tnreason.logic import coordinate_calculus as cc
 from tnreason.model import tensor_model as tm
 from tnreason.model import logic_model as lm
 from tnreason.model import model_visualization as mv
-from tnreason.model import create_cores as crc
+
+from tnreason.contraction import core_contractor as coc
 
 import numpy as np
 import pandas as pd
@@ -120,6 +121,84 @@ class GibbsSampler(SamplerBase):
                     sampleDict[updateAtomKey] = self.gibbs_step(sampleDict, [updateAtomKey], temperature=temperature)[
                         updateAtomKey]
         return sampleDict
+
+
+class CategoricalGibbsSampler(SamplerBase):
+
+    def turn_to_categorical(self):
+        categoricalAtomSet = {atomKey for catKey in
+                              self.categoricalConstraintsDict for atomKey in self.categoricalConstraintsDict[catKey]}
+        for atomKey in self.atoms:
+            if atomKey not in categoricalAtomSet:
+                categoricalAtomSet.add(atomKey)
+                self.categoricalConstraintsDict[atomKey + "_cat"] = [atomKey]
+
+    def calculate_categorical_probability(self, categoricalKey, catEvidenceDict={}):
+        restEvidenceDict = {
+            **{catEvidenceDict[key]: 1 for key in catEvidenceDict if
+               len(self.categoricalConstraintsDict[key]) > 1 and key != categoricalKey},
+            **{self.categoricalConstraintsDict[key][0]: catEvidenceDict[key]
+               for key in catEvidenceDict if len(self.categoricalConstraintsDict[key]) == 1 and key != categoricalKey}
+        }
+        variables = self.categoricalConstraintsDict[categoricalKey]
+        if len(variables) > 1:
+            marginalProb = np.empty(len(variables))
+            for i, variable in enumerate(variables):
+                tRep = tm.TensorRepresentation(self.expressionsDict,
+                                               factsDict={**self.factsDict,
+                                                          **{evidenceKey + "_evidence": ["not", evidenceKey] for
+                                                             evidenceKey in variables
+                                                             if evidenceKey != variable},
+                                                          **{key + "_evidence": key for key in restEvidenceDict if
+                                                             bool(restEvidenceDict[key])},
+                                                          **{key + "_evidence": ["not", key] for key in restEvidenceDict
+                                                             if not
+                                                             bool(restEvidenceDict[key])}
+                                                          },
+                                               categoricalConstraintsDict=self.categoricalConstraintsDict,
+                                               headType="expFactor")
+                marginalProb[i] = coc.CoreContractor(tRep.all_cores(), openColors=[variable]).contract().values[1]
+
+            marginalProb = 1 / np.sum(marginalProb) * marginalProb
+        else:
+            tRep = tm.TensorRepresentation({**self.expressionsDict,
+                                            "added": [variables[0], 0]
+                                            },
+                                           factsDict={**self.factsDict,
+                                                      **{key + "_evidence": key for key in restEvidenceDict if
+                                                         bool(restEvidenceDict[key])},
+                                                      **{key + "_evidence": ["not", key] for key in restEvidenceDict
+                                                         if not
+                                                         bool(restEvidenceDict[key])}},
+                                           categoricalConstraintsDict=self.categoricalConstraintsDict,
+                                           headType="expFactor")
+            marginalProb = coc.CoreContractor(tRep.all_cores(), openColors=variables).contract().normalize().values
+        return marginalProb
+
+    def gibbs_step(self, categoricalKey, catEvidenceDict={}):
+        marginalProb = self.calculate_categorical_probability(categoricalKey, catEvidenceDict)
+        if len(self.categoricalConstraintsDict[categoricalKey]) > 1:
+            return self.categoricalConstraintsDict[categoricalKey][
+                np.where(np.random.multinomial(1, marginalProb) == 1)[0][0]]
+        else:
+            return np.random.multinomial(1, marginalProb)[0] == 0
+
+    def gibbs_sampling(self, chainSize=10):
+        self.turn_to_categorical()
+        sampleDict = {key: self.gibbs_step(key) for key in self.categoricalConstraintsDict}
+
+        for repetition in range(chainSize):
+            for catKey in self.categoricalConstraintsDict:
+                sampleDict[catKey] = self.gibbs_step(catKey, sampleDict)
+        returnDict = {}
+        for key in sampleDict:
+            if len(self.categoricalConstraintsDict[key]) > 1:
+                returnDict = {**returnDict,
+                              **{atomKey: False for atomKey in self.categoricalConstraintsDict[key]}}
+                returnDict[sampleDict[key]] = True
+            elif len(self.categoricalConstraintsDict[key]) == 1:
+                returnDict[self.categoricalConstraintsDict[key][0]] = sampleDict[key]
+        return returnDict
 
 
 class ExactSampler:

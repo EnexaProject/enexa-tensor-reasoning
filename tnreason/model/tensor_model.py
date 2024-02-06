@@ -26,7 +26,8 @@ class TensorRepresentation:
                                                     ) for factKey in factsDict}
 
         self.categoricalDict = {categoricalKey: ft.CategoricalConstraint(categoricalConstraintsDict[categoricalKey])
-                                for categoricalKey in categoricalConstraintsDict}
+                                for categoricalKey in categoricalConstraintsDict if
+                                len(categoricalConstraintsDict[categoricalKey]) > 1}
 
         self.headType = headType  ## To prevent resetting of headCores
 
@@ -97,7 +98,7 @@ class TensorRepresentation:
         return self.marginalized_contraction([]).values
 
     # NOT USED!
-    #def evidence_contraction(self, evidenceDict):
+    # def evidence_contraction(self, evidenceDict):
     #    inferedFormulaTensorDict = {formulaKey: self.formulaTensorsDict[formulaKey].infer_on_evidenceDict(evidenceDict)
     #                                for formulaKey in self.formulaTensorsDict}
     #    resContractor = coc.CoreContractor(inferedFormulaTensorDict, openColors=[atomKey for atomKey in self.atoms if
