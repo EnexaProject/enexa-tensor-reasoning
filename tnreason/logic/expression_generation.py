@@ -64,11 +64,22 @@ def generate_from_generic_expression(expression):
 
 def replace_atoms(expression, atomDict):
     if isinstance(expression, str):
-        return atomDict[expression]
+        if expression in atomDict:
+            return atomDict[expression]
+        else:
+            return expression
     elif len(expression) == 2:
-        return [expression[0], replace_atoms(expression[1], atomDict)]
+        if expression[0] in atomDict:
+            connective = atomDict[expression[0]]
+        else:
+            connective = expression[0]
+        return [connective, replace_atoms(expression[1], atomDict)]
     elif len(expression) == 3:
-        return [replace_atoms(expression[0], atomDict), expression[1], replace_atoms(expression[2], atomDict)]
+        if expression[1] in atomDict:
+            connective = atomDict[expression[1]]
+        else:
+            connective = expression[1]
+        return [replace_atoms(expression[0], atomDict), connective, replace_atoms(expression[2], atomDict)]
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 

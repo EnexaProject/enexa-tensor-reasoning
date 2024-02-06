@@ -2,10 +2,12 @@
 from tnreason.learning import formula_sampling as fs
 
 
-skeleton = ["P0", "and", "P1"]
+skeleton = ["P0", "con1", "P1"]
 candidatesDict = {
         "P0": ["sikorka", "sledz"],
-        "P1": ["jaszczur"]#], "piskle"]#, "szczeniak", "piskle"]
+        "P1": ["jaszczur"],
+        "con1" : ["and","or","imp"]
+    #], "piskle"]#, "szczeniak", "piskle"]
     }
 
 from tnreason.model import generate_test_data as gtd

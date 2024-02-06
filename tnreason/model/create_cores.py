@@ -48,7 +48,7 @@ def create_subExpressionCores(expression, formulaKey):
         elif expression[1] == "eq":
             addCoreValue = create_biconditional_tensor()
         else:
-            raise ValueError("Expression {} not understood!")
+            raise ValueError("Expression {} not understood!".format(expression))
         return {**partsDict0, **partsDict2,
                 addCoreKey: cc.CoordinateCore(addCoreValue, [leftColor, rightColor, headColor], addCoreKey)}
 

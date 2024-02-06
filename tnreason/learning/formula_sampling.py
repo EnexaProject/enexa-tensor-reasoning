@@ -12,7 +12,7 @@ import numpy as np
 class FormulaSamplingBase:
     def __init__(self, skeletonExpression, candidatesDict, knownFormulasDict={}, knownFactsDict={}, sampleDf=None):
         self.skeletonExpression = skeletonExpression
-        self.placeHolders = eu.get_variables(skeletonExpression)
+        self.placeHolders = candidatesDict.keys()
         self.candidatesDict = candidatesDict
 
         self.formulaTensors = tm.TensorRepresentation(knownFormulasDict, knownFactsDict, headType="expFactor")
@@ -22,11 +22,7 @@ class FormulaSamplingBase:
             self.load_sampleDf(sampleDf)
 
     def load_sampleDf(self, sampleDf):
-        affectedAtoms = set()
-        for placeHolder in self.placeHolders:
-            affectedAtoms.update(self.candidatesDict[placeHolder])
-        affectedAtoms = list(affectedAtoms)
-        self.dataTensor = ft.DataTensor(sampleDf[affectedAtoms])
+        self.dataTensor = ft.DataTensor(sampleDf)
 
     def get_result(self):
         return eg.replace_atoms(self.skeletonExpression, self.assignment)
