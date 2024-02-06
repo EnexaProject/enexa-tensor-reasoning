@@ -245,6 +245,19 @@ def dataCore_from_sampleDf(sampleDf, atomKey, dataColor):
     return cc.CoordinateCore(values, [dataColor, atomKey])
 
 
+## ConstraintCore Creation:
+def create_constraintCoresDict(atoms, name):
+    constraintCoresDict = {}
+    for i, atomKey in enumerate(atoms):
+        coreValues = np.zeros(shape=(len(atoms),2))
+        coreValues[:,0] = np.ones(shape=(len(atoms)))
+        coreValues[i,0] = 0
+        coreValues[i,1] = 1
+        constraintCoresDict[name+"_"+atomKey+"_cconstraint"] = cc.CoordinateCore(core_values=coreValues,
+                                                                                 core_colors=[name+"_cconstraint", atomKey],
+                                                                                 name=name+"_"+atomKey+"_cconstraint")
+    return constraintCoresDict
+
 ## Analysis
 
 ## Check whether the colors in all coreDicts match wrt each other and the knownShapesDict

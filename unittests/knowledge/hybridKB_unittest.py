@@ -2,7 +2,7 @@ import unittest
 
 from tnreason import knowledge
 
-sampleRepetition = 1
+sampleRepetition = 5
 
 
 class HybridKBTest(unittest.TestCase):
@@ -161,10 +161,20 @@ class HybridKBTest(unittest.TestCase):
             weightedFormulasDict={"f1": ["a1", 2]},
             factsDict={"constraint1": ["a1", "imp", "a2"]}
         )
-        entailed, contradicted, contingent = hybridKB.evaluate_evidence({"a1":1, "a2":0})
+        entailed, contradicted, contingent = hybridKB.evaluate_evidence({"a1": 1, "a2": 0})
         self.assertEquals(entailed, ["f1"])
         self.assertEquals(contradicted, ["constraint1"])
         self.assertEquals(contingent, [])
+
+    def test_catecorical_constraint(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+            weightedFormulasDict={"f1": [["a1","imp","a2"], 10]},
+            factsDict={"f2": "a4"},
+            categoricalConstraintsDict={"c1": ["a1", "a2", "a3"]}
+        )
+        for rep in range(sampleRepetition):
+            sample = hybridKB.exact_map_query(["a1", "a2", "a3"])
+            self.assertTrue(int(sample["a1"]) + int(sample["a2"]) + int(sample["a3"]) == 1)
 
 
 if __name__ == "__main__":

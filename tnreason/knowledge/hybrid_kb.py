@@ -16,18 +16,39 @@ import numpy as np
 
 def from_yaml(loadPath):
     modelSpec = storage.load_from_yaml(loadPath)
-    return HybridKnowledgeBase(modelSpec["weightedFormulas"], factsDict=modelSpec["facts"])
+
+    if "weightedFormulas" in modelSpec:
+        weightedFormulas = modelSpec["weightedFormulas"]
+    else:
+        weightedFormulas = {}
+
+    if "facts" in modelSpec:
+        facts = modelSpec["facts"]
+    else:
+        facts = {}
+
+    if "categoricalConstraints" in modelSpec:
+        categoricalConstraints = modelSpec["categoricalConstraints"]
+    else:
+        categoricalConstraints = {}
+
+    return HybridKnowledgeBase(weightedFormulasDict=weightedFormulas,
+                               factsDict=facts,
+                               categoricalConstraintsDict=categoricalConstraints)
 
 
 class HybridKnowledgeBase:
-    def __init__(self, weightedFormulasDict={}, factsDict={}):
+    def __init__(self, weightedFormulasDict={}, factsDict={}, categoricalConstraintsDict={}):
         self.weightedFormulasDict = {key: [weightedFormulasDict[key][0], float(weightedFormulasDict[key][1])]
                                      for key in weightedFormulasDict}
         self.factsDict = factsDict.copy()
+        self.categoricalConstraintsDict = categoricalConstraintsDict
 
         self.formulaTensors = tm.TensorRepresentation(weightedFormulasDict, headType="expFactor")
         self.facts = tm.TensorRepresentation(
-            {key: [factsDict[key], None] for key in factsDict}, headType="truthEvaluation")
+            factsDict=factsDict,
+            categoricalConstraintsDict=categoricalConstraintsDict,
+            headType="truthEvaluation")
         self.atoms = list(
             eu.get_all_variables([weightedFormulasDict[key][0] for key in weightedFormulasDict] +
                                  [factsDict[key] for key in factsDict]))
@@ -36,7 +57,7 @@ class HybridKnowledgeBase:
                 raise ValueError("The initialized Knowledge Base is inconsistent!")
 
     def include(self, secondHybridKB):
-        ## Cannot handle key conflicts!
+        ## Cannot handle key conflicts and does not include categoricalConstraints!
         for key in secondHybridKB.weightedFormulasDict:
             self.formulaTensors.add_expression(secondHybridKB.weightedFormulasDict[key][0],
                                                weight=float(secondHybridKB.weightedFormulasDict[key][1]),
@@ -137,7 +158,8 @@ class HybridKnowledgeBase:
     def to_yaml(self, savePath):
         storage.save_as_yaml({
             "weightedFormulas": self.weightedFormulasDict,
-            "facts": self.factsDict
+            "facts": self.factsDict,
+            "categoricalConstraints": self.categoricalConstraintsDict
         }, savePath)
 
     def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,

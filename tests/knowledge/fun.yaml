@@ -1,3 +1,4 @@
+categoricalConstraints: {}
 facts:
   f2:
   - not
@@ -15,20 +16,20 @@ weightedFormulas:
     - eq
     - - not
       - a1
-  - 2
+  - 2.0
   e2:
   - - a4
     - xor
     - - a5
       - eq
       - a1
-  - 2
+  - 2.0
   e3:
   - - a6
     - or
     - - not
       - a1
-  - 2
+  - 2.0
   e4:
   - a3
-  - 100
+  - 100.0

@@ -1,5 +1,4 @@
 ## Integrates the former separated weight and formula learning
-import knowledge
 from tnreason.optimization import alternating_mle as amle
 from tnreason.optimization import entropy_maximization as entm
 

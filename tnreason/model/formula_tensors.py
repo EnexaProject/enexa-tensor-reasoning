@@ -127,8 +127,21 @@ class DataTensor:
     def get_cores(self):
         return self.dataCores
 
+class CategoricalConstraint:
+    def __init__(self, atoms, name="categorical"):
+        self.constraintCores = crc.create_constraintCoresDict(atoms, name)
+
+    def get_cores(self):
+        return self.constraintCores
+
 
 if __name__ == "__main__":
+
+    constraint = CategoricalConstraint(["a","b","c","d"])
+    contraction = coc.CoreContractor(constraint.get_cores()).contract()
+    print(contraction.values)
+    exit()
+
     expression = ["A1", "and", ["not", "A2"]]
     fTensor = FormulaTensor(expression, "f1", headType="truthEvaluation", weight=1)
 

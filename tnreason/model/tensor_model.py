@@ -10,9 +10,10 @@ import numpy as np
 
 
 class TensorRepresentation:
-    def __init__(self, expressionsDict, factsDict={}, headType="expFactor"):
+    def __init__(self, expressionsDict={}, factsDict={}, categoricalConstraintsDict={}, headType="expFactor"):
         self.factsDict = factsDict.copy()
         self.expressionsDict = expressionsDict.copy()
+        self.categoricalConstraintsDict = categoricalConstraintsDict.copy()
 
         self.formulaTensorsDict = {formulaKey: ft.FormulaTensor(expression=expressionsDict[formulaKey][0],
                                                                 formulaKey=formulaKey,
@@ -23,6 +24,9 @@ class TensorRepresentation:
                                                     formulaKey=factKey,
                                                     headType="truthEvaluation"
                                                     ) for factKey in factsDict}
+
+        self.categoricalDict = {categoricalKey: ft.CategoricalConstraint(categoricalConstraintsDict[categoricalKey])
+                                for categoricalKey in categoricalConstraintsDict}
 
         self.headType = headType  ## To prevent resetting of headCores
 
@@ -50,7 +54,8 @@ class TensorRepresentation:
 
     def get_cores(self, formulaKeys=None, headType="expFactor"):
         if formulaKeys is None:
-            formulaKeys = list(self.formulaTensorsDict.keys()) + list(self.factsDict.keys())
+            formulaKeys = list(self.formulaTensorsDict.keys()) + list(self.factsDict.keys()) + list(
+                self.categoricalDict.keys())
         if self.headType != headType:
             self.set_heads(headType)
         restCoresDict = {}
@@ -59,6 +64,8 @@ class TensorRepresentation:
                 restCoresDict = {**restCoresDict, **self.formulaTensorsDict[formulaKey].get_cores()}
             elif formulaKey in self.factsDict:
                 restCoresDict = {**restCoresDict, **self.factsDict[formulaKey].get_cores()}
+            elif formulaKey in self.categoricalDict:
+                restCoresDict = {**restCoresDict, **self.categoricalDict[formulaKey].get_cores()}
         return restCoresDict
 
     def set_heads(self, headType):
@@ -89,12 +96,13 @@ class TensorRepresentation:
             print("Warning: Partition of Tensor Model computed, but headtype expFactor!")
         return self.marginalized_contraction([]).values
 
-    def evidence_contraction(self, evidenceDict):
-        inferedFormulaTensorDict = {formulaKey: self.formulaTensorsDict[formulaKey].infer_on_evidenceDict(evidenceDict)
-                                    for formulaKey in self.formulaTensorsDict}
-        resContractor = coc.CoreContractor(inferedFormulaTensorDict, openColors=[atomKey for atomKey in self.atoms if
-                                                                                 atomKey not in evidenceDict])
-        return resContractor.contract()
+    # NOT USED!
+    #def evidence_contraction(self, evidenceDict):
+    #    inferedFormulaTensorDict = {formulaKey: self.formulaTensorsDict[formulaKey].infer_on_evidenceDict(evidenceDict)
+    #                                for formulaKey in self.formulaTensorsDict}
+    #    resContractor = coc.CoreContractor(inferedFormulaTensorDict, openColors=[atomKey for atomKey in self.atoms if
+    #                                                                             atomKey not in evidenceDict])
+    #    return resContractor.contract()
 
     def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
                   pos=None):
@@ -116,7 +124,6 @@ if __name__ == "__main__":
     tRep = TensorRepresentation(learnedFormulaDict)
 
     tRep.visualize(evidenceDict={"A2": 1, "A3": False})
-    print(tRep.evidence_contraction({"A2": 1, "A3": False}).values)
     print(tRep.marginalized_contraction(["A2", "A3"]).values)
 
     print(tRep.contract_partition())
