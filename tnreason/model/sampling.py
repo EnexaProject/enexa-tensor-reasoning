@@ -175,8 +175,10 @@ class CategoricalGibbsSampler(SamplerBase):
             marginalProb = coc.CoreContractor(tRep.all_cores(), openColors=variables).contract().normalize().values
         return marginalProb
 
-    def gibbs_step(self, categoricalKey, catEvidenceDict={}):
+    def gibbs_step(self, categoricalKey, catEvidenceDict={}, temperature=1):
         marginalProb = self.calculate_categorical_probability(categoricalKey, catEvidenceDict)
+        if temperature != 1:
+            marginalProb = heat_prob(marginalProb, temperature)
         if len(self.categoricalConstraintsDict[categoricalKey]) > 1:
             return self.categoricalConstraintsDict[categoricalKey][
                 np.where(np.random.multinomial(1, marginalProb) == 1)[0][0]]
@@ -190,6 +192,9 @@ class CategoricalGibbsSampler(SamplerBase):
         for repetition in range(chainSize):
             for catKey in self.categoricalConstraintsDict:
                 sampleDict[catKey] = self.gibbs_step(catKey, sampleDict)
+        return self.catSample_to_standardSample(sampleDict)
+
+    def catSample_to_standardSample(self, sampleDict):
         returnDict = {}
         for key in sampleDict:
             if len(self.categoricalConstraintsDict[key]) > 1:
@@ -199,7 +204,32 @@ class CategoricalGibbsSampler(SamplerBase):
             elif len(self.categoricalConstraintsDict[key]) == 1:
                 returnDict[self.categoricalConstraintsDict[key][0]] = sampleDict[key]
         return returnDict
+    def simulated_annealing_gibbs(self, variableList, annealingPattern):
+        self.turn_to_categorical()
 
+        optimizationKeys = []
+        for variable in variableList:
+            found = False
+            for catKey in self.categoricalConstraintsDict:
+                if variable in self.categoricalConstraintsDict[catKey] and catKey not in optimizationKeys:
+                    optimizationKeys.append(catKey)
+                    found = True
+            if not found:
+                self.categoricalConstraintsDict[variable+"_emptyAdd"] = [variable]
+                optimizationKeys.append(variable+"_emptyAdd")
+
+        sampleDict = {key: self.gibbs_step(key) for key in optimizationKeys}
+
+        for chainSize, temperature in annealingPattern:
+            for sweep in range(chainSize):
+                for catKey in optimizationKeys:
+                    sampleDict[catKey] = self.gibbs_step(catKey, sampleDict, temperature=temperature)
+
+        return self.catSample_to_standardSample(sampleDict)
+
+def heat_prob(probArray, temperature):
+    unnormalized = np.exp(1/temperature * np.log(probArray))
+    return 1/np.sum(unnormalized) * unnormalized
 
 class ExactSampler:
     def __init__(self, expressionsDict, margAtoms=None):

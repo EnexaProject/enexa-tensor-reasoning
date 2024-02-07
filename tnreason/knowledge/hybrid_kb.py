@@ -145,12 +145,17 @@ class HybridKnowledgeBase:
         maxIndex = np.unravel_index(np.argmax(distributionCore.values.flatten()), distributionCore.values.shape)
         return {variable: maxIndex[i] for i, variable in enumerate(distributionCore.colors)}
 
-    def annealed_map_query(self, variableList, evidenceDict={}, annealingPattern=[(10, 1)]):
+    def annealed_map_query(self, variableList, evidenceDict={}, annealingPattern=[(10, 1), (5, 0.1), (2, 0.01)],
+                           categorical=True):
         logRep = lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict)
         logRep.infer(evidenceDict=evidenceDict, simplify=True)
 
-        sampler = samp.GibbsSampler(*logRep.get_formulas_and_facts(),
-                                    categoricalConstraintsDict=self.categoricalConstraintsDict)
+        if categorical:
+            sampler = samp.CategoricalGibbsSampler(*logRep.get_formulas_and_facts(),
+                                                   categoricalConstraintsDict=self.categoricalConstraintsDict)
+        else:
+            sampler = samp.GibbsSampler(*logRep.get_formulas_and_facts(),
+                                        categoricalConstraintsDict=self.categoricalConstraintsDict)
         return sampler.simulated_annealing_gibbs(variableList, annealingPattern)
 
     def evaluate_evidence(self, evidenceDict={}):
