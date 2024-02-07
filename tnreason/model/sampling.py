@@ -177,8 +177,8 @@ class CategoricalGibbsSampler(SamplerBase):
 
     def gibbs_step(self, categoricalKey, catEvidenceDict={}, temperature=1):
         marginalProb = self.calculate_categorical_probability(categoricalKey, catEvidenceDict)
-        if temperature != 1:
-            marginalProb = heat_prob(marginalProb, temperature)
+        marginalProb = heat_prob(marginalProb, temperature)
+
         if len(self.categoricalConstraintsDict[categoricalKey]) > 1:
             return self.categoricalConstraintsDict[categoricalKey][
                 np.where(np.random.multinomial(1, marginalProb) == 1)[0][0]]
@@ -228,8 +228,16 @@ class CategoricalGibbsSampler(SamplerBase):
         return self.catSample_to_standardSample(sampleDict)
 
 def heat_prob(probArray, temperature):
-    unnormalized = np.exp(1/temperature * np.log(probArray))
-    return 1/np.sum(unnormalized) * unnormalized
+    choiceNum = probArray.size
+    for i in range(choiceNum):
+        if probArray[i] > 0:
+            probArray[i] = np.exp(1/temperature * np.log(probArray[i]))
+    sum = np.sum(probArray)
+    if np.isnan(probArray).any() or probArray[probArray<0].any() or sum==0:
+        print("Bad sampling weights {} found and replaced by uniform.".format(probArray))
+        return 1/choiceNum * np.ones(choiceNum)
+
+    return 1/sum * probArray
 
 class ExactSampler:
     def __init__(self, expressionsDict, margAtoms=None):
