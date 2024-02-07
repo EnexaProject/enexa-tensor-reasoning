@@ -66,6 +66,30 @@ class FormulaSamplingBase:
 
         return dataTerm / partition
 
+    def compute_loglikelihood(self, formula, weight, verbose=False):
+        ## Computes average of the loglikelihood when data have been generated with candidateformula as hard constraint
+        ## = negative empirical cross entropy
+        candidateTensor = ft.FormulaTensor(
+            formula,
+            weight=weight,
+            headType="weightedTruthEvaluation")
+
+        dataTerm = coc.CoreContractor({
+            **self.formulaTensors.get_cores(headType="weightedTruthEvaluation"),
+            **self.dataTensor.get_cores(),
+            **candidateTensor.get_cores(headType="weightedTruthEvaluation")
+        }).contract().values / self.dataTensor.dataNum
+
+        partition = coc.CoreContractor({
+            **self.formulaTensors.get_cores(headType="expFactor"),
+            **candidateTensor.get_cores(headType="expFactor")
+        }).contract().values
+
+        if dataTerm == 0 and verbose:
+            print("Formula {} nether true!".format(candidateTensor.expression))
+
+        return dataTerm - np.log(partition)
+
 
 class GibbsFormulaSampler(FormulaSamplingBase):
     def gibbs_step(self, key, temperature=1):

@@ -18,7 +18,7 @@ sampleDf = gtd.generate_sampleDf({
     }, 10)
 
 fSampler = fs.GibbsFormulaSampler(skeleton, candidatesDict, sampleDf=sampleDf)
-
+print("likelihood",fSampler.compute_loglikelihood(["not","sikorka"],1))
 
 fSampler.gibbs(10)
 print(fSampler.assignment)

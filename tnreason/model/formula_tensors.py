@@ -30,8 +30,12 @@ class FormulaTensor:
     def create_subExpressionCores(self):
         self.subExpressionCoresDict = crc.create_subExpressionCores(self.expression, str(self.formulaKey))
 
-    def set_head(self, headType, weight=1):
-        self.weight = weight
+    def set_head(self, headType, weight=None):
+        if weight is None:
+            weight = self.weight
+        else:
+            self.weight = weight
+        self.headType = headType
         self.headCore = crc.create_headCore(headType, weight, headColor=self.formulaKey + "_" + str(self.expression))
 
     def infer_on_evidenceDict(self, evidenceDict):
@@ -39,7 +43,11 @@ class FormulaTensor:
                                   openColors=[atomKey for atomKey in self.atoms if
                                               atomKey not in evidenceDict]).contract()
 
-    def get_cores(self):
+    def get_cores(self, headType=None):
+        if headType is None:
+            headType = self.headType
+        if headType != self.headType:
+            self.set_head(headType)
         return {**self.subExpressionCoresDict, self.formulaKey + "_head": self.headCore}
 
 
@@ -118,14 +126,20 @@ class DataTensor:
         }
 
     def compute_shannon_entropy(self):
-        contractedData = coc.CoreContractor(self.dataCores,
-                                            openColors=self.atoms).contract().values.flatten() / self.dataNum
-        logContractedData = np.log(np.copy(contractedData))
-        logContractedData[logContractedData < -1e308] = 0
-        return -np.dot(logContractedData, contractedData)
+        contractedData = coc.CoreContractor(
+            {**self.dataCores.copy(),
+             **change_color_in_coredict(self.dataCores, {self.dataColor: self.dataColor + "_out"})},
+            openColors=[self.dataColor + "_out"]
+        ).contract().values
+
+        assert not np.isnan(contractedData).any(), "Contraction for Entropy did not work!"
+
+        logContractedData = np.log(contractedData / self.dataNum)
+        return -np.sum(logContractedData) / self.dataNum
 
     def get_cores(self):
         return self.dataCores
+
 
 class CategoricalConstraint:
     def __init__(self, atoms, name="categorical"):
@@ -135,9 +149,21 @@ class CategoricalConstraint:
         return self.constraintCores
 
 
-if __name__ == "__main__":
+def change_color_in_coredict(coreDict, colorReplaceDict, replaceSuffix = "_replaced"):
+    returnDict = {}
+    for key in coreDict.copy():
+        core = coreDict[key].clone()
+        newColors = core.colors
+        for i, color in enumerate(newColors):
+            if color in colorReplaceDict:
+                newColors[i] = colorReplaceDict[color]
+        core.colors = newColors
+        returnDict[key+"_replaced"] = core
+    return returnDict
 
-    constraint = CategoricalConstraint(["a","b","c","d"])
+
+if __name__ == "__main__":
+    constraint = CategoricalConstraint(["a", "b", "c", "d"])
     contraction = coc.CoreContractor(constraint.get_cores()).contract()
     print(contraction.values)
     exit()
