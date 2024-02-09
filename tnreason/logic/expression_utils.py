@@ -50,6 +50,32 @@ def get_symbols(expression):
             symbols = symbols + get_symbols(subexpression)
         return symbols
 
+def replace_double_symbols(expression, replaceDict={}):
+    if isinstance(expression, str):
+        if expression in replaceDict:
+            replaceDict[expression] = replaceDict[expression] + "_0"
+        else:
+            replaceDict[expression] = expression
+        return expression, replaceDict
+    elif len(expression) == 2:
+        if expression[0] in replaceDict:
+            replaceDict[expression[0]] = replaceDict[expression[0]] + "_0"
+            expression[0] = replaceDict[expression[0]]
+        else:
+            replaceDict[expression[0]] = expression[0]
+        rightReplaced, replaceDict = replace_double_symbols(expression[1], replaceDict)
+        return [expression[0], rightReplaced], replaceDict
+    elif len(expression) == 3:
+        leftReplaced, replaceDict = replace_double_symbols(expression[0], replaceDict)
+        if expression[1] in replaceDict:
+            replaceDict[expression[1]] = replaceDict[expression[1]] + "_0"
+            expression[1] = replaceDict[expression[1]]
+        else:
+            replaceDict[expression[1]] = expression[1]
+        rightReplaced, replaceDict = replace_double_symbols(expression[2], replaceDict)
+        return [leftReplaced, expression[1], rightReplaced], replaceDict
+
+
 def decide_symbol_type(expression, symbol):
     if isinstance(expression, str):
         if expression == symbol:
@@ -80,21 +106,23 @@ def decide_symbol_type(expression, symbol):
         raise ValueError("Expression {} not understood!".format(expression))
 
 
-def get_binary_subexpression(expression, binConnective):
+def get_subexpression(expression, connective):
     if isinstance(expression, str):
         return None
     elif len(expression) == 2:
-        return get_binary_subexpression(expression, binConnective)
+        if expression[0] == connective:
+            return expression
+        return get_subexpression(expression[1], connective)
     elif len(expression) == 3:
-        if expression[1] == binConnective:
+        if expression[1] == connective:
             return expression
         else:
-            left = get_binary_subexpression(expression[0], binConnective)
-            right = get_binary_subexpression(expression[1], binConnective)
+            left = get_subexpression(expression[0], connective)
+            right = get_subexpression(expression[2], connective)
             if left is None:
                 return right
             elif right is None:
                 return left
             else:
                 ValueError(
-                    "Placeholder connective {} appears multiple in expression {}.".format(binConnective, expression))
+                    "Placeholder connective {} appears multiple in expression {}.".format(connective, expression))

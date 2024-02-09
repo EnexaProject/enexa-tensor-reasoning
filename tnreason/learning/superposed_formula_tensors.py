@@ -7,40 +7,61 @@ import numpy as np
 
 
 class SuperPosedFormulaTensor:
-    def __init__(self, skeletonExpression, candidatesDict, parameterCoresDict={}):
+    def __init__(self, skeletonExpression, candidatesDict, parameterCoresDict={}, name="spfTensor"):
+        self.skeletonExpression, replaceDict = eu.replace_double_symbols(skeletonExpression, {})
+        self.coresDict = {}
+
         self.skeletonExpression = skeletonExpression
         self.candidatesDict = candidatesDict
+        self.name = name
 
-        symbols = eu.get_symbols(self.skeletonExpression)
-        for symbol in symbols:
-            if symbol not in candidatesDict:
-                candidatesDict[symbol] = [symbol]
+        self.symbols = eu.get_symbols(
+            self.skeletonExpression)  ## Symbols are the placeholderKeys + _0 for each repetition
+        for symbol in self.symbols:
+            if symbol.split("_")[
+                0] not in candidatesDict:  ## Adding placeHolders to candidatesDict (here they need to be atoms or connectives)
+                candidatesDict[symbol] = [symbol.split("_")[0]]
         self.create_cores()
 
     def create_cores(self):
-        self.coresDict = {}
-        for placeHolderKey in self.candidatesDict:
+        for symbol in self.symbols:
             self.coresDict = {**self.coresDict,
-                              **self.create_local_cores(placeHolderKey)}
+                              **self.create_local_cores(symbol)}
 
-    def create_local_cores(self, placeHolderKey):
-        phType = eu.decide_symbol_type(self.skeletonExpression, placeHolderKey)
+    def create_local_cores(self, symbol):
+        placeHolderKey = symbol.split("_")[0]
+        phType = eu.decide_symbol_type(self.skeletonExpression, symbol)
         if phType == "binary":
-            subExpression = eu.get_binary_subexpression(self.skeletonExpression, placeHolderKey)
-            upColor = placeHolderKey + "_" + str(subExpression)
-            leftColor = placeHolderKey + "_" + str(subExpression[1])
-            rightColor = placeHolderKey + "_" + str(subExpression[2])
+            subExpression = eu.get_subexpression(self.skeletonExpression, symbol)
+            upColor = self.name + "_" + str(subExpression)
+            leftColor = self.name + "_" + str(subExpression[0])
+            rightColor = self.name + "_" + str(subExpression[2])
 
-            return {placeHolderKey + "_binSelector":
+            return {symbol + "_binSelector":
                         cc.CoordinateCore(create_binary_core(self.candidatesDict[placeHolderKey]),
                                           core_colors=[placeHolderKey, upColor, leftColor, rightColor])}
         elif phType == "unary":
-            return {}
+            subExpression = eu.get_subexpression(self.skeletonExpression, symbol)
+            upColor = self.name + "_" + str(subExpression)
+            downColor = self.name + "_" + str(subExpression[1])
+            return {symbol + "_uniSelector":
+                        cc.CoordinateCore(create_unary_core(self.candidatesDict[placeHolderKey]),
+                                          [placeHolderKey, upColor, downColor])}
         elif phType == "atom":
-            return crc.create_local_selectorCores(self.candidatesDict[placeHolderKey], placeHolderKey)
+            return crc.create_local_selectorCores(self.candidatesDict[placeHolderKey], symbol)
+
+        else:
+            raise ValueError("Placeholder {} not in the expression {}!".format(symbol, self.skeletonExpression))
 
     def get_cores(self):
         return self.coresDict
+
+
+def create_unary_core(symbols):
+    coreValues = np.empty(shape=(len(symbols), 2, 2))
+    for i, symbol in enumerate(symbols):
+        coreValues[i] = crc.get_unary_tensor(symbol)
+    return coreValues
 
 
 def create_binary_core(symbols):
@@ -51,9 +72,15 @@ def create_binary_core(symbols):
 
 
 if __name__ == "__main__":
-    spfTensor = SuperPosedFormulaTensor(["sledz", "jaszczur", "sikorka"],
+    spfTensor = SuperPosedFormulaTensor(["jaszczur", "jaszczur", ["sledz", "sikorka"]],
                                         {
-                                            "sledz": ["alphasledz"],
-                                            "jaszczur": ["and", "or"]
+                                            # "not1" : ["not"],
+                                            # "sledz": ["alphasledz"],
+                                            "sledz": ["not"],
+                                            "jaszczur": ["and", "or", "imp"]
                                         })
-    print(spfTensor.get_cores().keys())
+    # print(spfTensor.get_cores().keys())
+    cores = spfTensor.get_cores()
+    for key in cores:
+        print(key, cores[key].values.shape, cores[key].colors)
+        print(cores[key].values)

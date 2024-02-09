@@ -45,6 +45,12 @@ def create_subExpressionCores(expression, formulaKey):
         raise ValueError("Expression {} has wrong length!".format(expression))
 
 
+def get_unary_tensor(type):
+    if type == "id":
+        return np.eye(2)
+    elif type == "not":
+        return create_negation_tensor()
+
 def get_binary_tensor(type):
     if type == "and":
         return create_conjunction_tensor()
