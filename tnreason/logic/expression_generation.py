@@ -83,6 +83,32 @@ def replace_atoms(expression, atomDict):
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 
+def decide_symbol_type(expression, symbol):
+    if isinstance(expression, str):
+        if expression==symbol:
+            return "atom"
+        else:
+            return "unseen"
+    elif len(expression) == 2:
+        if expression[0] == symbol:
+            return "unary"
+        else:
+            return decide_symbol_type(expression[1], symbol)
+    elif len(expression) == 3:
+        if expression[1] == symbol:
+            return "binary"
+        else:
+            leftResult = decide_symbol_type(expression[0], symbol)
+            rightResult = decide_symbol_type(expression[2], symbol)
+            if rightResult == "unseen":
+                return leftResult
+            elif leftResult == "unseen":
+                return rightResult
+            else:
+                if rightResult != leftResult:
+                    raise ValueError("Symbol {} appears differently in expression {}.".format(symbol, expression))
+                else:
+                    return rightResult
 
 def generate_pracmln_string(expression, weight):
     return str(weight) + " " + generate_pracmln_formulastring(expression)

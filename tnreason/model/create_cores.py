@@ -37,23 +37,27 @@ def create_subExpressionCores(expression, formulaKey):
             partsDict2 = create_subExpressionCores(expression[2], formulaKey)
             rightColor = formulaKey + "_" + str(expression[2])
 
-        if expression[1] == "and":
-            addCoreValue = create_conjunction_tensor()
-        elif expression[1] == "or":
-            addCoreValue = create_disjunction_tensor()
-        elif expression[1] == "xor":
-            addCoreValue = create_xor_tensor()
-        elif expression[1] == "imp":
-            addCoreValue = create_implication_tensor()
-        elif expression[1] == "eq":
-            addCoreValue = create_biconditional_tensor()
-        else:
-            raise ValueError("Expression {} not understood!".format(expression))
         return {**partsDict0, **partsDict2,
-                addCoreKey: cc.CoordinateCore(addCoreValue, [leftColor, rightColor, headColor], addCoreKey)}
+                addCoreKey: cc.CoordinateCore(get_binary_tensor(expression[1]), [leftColor, rightColor, headColor],
+                                              addCoreKey)}
 
     else:
         raise ValueError("Expression {} has wrong length!".format(expression))
+
+
+def get_binary_tensor(type):
+    if type == "and":
+        return create_conjunction_tensor()
+    elif type == "or":
+        return create_disjunction_tensor()
+    elif type == "xor":
+        return create_xor_tensor()
+    elif type == "imp":
+        return create_implication_tensor()
+    elif type == "eq":
+        return create_biconditional_tensor()
+    else:
+        raise ValueError("Binary connective {} not understood!".format(type))
 
 
 def create_truth_vec():
@@ -137,9 +141,11 @@ def create_expFactor_values(weight, differentiated):
     values[1] = np.exp(weight)
     return values
 
+
 def create_emptyCoresDict(variableList):
-    return {variableKey+"_trivialCore": cc.CoordinateCore(np.ones(2), [variableKey], variableKey + "_trivialCore")
+    return {variableKey + "_trivialCore": cc.CoordinateCore(np.ones(2), [variableKey], variableKey + "_trivialCore")
             for variableKey in variableList}
+
 
 def create_evidenceCoresDict(evidenceDict):
     evidenceCoresDict = {}
@@ -221,13 +227,20 @@ def create_selectorCoresDict(candidatesDict):
     ## outcolors: placeHolderKey + "_" + atomKey
     selectorCoresDict = {}
     for placeHolderKey in candidatesDict:
-        for i, atomKey in enumerate(candidatesDict[placeHolderKey]):
-            coreValues = np.ones(shape=(len(candidatesDict[placeHolderKey]), 2))
-            coreValues[i, 0] = 0
-            selectorCoresDict[placeHolderKey + "_" + atomKey + "_selector"] = cc.CoordinateCore(
-                coreValues, [placeHolderKey, placeHolderKey + "_" + atomKey],
-                placeHolderKey + "_" + atomKey + "_selector")
+        selectorCoresDict = {**selectorCoresDict,
+                             **create_local_selectorCores(candidatesDict[placeHolderKey], placeHolderKey)}
     return selectorCoresDict
+
+
+def create_local_selectorCores(atoms, placeHolderKey):
+    returnDict = {}
+    for i, atomKey in enumerate(atoms):
+        coreValues = np.ones(shape=(len(atoms), 2))
+        coreValues[i, 0] = 0
+        returnDict[placeHolderKey + "_" + atomKey + "_selector"] = cc.CoordinateCore(
+            coreValues, [placeHolderKey, placeHolderKey + "_" + atomKey],
+            placeHolderKey + "_" + atomKey + "_selector")
+    return returnDict
 
 
 ## DataCore Creation
@@ -249,14 +262,17 @@ def dataCore_from_sampleDf(sampleDf, atomKey, dataColor):
 def create_constraintCoresDict(atoms, name):
     constraintCoresDict = {}
     for i, atomKey in enumerate(atoms):
-        coreValues = np.zeros(shape=(len(atoms),2))
-        coreValues[:,0] = np.ones(shape=(len(atoms)))
-        coreValues[i,0] = 0
-        coreValues[i,1] = 1
-        constraintCoresDict[name+"_"+atomKey+"_cconstraint"] = cc.CoordinateCore(core_values=coreValues,
-                                                                                 core_colors=[name+"_cconstraint", atomKey],
-                                                                                 name=name+"_"+atomKey+"_cconstraint")
+        coreValues = np.zeros(shape=(len(atoms), 2))
+        coreValues[:, 0] = np.ones(shape=(len(atoms)))
+        coreValues[i, 0] = 0
+        coreValues[i, 1] = 1
+        constraintCoresDict[name + "_" + atomKey + "_cconstraint"] = cc.CoordinateCore(core_values=coreValues,
+                                                                                       core_colors=[
+                                                                                           name + "_cconstraint",
+                                                                                           atomKey],
+                                                                                       name=name + "_" + atomKey + "_cconstraint")
     return constraintCoresDict
+
 
 ## Analysis
 
