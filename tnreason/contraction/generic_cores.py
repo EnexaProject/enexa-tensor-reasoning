@@ -34,6 +34,9 @@ class NumpyTensorCore(TensorCoreBase):
 
         return NumpyTensorCore(outValues, outColors, [self.name, "con", core1.name])
 
+    def reduce_color(self, reductionColor):
+        self.reduce_colors([reductionColor])
+
     def reduce_colors(self, reductionColors):
         colorDict = {color: alphabet[i] for i, color in enumerate(self.colors)}
 
