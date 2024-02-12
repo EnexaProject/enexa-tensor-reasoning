@@ -1,5 +1,6 @@
 from tnreason.logic import expression_utils as eu
 
+from tnreason import contraction
 from tnreason.contraction import core_contractor as coc
 from tnreason.model import create_cores as crc
 
@@ -126,8 +127,8 @@ class DataTensor:
             for atomKey in self.atoms
         }
 
-    def compute_shannon_entropy(self):
-        contractedData = coc.CoreContractor(
+    def compute_shannon_entropy(self, contractionMethod="TNChainContractor"):
+        contractedData = contraction.get_contractor(contractionMethod)(
             {**self.dataCores.copy(),
              **change_color_in_coredict(self.dataCores, {self.dataColor: self.dataColor + "_out"})},
             openColors=[self.dataColor + "_out"]

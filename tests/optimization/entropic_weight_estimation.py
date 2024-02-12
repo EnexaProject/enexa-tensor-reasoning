@@ -15,6 +15,7 @@ satisfactionDict = {
 }
 
 maximizer = enm.EntropyMaximizer(formulaDict=formulaDict, satisfactionDict=satisfactionDict, factDict={"c0": "a4"})
+maximizer.independent_estimation()
 maximizer.formula_optimization("f1")
 maximizer.alternating_optimization(10)
 maximizer.fact_identification()
