@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 
-class SamplerBase:
+class ModelSamplerBase:
     def __init__(self, expressionsDict, factsDict={}, categoricalConstraintsDict={}):
         self.expressionsDict = expressionsDict.copy()
         self.factsDict = factsDict.copy()
@@ -74,7 +74,7 @@ class SamplerBase:
                                   show=show)
 
 
-class GibbsSampler(SamplerBase):
+class GibbsSampler(ModelSamplerBase):
     def create_sampleDf(self, sampleNum, chainLength=10, outType="int64"):
         sampleDf = pd.DataFrame(columns=self.atoms)
         for samplePos in range(sampleNum):
@@ -94,7 +94,7 @@ class GibbsSampler(SamplerBase):
         inferedFormulas = {**inferedFormulas,
                            **{updateAtomKey + "_ensure": [updateAtomKey, 0] for updateAtomKey in updateAtomKeys}}
 
-        stepSampler = SamplerBase(inferedFormulas,
+        stepSampler = ModelSamplerBase(inferedFormulas,
                                   factsDict=inferedFacts,
                                   categoricalConstraintsDict=self.categoricalConstraintsDict)
 
@@ -123,7 +123,7 @@ class GibbsSampler(SamplerBase):
         return sampleDict
 
 
-class CategoricalGibbsSampler(SamplerBase):
+class CategoricalGibbsSampler(ModelSamplerBase):
 
     def turn_to_categorical(self):
         categoricalAtomSet = {atomKey for catKey in

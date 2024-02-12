@@ -9,9 +9,14 @@ formulaDict = {
 
 sampleDf = gtd.generate_sampleDf(formulaDict, 100)
 
-maximizer = enm.EntropyMaximizer(formulaDict=formulaDict, sampleDf=sampleDf, factDict={"c0": "a4"})
-maximizer.formula_optimization("f1")
+satCounter = enm.EmpiricalCounter(sampleDf)
+satisfactionDict = {
+    key : satCounter.get_empirical_satisfaction(formulaDict[key][0]) for key in formulaDict
+}
 
+maximizer = enm.EntropyMaximizer(formulaDict=formulaDict, satisfactionDict=satisfactionDict, factDict={"c0": "a4"})
+maximizer.formula_optimization("f1")
+maximizer.alternating_optimization(10)
 maximizer.fact_identification()
 maximizer.soften_facts(10.2)
 

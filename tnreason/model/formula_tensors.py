@@ -24,8 +24,9 @@ class FormulaTensor:
 
         ## Build the Cores
         self.create_subExpressionCores()
-        self.set_head(headType=headType, weight=weight)
         self.weight = weight
+        self.set_head(headType=headType, weight=weight)
+
 
     def create_subExpressionCores(self):
         self.subExpressionCoresDict = crc.create_subExpressionCores(self.expression, str(self.formulaKey))

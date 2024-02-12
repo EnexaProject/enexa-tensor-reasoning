@@ -3,6 +3,8 @@ from tnreason.model import formula_tensors as ft
 
 from tnreason.contraction import core_contractor as coc
 
+from tnreason import contraction
+
 from tnreason import knowledge
 
 import numpy as np
@@ -11,7 +13,8 @@ import numpy as np
 class EntropyMaximizer:
     def __init__(self, formulaList=[], formulaDict=None,
                  satisfactionDict={},
-                 factDict={}):
+                 factDict={},
+                 contractionMethod = "TNChainContractor"):
         if formulaDict is not None:
             self.formulaDict = formulaDict
         else:
@@ -24,6 +27,8 @@ class EntropyMaximizer:
         self.factTensors = tm.TensorRepresentation({key: [factDict[key], None] for key in factDict},
                                                    headType="truthEvaluation")
         self.satisfactionDict = satisfactionDict
+
+        self.contractionMethod = contractionMethod
 
     def to_hybrid_kb(self):
         return knowledge.HybridKnowledgeBase(weightedFormulasDict=self.formulaDict,
@@ -96,7 +101,7 @@ class EntropyMaximizer:
             **self.factTensors.get_cores(headType="truthEvaluation")
         }
 
-        negativeProbability, positiveProbability = coc.CoreContractor(
+        negativeProbability, positiveProbability = contraction.get_contractor(self.contractionMethod)(
             contractionDict,
             openColors=[tboFormulaKey + "_" + str(self.formulaDict[tboFormulaKey][0])]
         ).contract().values
