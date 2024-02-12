@@ -9,7 +9,7 @@ class TensorCoreBase:
         if len(colors) != len(values.shape):
             raise ValueError("Number of Colors does not match the Value Shape in Core {}!".format(name))
         if len(colors) != len(set(colors)):
-            raise ValueError("There are duplicate colors in Core {}!".format(name))
+            raise ValueError("There are duplicate colors in the colors {} of Core {}!".format(colors, name))
 
         self.values = values
         self.colors = colors

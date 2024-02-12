@@ -1,6 +1,8 @@
 from tnreason.logic import expression_utils as eu
 from tnreason.logic import coordinate_calculus as cc
 
+from tnreason.contraction import generic_cores as gc
+
 from tnreason.model import create_cores as crc
 
 import numpy as np
@@ -9,7 +11,7 @@ import numpy as np
 class SuperPosedFormulaTensor:
     def __init__(self, skeletonExpression, candidatesDict, parameterCoresDict={}, name="spfTensor"):
         self.skeletonExpression, replaceDict = eu.replace_double_symbols(skeletonExpression, {})
-        self.coresDict = {}
+        self.coresDict = parameterCoresDict
 
         self.skeletonExpression = skeletonExpression
         self.candidatesDict = candidatesDict
@@ -38,17 +40,20 @@ class SuperPosedFormulaTensor:
             rightColor = self.name + "_" + str(subExpression[2])
 
             return {symbol + "_binSelector":
-                        cc.CoordinateCore(create_binary_core(self.candidatesDict[placeHolderKey]),
-                                          core_colors=[placeHolderKey, upColor, leftColor, rightColor])}
+                        gc.NumpyTensorCore(values=create_binary_values(self.candidatesDict[placeHolderKey]),
+                                           colors=[placeHolderKey, leftColor, rightColor, upColor],
+                                           name=symbol + "_binSelector")}
         elif phType == "unary":
             subExpression = eu.get_subexpression(self.skeletonExpression, symbol)
             upColor = self.name + "_" + str(subExpression)
             downColor = self.name + "_" + str(subExpression[1])
             return {symbol + "_uniSelector":
-                        cc.CoordinateCore(create_unary_core(self.candidatesDict[placeHolderKey]),
-                                          [placeHolderKey, upColor, downColor])}
+                        gc.NumpyTensorCore(values=create_unary_values(self.candidatesDict[placeHolderKey]),
+                                           colors=[placeHolderKey, downColor, upColor],
+                                           name=symbol + "_uniSelector")}
         elif phType == "atom":
-            return crc.create_local_selectorCores(self.candidatesDict[placeHolderKey], symbol)
+            return create_controlled_atom_selectors(self.candidatesDict[placeHolderKey], symbol, self.name)
+        #            return crc.create_local_selectorCores(self.candidatesDict[placeHolderKey], symbol)
 
         else:
             raise ValueError("Placeholder {} not in the expression {}!".format(symbol, self.skeletonExpression))
@@ -57,14 +62,30 @@ class SuperPosedFormulaTensor:
         return self.coresDict
 
 
-def create_unary_core(symbols):
+def create_controlled_atom_selectors(atoms, symbol, formulaKey):
+    if len(atoms) == 1:  ## The Case of single atom in candidate - Nothing to controlled select
+        return {}
+    placeHolder = symbol.split("_")[0]
+    cSelectorDict = {}
+    for i, atomKey in enumerate(atoms):
+        values = np.ones(shape=(len(atoms), 2, 2))  # control, atom (subexpression), formulatruth (headexpression)
+        values[i, 0, 1] = 0
+        values[i, 1, 0] = 0
+        cSelectorDict[symbol + "_" + atomKey + "_selector"] = gc.NumpyTensorCore(values=values,
+                                                                                 colors=[placeHolder, atomKey,
+                                                                                         formulaKey + "_" + symbol],
+                                                                                 name=symbol + "_" + atomKey + "_selector")
+    return cSelectorDict
+
+
+def create_unary_values(symbols):
     coreValues = np.empty(shape=(len(symbols), 2, 2))
     for i, symbol in enumerate(symbols):
         coreValues[i] = crc.get_unary_tensor(symbol)
     return coreValues
 
 
-def create_binary_core(symbols):
+def create_binary_values(symbols):
     coreValues = np.empty(shape=(len(symbols), 2, 2, 2))
     for i, symbol in enumerate(symbols):
         coreValues[i] = crc.get_binary_tensor(symbol)
@@ -72,15 +93,16 @@ def create_binary_core(symbols):
 
 
 if __name__ == "__main__":
-    spfTensor = SuperPosedFormulaTensor(["jaszczur", "jaszczur", ["sledz", "sikorka"]],
+    spfTensor = SuperPosedFormulaTensor(["jaszczur", "piskle", ["sledz", "sikorka"]],
                                         {
+                                            "piskle": ["and", "or", "imp"],
                                             # "not1" : ["not"],
                                             # "sledz": ["alphasledz"],
                                             "sledz": ["not"],
-                                            "jaszczur": ["and", "or", "imp"]
+                                            "jaszczur": ["a1", "a2", "a3"]
                                         })
     # print(spfTensor.get_cores().keys())
     cores = spfTensor.get_cores()
     for key in cores:
         print(key, cores[key].values.shape, cores[key].colors)
-        print(cores[key].values)
+        # print(cores[key].values)
