@@ -9,7 +9,7 @@ hybridKB = knowledge.HybridKnowledgeBase(
     }
 )
 
-from tnreason.probability import distributions
+from tnreason.network import distributions
 
 dist = distributions.TNDistribution(
     {**hybridKB.facts.get_cores(),

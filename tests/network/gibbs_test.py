@@ -7,7 +7,7 @@ coreDict = {
     "c2": cc.CoordinateCore(np.random.binomial(20, 0.8, size=(3, 2, 5)), ["a", "b", "c"])
 }
 
-from tnreason.probability import distributions as dis
+from tnreason.network import distributions as dis
 
 dist = dis.TNDistribution(coreDict)
 assignment = dist.gibbs_sampling(["a", "b"], {"a": 3, "b": 2})

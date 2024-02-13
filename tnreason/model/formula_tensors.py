@@ -160,7 +160,7 @@ def change_color_in_coredict(coreDict, colorReplaceDict, replaceSuffix = "_repla
             if color in colorReplaceDict:
                 newColors[i] = colorReplaceDict[color]
         core.colors = newColors
-        returnDict[key+"_replaced"] = core
+        returnDict[key+replaceSuffix] = core
     return returnDict
 
 
