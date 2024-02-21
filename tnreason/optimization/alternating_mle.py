@@ -2,7 +2,7 @@ import stubs.bc_contraction_generation as bcg
 import tnreason.contraction.core_contractor as coc
 
 import tnreason.tensor.formula_tensors as ft
-import tnreason.model.tensor_model as tm
+import tnreason.tensor.tensor_model as tm
 import tnreason.model.entropies as ent
 
 import tnreason.logic.expression_generation as eg

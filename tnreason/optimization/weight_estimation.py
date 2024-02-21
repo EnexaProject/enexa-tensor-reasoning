@@ -9,8 +9,7 @@ import numpy as np
 
 from tnreason.representation import sampledf_to_cores as stoc
 
-from tnreason.model import tensor_model as tm
-from tnreason.tensor import formula_tensors as ft
+from tnreason.tensor import formula_tensors as ft, tensor_model as tm
 
 
 class WeightEstimator:

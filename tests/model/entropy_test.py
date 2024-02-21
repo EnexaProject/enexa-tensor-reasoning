@@ -1,5 +1,3 @@
-from tnreason.model import tensor_model as tm
-
 from tnreason.model import entropies as ent
 import tnreason.model.generate_test_data as gtd
 

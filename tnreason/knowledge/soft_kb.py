@@ -1,5 +1,4 @@
-from tnreason.model import tensor_model as tm
-from tnreason.tensor import model_cores as crc, formula_tensors as ft
+from tnreason.tensor import model_cores as crc, formula_tensors as ft, tensor_model as tm
 
 from tnreason.contraction import core_contractor as coc
 

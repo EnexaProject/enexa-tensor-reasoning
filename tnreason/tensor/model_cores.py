@@ -11,7 +11,7 @@ def get_expression_string(expression):
         return expression[0] + "_" + get_expression_string(expression[1])
     elif len(expression) == 3:
         assert isinstance(expression[1], str)
-        return "(" + get_expression_string(expression[0]) + "_" + expression[1] + get_expression_string(
+        return "(" + get_expression_string(expression[0]) + "_" + expression[1] + "_" + get_expression_string(
             expression[2]) + ")"
 
 
@@ -19,8 +19,9 @@ def create_conCore(expression, coreType="NumpyTensorCore"):
     expressionString = get_expression_string(expression)
 
     if isinstance(expression, str):
-        return {expressionString + "_conCore": tensor.get_core(coreType=coreType)(np.ones(2), [expressionString],
-                                                                                  expressionString + "_conCore")}
+        return {}
+        #expressionString + "_conCore": tensor.get_core(coreType=coreType)(np.ones(2), [expressionString],
+        #                                                                          expressionString + "_conCore")}
     elif len(expression) == 2:
         preExpressionString = get_expression_string(expression[1])
         return {expressionString + "_conCore": tensor.get_core(coreType=coreType)(
@@ -31,7 +32,7 @@ def create_conCore(expression, coreType="NumpyTensorCore"):
 
     elif len(expression) == 3:
         leftExpressionString = get_expression_string(expression[0])
-        rightExpressionString = get_expression_string(expression[1])
+        rightExpressionString = get_expression_string(expression[2])
         return {expressionString + "_conCore": tensor.get_core(coreType=coreType)(get_binary_tensor(expression[1]),
                                                                                   [leftExpressionString,
                                                                                    rightExpressionString,
@@ -203,10 +204,10 @@ def create_constraintCoresDict(atoms, name, coreType="NumpyTensorCore"):
         coreValues[:, 0] = np.ones(shape=(len(atoms)))
         coreValues[i, 0] = 0
         coreValues[i, 1] = 1
-        constraintCoresDict[name + "_" + atomKey + "_cconstraint"] = tensor.get_core(coreType=coreType)(
+        constraintCoresDict[name + "_" + atomKey + "_catCore"] = tensor.get_core(coreType=coreType)(
             coreValues,
             [
-                name + "_cconstraint",
+                name,
                 atomKey],
-            name=name + "_" + atomKey + "_cconstraint")
+            name=name + "_" + atomKey + "_catCore")
     return constraintCoresDict

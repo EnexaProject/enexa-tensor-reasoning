@@ -5,14 +5,17 @@ from tnreason.logic import coordinate_calculus as cc
 import numpy as np
 
 
+defaultContractionMethod = "PgmpyVariableEliminator"
+
 class TNDistribution:
     def __init__(self, distributionCores):
         self.distributionCores = distributionCores
 
     def heat_cores(self, coreKeys):
+        ## coreKeys should be HeadCores
         pass
 
-    def gibbs_sampling(self, sampleKeys, sampleDimDict, sweepNum=10, contractionMethod="TNChainContractor"):
+    def gibbs_sampling(self, sampleKeys, sampleDimDict, sweepNum=10, contractionMethod=defaultContractionMethod):
         self.assignment = {}  ## sampleKey, value
         self.sampleDimDict = sampleDimDict  ## stores leg dimensions of sampleKeys
 

@@ -4,9 +4,11 @@ from tnreason.model import model_visualization as mv
 from tnreason.logic import expression_utils as eu
 from tnreason.logic import coordinate_calculus as cc
 
-from tnreason.contraction import core_contractor as coc
+from tnreason import contraction
 
 import numpy as np
+
+defaultContractionMethod = "PgmpyVariableEliminator"
 
 
 class TensorRepresentation:
@@ -25,9 +27,10 @@ class TensorRepresentation:
                                                     headType="truthEvaluation"
                                                     ) for factKey in factsDict}
 
-        self.categoricalDict = {categoricalKey: ft.CategoricalConstraint(categoricalConstraintsDict[categoricalKey])
-                                for categoricalKey in categoricalConstraintsDict if
-                                len(categoricalConstraintsDict[categoricalKey]) > 1}
+        self.categoricalDict = {
+            categoricalKey: ft.CategoricalConstraint(categoricalConstraintsDict[categoricalKey], name=categoricalKey)
+            for categoricalKey in categoricalConstraintsDict if
+            len(categoricalConstraintsDict[categoricalKey]) > 1}
 
         self.headType = headType  ## To prevent resetting of headCores
 
@@ -86,24 +89,17 @@ class TensorRepresentation:
     def get_weights(self):
         return {formulaKey: self.formulaTensorsDict[formulaKey].weight for formulaKey in self.formulaTensorsDict}
 
-    def marginalized_contraction(self, atomList):
+    def marginalized_contraction(self, atomList, contractionMethod=defaultContractionMethod):
         marginalizationDict = {atomKey + "_marg": cc.CoordinateCore(np.ones(shape=(2)), [atomKey]) for atomKey in
                                atomList}  # To make sure, that all atoms appear in colors
-        margContractor = coc.CoreContractor({**self.all_cores(), **marginalizationDict}, openColors=atomList)
+        margContractor = contraction.get_contractor(contractionMethod=contractionMethod)(
+            {**self.all_cores(), **marginalizationDict}, openColors=atomList)
         return margContractor.contract()
 
     def contract_partition(self):
         if self.headType != "expFactor":
             print("Warning: Partition of Tensor Model computed, but headtype expFactor!")
         return self.marginalized_contraction([]).values
-
-    # NOT USED!
-    # def evidence_contraction(self, evidenceDict):
-    #    inferedFormulaTensorDict = {formulaKey: self.formulaTensorsDict[formulaKey].infer_on_evidenceDict(evidenceDict)
-    #                                for formulaKey in self.formulaTensorsDict}
-    #    resContractor = coc.CoreContractor(inferedFormulaTensorDict, openColors=[atomKey for atomKey in self.atoms if
-    #                                                                             atomKey not in evidenceDict])
-    #    return resContractor.contract()
 
     def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
                   pos=None):

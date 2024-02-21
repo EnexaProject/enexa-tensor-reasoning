@@ -1,7 +1,7 @@
 from tnreason.logic import expression_utils as eu
 from tnreason.logic import coordinate_calculus as cc
 
-from tnreason.model import tensor_model as tm
+from tnreason.tensor import tensor_model as tm
 from tnreason.model import logic_model as lm
 from tnreason.model import model_visualization as mv
 

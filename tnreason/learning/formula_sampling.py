@@ -1,5 +1,4 @@
-from tnreason.model import tensor_model as tm
-from tnreason.tensor import formula_tensors as ft
+from tnreason.tensor import formula_tensors as ft, tensor_model as tm
 
 from tnreason.logic import expression_generation as eg
 

@@ -1,16 +1,19 @@
-from tnreason.model import tensor_model as tm
 from tnreason.model import logic_model as lm
-from tnreason.tensor import model_cores as crc, formula_tensors as ft
+from tnreason.tensor import model_cores as crc, formula_tensors as ft, tensor_model as tm
 from tnreason.model import sampling as samp
 from tnreason.model import model_visualization as mov
 
-from tnreason.contraction import core_contractor as coc
+from tnreason import contraction
 
 from tnreason.logic import expression_utils as eu
 
-#from tnreason.knowledge import storage
+from tnreason.knowledge import storage
+
+from tnreason.network import distributions as dist
 
 import numpy as np
+
+defaultContractionMethod = "PgmpyVariableEliminator"
 
 
 def from_yaml(loadPath):
@@ -75,8 +78,9 @@ class HybridKnowledgeBase:
                           **secondHybridKB.factsDict}
         self.atoms = list(set(self.atoms) | set(secondHybridKB.atoms))
 
-    def is_satisfiable(self):
-        return coc.CoreContractor(self.facts.get_cores(headType="truthEvaluation")).contract().values > 0
+    def is_satisfiable(self, contractionMethod=defaultContractionMethod):
+        return contraction.get_contractor(contractionMethod=contractionMethod)(
+            self.facts.get_cores(headType="truthEvaluation")).contract().values > 0
 
     def ask_constraint(self, constraint):
         probability = self.ask(constraint, evidenceDict={})
@@ -112,25 +116,25 @@ class HybridKnowledgeBase:
             if atom not in self.atoms:
                 self.atoms.append(atom)
 
-    def ask(self, queryFormula, evidenceDict={}):
+    def ask(self, queryFormula, evidenceDict={}, contractionMethod=defaultContractionMethod):
         overheadCount = len(
             [atom for atom in eu.get_variables(queryFormula) if (atom not in self.atoms and atom not in evidenceDict)])
 
         modelCores = {**self.formulaTensors.get_cores(),
                       **self.facts.get_cores(headType="truthEvaluation"),
                       **crc.create_evidenceCoresDict(evidenceDict)}
-        return coc.CoreContractor(
+        return contraction.get_contractor(contractionMethod=contractionMethod)(
             {**modelCores,
              **ft.FormulaTensor(queryFormula,
                                 headType="truthEvaluation").get_cores()}).contract().values / (
-                coc.CoreContractor(
+                contraction.get_contractor(contractionMethod=contractionMethod)(
                     modelCores).contract().values * 2 ** overheadCount)
 
-    def query(self, variableList, evidenceDict={}):
+    def query(self, variableList, evidenceDict={}, contractionMethod=defaultContractionMethod):
         disconnectedVariables = [variable for variable in variableList if
                                  variable not in self.atoms and variable not in evidenceDict]
 
-        return coc.CoreContractor(
+        return contraction.get_contractor(contractionMethod=contractionMethod)(
             {
                 **crc.create_emptyCoresDict(disconnectedVariables),
                 **self.formulaTensors.get_cores(),
@@ -144,18 +148,22 @@ class HybridKnowledgeBase:
         maxIndex = np.unravel_index(np.argmax(distributionCore.values.flatten()), distributionCore.values.shape)
         return {variable: maxIndex[i] for i, variable in enumerate(distributionCore.colors)}
 
-    def annealed_map_query(self, variableList, evidenceDict={}, annealingPattern=[(10, 1), (5, 0.1), (2, 0.01)],
-                           categorical=True):
+    def annealed_map_query(self, variableList, evidenceDict={}, annealingPattern=[(10, 1), (5, 0.1), (2, 0.01)]):
+        ## Need to support heating in distributions first!
+        return self.gibbs_sample(variableList, evidenceDict)
+
+    def gibbs_sample(self, variableList, evidenceDict={}, sweepNum=10):
         logRep = lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict)
         logRep.infer(evidenceDict=evidenceDict, simplify=True)
+        weightedFormulas, facts = logRep.get_formulas_and_facts()
 
-        if categorical:
-            sampler = samp.CategoricalGibbsSampler(*logRep.get_formulas_and_facts(),
-                                                   categoricalConstraintsDict=self.categoricalConstraintsDict)
-        else:
-            sampler = samp.GibbsSampler(*logRep.get_formulas_and_facts(),
-                                        categoricalConstraintsDict=self.categoricalConstraintsDict)
-        return sampler.simulated_annealing_gibbs(variableList, annealingPattern)
+        tenRep = tm.TensorRepresentation(expressionsDict=weightedFormulas,
+                                         factsDict=facts,
+                                         categoricalConstraintsDict=self.categoricalConstraintsDict)
+
+        distribution = dist.TNDistribution(tenRep.get_cores())
+
+        return distribution.gibbs_sampling(variableList, {variable: 2 for variable in variableList}, sweepNum=sweepNum)
 
     def evaluate_evidence(self, evidenceDict={}):
         return lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict).evaluate_evidence(evidenceDict)

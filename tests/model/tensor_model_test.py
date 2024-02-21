@@ -1,4 +1,4 @@
-import tnreason.model.tensor_model as tm
+import tnreason.tensor.tensor_model as tm
 import tnreason.contraction.core_contractor as coc
 
 import tnreason.model.generate_test_data as gtd
