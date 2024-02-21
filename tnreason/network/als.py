@@ -10,10 +10,12 @@ defaultCoreType = "NumpyTensorCore"
 
 
 class ALS:
-    def __init__(self, networkCores, targetCores, openTargetColors, contractionMethod=defaultContractionMethod):
+    def __init__(self, networkCores, targetCores={}, openTargetColors=[], importanceCores={},
+                 contractionMethod=defaultContractionMethod):
         self.networkCores = networkCores
         self.targetCores = targetCores
         self.openTargetColors = openTargetColors
+        self.importanceCores = importanceCores
         self.contractionMethod = contractionMethod
 
     def random_initialize(self, updateKeys, shapesDict={}, colorsDict={}, coreType=defaultCoreType):
@@ -47,12 +49,14 @@ class ALS:
         )
 
         conOperator = contraction.get_contractor(self.contractionMethod)({
+            **self.importanceCores,
             **self.networkCores,
             **copy_cores(self.networkCores, "_out", self.openTargetColors),
             **trivialCores
         }, openColors=updateColors + [updateColor + "_out" for updateColor in updateColors]).contract()
 
         conTarget = contraction.get_contractor(self.contractionMethod)({
+            **self.importanceCores,
             **self.networkCores,
             **self.targetCores,
             **mcore.create_emptyCoresDict(

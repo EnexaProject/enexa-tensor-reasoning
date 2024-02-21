@@ -57,6 +57,19 @@ class NumpyTensorCore(TensorCoreBase):
     def normalize(self):
         return NumpyTensorCore(1 / np.sum(self.values) * self.values, self.colors, self.name)
 
+    def reorder_colors(self, newColors):
+        oldColors = self.colors.copy()
+        oldValues = np.copy(self.values)
+
+        colorDict = {oldColors[i]: alphabet[i] for i in range(len(oldColors))}
+        old_string = "".join([colorDict[color] for color in oldColors])
+        new_string = "".join([colorDict[color] for color in newColors])
+        contraction_string = "->".join([old_string, new_string])
+
+        newValues = np.einsum(contraction_string, oldValues)
+
+        self.values = newValues
+        self.colors = newColors
 
 def change_type(cCore, targetType="NumpyTensorCore"):
     if targetType == "NumpyTensorCore":
