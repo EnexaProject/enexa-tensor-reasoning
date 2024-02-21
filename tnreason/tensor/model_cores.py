@@ -1,29 +1,15 @@
 from tnreason import tensor
+from tnreason.logic import  expression_utils as eu
 
 import numpy as np
 
-
-def get_expression_string(expression):
-    if isinstance(expression, str):
-        return expression
-    elif len(expression) == 2:
-        assert isinstance(expression[0], str)
-        return expression[0] + "_" + get_expression_string(expression[1])
-    elif len(expression) == 3:
-        assert isinstance(expression[1], str)
-        return "(" + get_expression_string(expression[0]) + "_" + expression[1] + "_" + get_expression_string(
-            expression[2]) + ")"
-
-
 def create_conCore(expression, coreType="NumpyTensorCore"):
-    expressionString = get_expression_string(expression)
+    expressionString = eu.get_expression_string(expression)
 
     if isinstance(expression, str):
         return {}
-        #expressionString + "_conCore": tensor.get_core(coreType=coreType)(np.ones(2), [expressionString],
-        #                                                                          expressionString + "_conCore")}
     elif len(expression) == 2:
-        preExpressionString = get_expression_string(expression[1])
+        preExpressionString = eu.get_expression_string(expression[1])
         return {expressionString + "_conCore": tensor.get_core(coreType=coreType)(
             get_unary_tensor(expression[0]),
             [preExpressionString, expressionString],
@@ -31,8 +17,8 @@ def create_conCore(expression, coreType="NumpyTensorCore"):
         }
 
     elif len(expression) == 3:
-        leftExpressionString = get_expression_string(expression[0])
-        rightExpressionString = get_expression_string(expression[2])
+        leftExpressionString = eu.get_expression_string(expression[0])
+        rightExpressionString = eu.get_expression_string(expression[2])
         return {expressionString + "_conCore": tensor.get_core(coreType=coreType)(get_binary_tensor(expression[1]),
                                                                                   [leftExpressionString,
                                                                                    rightExpressionString,
@@ -68,7 +54,7 @@ def create_headCore(expression, headType, weight=None, coreType="NumpyTensorCore
         headValues = create_expFactor_values(weight, True)
     else:
         raise ValueError("Headtype {} not understood!".format(headType))
-    expressionString = get_expression_string(expression)
+    expressionString = eu.get_expression_string(expression)
     return {expressionString + "_headCore": tensor.get_core(coreType=coreType)(headValues, [expressionString],
                                                                                expressionString + "_headCore")}
 

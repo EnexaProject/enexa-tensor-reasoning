@@ -1,6 +1,17 @@
 import numpy as np
 
 
+def get_expression_string(expression):
+    if isinstance(expression, str):
+        return expression
+    elif len(expression) == 2:
+        assert isinstance(expression[0], str)
+        return expression[0] + "_" + get_expression_string(expression[1])
+    elif len(expression) == 3:
+        assert isinstance(expression[1], str)
+        return "(" + get_expression_string(expression[0]) + "_" + expression[1] + "_" + get_expression_string(
+            expression[2]) + ")"
+
 def get_all_variables(expressionList):
     variables = []
     for expression in expressionList:

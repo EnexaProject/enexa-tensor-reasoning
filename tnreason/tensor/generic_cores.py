@@ -56,7 +56,7 @@ class NumpyTensorCore(TensorCoreBase):
 
     def normalize(self):
         return NumpyTensorCore(1 / np.sum(self.values) * self.values, self.colors, self.name)
-    
+
 
 def change_type(cCore, targetType="NumpyTensorCore"):
     if targetType == "NumpyTensorCore":
