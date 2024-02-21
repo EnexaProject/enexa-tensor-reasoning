@@ -4,6 +4,7 @@ from pgmpy.inference import VariableElimination
 
 from tnreason.logic import coordinate_calculus as cc
 
+from tnreason import  tensor
 
 class PgmpyVariableEliminator:
     def __init__(self, coreDict={}, openColors=[]):
@@ -23,6 +24,6 @@ class PgmpyVariableEliminator:
                 DiscreteFactor(coresDict[coreKey].colors, coresDict[coreKey].values.shape, coresDict[coreKey].values)
             )
 
-    def contract(self):
+    def contract(self, outPutType="NumpyTensorCore"):
         result = VariableElimination(self.model).query(evidence={}, variables=self.openColors)
-        return cc.CoordinateCore(result.values, result.variables)
+        return tensor.get_core(coreType=outPutType)(result.values, result.variables)

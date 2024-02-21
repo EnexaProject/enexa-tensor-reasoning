@@ -1,7 +1,7 @@
 from tnreason.model import logic_model as lm
-from tnreason.tensor import model_cores as crc, formula_tensors as ft, tensor_model as tm
-from tnreason.model import sampling as samp
 from tnreason.model import model_visualization as mov
+
+from tnreason.tensor import model_cores as crc, formula_tensors as ft, tensor_model as tm
 
 from tnreason import contraction
 

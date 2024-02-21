@@ -18,6 +18,7 @@ hybridKB = knowledge.HybridKnowledgeBase(
     }
 )
 print(hybridKB.facts.get_cores().keys())
+print(hybridKB.formulaTensors.get_cores().keys())
 
 from tnreason.network import als
 
@@ -27,7 +28,7 @@ optimizer = als.ALS(
     targetCores=targetDict,
     openTargetColors=["a1"]
 )
-optimizer.random_initialize(["con1", "a1_update", "fact1_head"], {"con1": 3, "a1_update": 2},
+optimizer.random_initialize(["con1", "a1_update"], {"con1": 3, "a1_update": 2},
                             {"con1": ["c1"], "a1_update": ["a1"]})
-optimizer.alternating_optimization(["con1", "a1_update", "fact1_head"])
+optimizer.alternating_optimization(["con1", "a1_update"])
 optimizer.optimize_core("con1")

@@ -75,7 +75,7 @@ def evidence_to_array(evidenceDict, num, verbose=False):
         for r2 in range(num):
             for c1 in range(num):
                 for c2 in range(num):
-                    catVarKey = "pos_" + str(r1) + "_" + str(r2) + "_" + str(c1) + "_" + str(c2) + "_cconstraint"
+                    catVarKey = "pos_" + str(r1) + "_" + str(r2) + "_" + str(c1) + "_" + str(c2)
                     if catVarKey in evidenceDict:
                         if verbose:
                             print(
@@ -119,9 +119,9 @@ propagator.propagate_cores()
 evidenceDict, multipleAssignmentColors, redundantCores, remainingCores = propagator.find_evidence_and_redundant_cores()
 
 ## Sanity Check: This follows already from evidence {"a_0_1_0_0_1": 1}
-
+print(evidenceDict.keys())
 ## The 1 in the first position is in place 2
-print(evidenceDict["square_1_0_0_cconstraint"] == num)
+print(evidenceDict["square_1_0_0"] == num)
 
 ## The 1 is not in place 2
 print(not evidenceDict["a_0_0_0_0_1"])

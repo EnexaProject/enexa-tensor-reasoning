@@ -1,14 +1,17 @@
 from tnreason.logic import expression_utils as eu
-from tnreason.logic import coordinate_calculus as cc
 
-from tnreason.tensor import generic_cores as gc, model_cores as crc
+from tnreason import  tensor
+
+from tnreason.tensor import model_cores as crc
 
 import numpy as np
 
 
+defaultCoreType = "NumpyTensorCore"
+
 class SuperPosedFormulaTensor:
     def __init__(self, skeletonExpression, candidatesDict, parameterCoresDict={}, name="spfTensor",
-                 coreType="CoordinateCore"):
+                 coreType=defaultCoreType):
         self.skeletonExpression, replaceDict = eu.replace_double_symbols(skeletonExpression, {})
         self.coresDict = parameterCoresDict
 
@@ -29,7 +32,7 @@ class SuperPosedFormulaTensor:
             self.coresDict = {**self.coresDict,
                               **self.create_local_cores(symbol, coreType)}
 
-    def create_local_cores(self, symbol, coreType="CoordinateCore"):
+    def create_local_cores(self, symbol, coreType=defaultCoreType):
         placeHolderKey = symbol.split("_")[0]
         phType = eu.decide_symbol_type(self.skeletonExpression, symbol)
         if phType == "binary":
@@ -37,30 +40,24 @@ class SuperPosedFormulaTensor:
             upColor = self.name + "_" + str(subExpression)
             leftColor = self.name + "_" + str(subExpression[0])
             rightColor = self.name + "_" + str(subExpression[2])
-            if coreType == "NumpyTensorCore":
-                return {symbol + "_binSelector":
-                            gc.NumpyTensorCore(values=create_binary_values(self.candidatesDict[placeHolderKey]),
-                                               colors=[placeHolderKey, leftColor, rightColor, upColor],
-                                               name=symbol + "_binSelector")}
-            elif coreType == "CoordinateCore":
-                return {symbol + "_binSelector":
-                            cc.CoordinateCore(create_binary_values(self.candidatesDict[placeHolderKey]),
-                                              [placeHolderKey, leftColor, rightColor, upColor],
-                                              name=symbol + "_binSelector")}
+
+            return {symbol + "_binSelector": tensor.get_core(coreType)(
+                create_binary_values(self.candidatesDict[placeHolderKey]),
+                [placeHolderKey, leftColor, rightColor, upColor],
+                symbol + "_binSelector"
+            )}
+
         elif phType == "unary":
             subExpression = eu.get_subexpression(self.skeletonExpression, symbol)
             upColor = self.name + "_" + str(subExpression)
             downColor = self.name + "_" + str(subExpression[1])
-            if coreType == "NumpyTensorCore":
-                return {symbol + "_uniSelector":
-                            gc.NumpyTensorCore(values=create_unary_values(self.candidatesDict[placeHolderKey]),
-                                               colors=[placeHolderKey, downColor, upColor],
-                                               name=symbol + "_uniSelector")}
-            elif coreType == "CoordinateCore":
-                return {symbol + "_uniSelector":
-                            cc.CoordinateCore(create_unary_values(self.candidatesDict[placeHolderKey]),
-                                              [placeHolderKey, downColor, upColor],
-                                              name=symbol + "_uniSelector")}
+
+            return {symbol + "_uniSelector": tensor.get_core(coreType)(
+                create_unary_values(self.candidatesDict[placeHolderKey]),
+                [placeHolderKey, downColor, upColor],
+                symbol + "_uniSelector"
+            )}
+
         elif phType == "atom":
             return create_controlled_atom_selectors(self.candidatesDict[placeHolderKey], symbol, self.name,
                                                     coreType)
@@ -72,7 +69,7 @@ class SuperPosedFormulaTensor:
         return self.coresDict
 
 
-def create_controlled_atom_selectors(atoms, symbol, formulaKey, coreType="NumpyTensorCore"):
+def create_controlled_atom_selectors(atoms, symbol, formulaKey, coreType=defaultCoreType):
     placeHolder = symbol.split("_")[0]
     if len(atoms) == 1 and atoms[
         0] == placeHolder:  ## The Case of single atom in candidate - Nothing to controlled select
@@ -82,17 +79,15 @@ def create_controlled_atom_selectors(atoms, symbol, formulaKey, coreType="NumpyT
         values = np.ones(shape=(len(atoms), 2, 2))  # control, atom (subexpression), formulatruth (headexpression)
         values[i, 0, 1] = 0
         values[i, 1, 0] = 0
-        if coreType == "NumpyTensorCore":
-            cSelectorDict[symbol + "_" + atomKey + "_selector"] = gc.NumpyTensorCore(values=values,
-                                                                                     colors=[placeHolder, atomKey,
-                                                                                             formulaKey + "_" + symbol],
-                                                                                     name=symbol + "_" + atomKey + "_selector")
-        elif coreType == "CoordinateCore":
-            cSelectorDict[symbol + "_" + atomKey + "_selector"] = cc.CoordinateCore(values,
-                                                                                    [placeHolder, atomKey,
-                                                                                     formulaKey + "_" + symbol],
-                                                                                    symbol + "_" + atomKey + "_selector")
+
+        cSelectorDict[symbol + "_" + atomKey + "_selector"] = tensor.get_core(coreType)(values,
+                                                                                        [placeHolder, atomKey,
+                                                                                         formulaKey + "_" + symbol],
+                                                                                        symbol + "_" + atomKey + "_selector"
+                                                                                        )
     return cSelectorDict
+
+
 
 
 def create_unary_values(symbols):

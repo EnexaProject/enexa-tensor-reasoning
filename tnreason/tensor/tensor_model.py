@@ -1,15 +1,16 @@
 from tnreason.tensor import formula_tensors as ft
+from tnreason.tensor import model_cores as mcore
+
 from tnreason.model import model_visualization as mv
 
 from tnreason.logic import expression_utils as eu
-from tnreason.logic import coordinate_calculus as cc
 
 from tnreason import contraction
 
 import numpy as np
 
 defaultContractionMethod = "PgmpyVariableEliminator"
-
+defaultCoreType = "NumpyTensorCore"
 
 class TensorRepresentation:
     def __init__(self, expressionsDict={}, factsDict={}, categoricalConstraintsDict={}, headType="expFactor"):
@@ -89,11 +90,11 @@ class TensorRepresentation:
     def get_weights(self):
         return {formulaKey: self.formulaTensorsDict[formulaKey].weight for formulaKey in self.formulaTensorsDict}
 
-    def marginalized_contraction(self, atomList, contractionMethod=defaultContractionMethod):
-        marginalizationDict = {atomKey + "_marg": cc.CoordinateCore(np.ones(shape=(2)), [atomKey]) for atomKey in
-                               atomList}  # To make sure, that all atoms appear in colors
+    def marginalized_contraction(self, atomList, contractionMethod=defaultContractionMethod, coreType=defaultCoreType):
+        emptyCoresDict = mcore.create_emptyCoresDict(atomList, coreType=coreType)
+
         margContractor = contraction.get_contractor(contractionMethod=contractionMethod)(
-            {**self.all_cores(), **marginalizationDict}, openColors=atomList)
+            {**self.all_cores(), **emptyCoresDict}, openColors=atomList)
         return margContractor.contract()
 
     def contract_partition(self):

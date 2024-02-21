@@ -1,10 +1,12 @@
-from tnreason.logic import coordinate_calculus as cc
-
 from tnreason import contraction
 
+from tnreason import tensor
 import numpy as np
 
 from queue import Queue
+
+defaultContractionMethod = "PgmpyVariableEliminator"
+defaultCoreType = "NumpyTensorCore"
 
 
 class ConstraintPropagator:
@@ -25,7 +27,7 @@ class ConstraintPropagator:
         for coreKey in self.binaryCoresDict:
             for i, color in enumerate(self.binaryCoresDict[coreKey].colors):
                 if color + "_domainCore" not in self.domainCoresDict:
-                    self.domainCoresDict[color + "_domainCore"] = cc.CoordinateCore(
+                    self.domainCoresDict[color + "_domainCore"] = tensor.get_core(coreType=defaultCoreType)(
                         np.ones(self.binaryCoresDict[coreKey].values.shape[i]),
                         [color],
                         color + "_domainCore")
@@ -50,7 +52,7 @@ class ConstraintPropagator:
             print("Propagating core {}.".format(coreKey))
         changedColors = []
         for color in self.binaryCoresDict[coreKey].colors:
-            contracted = contraction.get_contractor()(
+            contracted = contraction.get_contractor(contractionMethod=defaultContractionMethod)(
                 {coreKey: self.binaryCoresDict[coreKey],
                  **{otherColor + "_domainCore": self.domainCoresDict[otherColor + "_domainCore"] for otherColor in
                     self.binaryCoresDict[coreKey].colors if otherColor != color}},

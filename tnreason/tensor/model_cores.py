@@ -163,16 +163,20 @@ def create_expFactor_values(weight, differentiated):
     return values
 
 
-def create_emptyCoresDict(variableList, coreType="NumpyTensorCore"):
-    return {variableKey + "_trivialCore": tensor.get_core(coreType=coreType)(np.ones(2), [variableKey],
+def create_emptyCoresDict(variableList, coreType="NumpyTensorCore", varDimDict=None):
+    if varDimDict is None:
+        varDimDict = {variableKey : 2 for variableKey in variableList}
+    return {variableKey + "_trivialCore": tensor.get_core(coreType=coreType)(np.ones(varDimDict[variableKey]), [variableKey],
                                                                              variableKey + "_trivialCore")
             for variableKey in variableList}
 
 
-def create_evidenceCoresDict(evidenceDict, coreType="NumpyTensorCore"):
+def create_evidenceCoresDict(evidenceDict, dimDict=None,coreType="NumpyTensorCore"):
+    if dimDict is None:
+        dimDict = {evidenceKey : 2 for evidenceKey in evidenceDict}
     evidenceCoresDict = {}
     for atomKey in evidenceDict:
-        truthValues = np.zeros(shape=(2))
+        truthValues = np.zeros(shape=(dimDict[atomKey]))
         if bool(evidenceDict[atomKey]):
             truthValues[1] = 1
         else:

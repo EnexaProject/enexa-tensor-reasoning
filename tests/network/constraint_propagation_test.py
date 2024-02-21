@@ -2,8 +2,6 @@ from tnreason import knowledge
 
 from tnreason.network import constraint_propagation as cp
 
-from tnreason.logic import coordinate_calculus as cc
-
 import numpy as np
 
 hybridKB = knowledge.HybridKnowledgeBase(

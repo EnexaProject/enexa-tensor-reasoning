@@ -52,8 +52,11 @@ class NumpyTensorCore(TensorCoreBase):
         return self.values
 
     def clone(self):
-        return NumpyTensorCore(self.values.copy(), self.colors.copy(), self.name) # ! Shallow Copies?
+        return NumpyTensorCore(self.values.copy(), self.colors.copy(), self.name)  # ! Shallow Copies?
 
+    def normalize(self):
+        return NumpyTensorCore(1 / np.sum(self.values) * self.values, self.colors, self.name)
+    
 
 def change_type(cCore, targetType="NumpyTensorCore"):
     if targetType == "NumpyTensorCore":
