@@ -30,15 +30,14 @@ class ALS:
             self.networkCores[updateKey] = tensor.get_core(coreType)(np.random.random(size=upShape), upColors,
                                                                      updateKey)
 
-    def alternating_optimization(self, updateKeys, sweepNum=10):
+    def alternating_optimization(self, updateKeys, sweepNum=10, importanceList=[(None, 1)]):
         for sweep in range(sweepNum):
             for updateKey in updateKeys:
-                self.optimize_core(updateKey)
+                self.optimize_core(updateKey, importanceList=importanceList)
 
-    def optimize_core(self, updateKey, coreType=defaultCoreType):
-        tbUpdated = self.networkCores.pop(updateKey)
-        updateColors = tbUpdated.colors
-        updateShape = tbUpdated.values.shape
+    def compute_conOperator(self, updateColors, updateShape, importanceCores=None, weight=1):
+        if importanceCores is None:
+            importanceCores = self.importanceCores
 
         trivialCores = mcore.create_emptyCoresDict(
             updateColors + [updateColor + "_out" for updateColor in updateColors],
@@ -48,21 +47,39 @@ class ALS:
             coreType=defaultCoreType
         )
 
-        conOperator = contraction.get_contractor(self.contractionMethod)({
-            **self.importanceCores,
+        return contraction.get_contractor(self.contractionMethod)({
+            **importanceCores,
             **self.networkCores,
             **copy_cores(self.networkCores, "_out", self.openTargetColors),
             **trivialCores
-        }, openColors=updateColors + [updateColor + "_out" for updateColor in updateColors]).contract()
+        }, openColors=updateColors + [updateColor + "_out" for updateColor in updateColors]).contract().multiply(weight)
 
-        conTarget = contraction.get_contractor(self.contractionMethod)({
-            **self.importanceCores,
+    def compute_conTarget(self, updateColors, updateShape, importanceCores=None, weight=1):
+        if importanceCores is None:
+            importanceCores = self.importanceCores
+
+        return contraction.get_contractor(self.contractionMethod)({
+            **importanceCores,
             **self.networkCores,
             **self.targetCores,
             **mcore.create_emptyCoresDict(
                 updateColors,
                 varDimDict={color: updateShape[i] for i, color in enumerate(updateColors)}),
-        }, openColors=updateColors).contract()
+        }, openColors=updateColors).contract().multiply(weight)
+
+    def optimize_core(self, updateKey, coreType=defaultCoreType, importanceList=[(None, 1)]):
+        tbUpdated = self.networkCores.pop(updateKey)
+        updateColors = tbUpdated.colors
+        updateShape = tbUpdated.values.shape
+
+        conOperator = self.compute_conOperator(updateColors, updateShape, importanceCores=importanceList[0][0],
+                                               weight=importanceList[0][1])
+        conTarget = self.compute_conTarget(updateColors, updateShape, importanceCores=importanceList[0][0],
+                                           weight=importanceList[0][1])
+        for importanceCores, weight in importanceList[1:]:
+            conOperator = conOperator.sum_with(
+                self.compute_conOperator(updateColors, updateShape, importanceCores, weight))
+            conTarget = conTarget.sum_with(self.compute_conTarget(updateColors, updateShape, importanceCores, weight))
 
         resultDim = int(np.prod(conTarget.values.shape))
         conOperator.reorder_colors(conTarget.colors + [color + "_out" for color in conTarget.colors])

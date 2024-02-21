@@ -54,9 +54,11 @@ class NumpyTensorCore(TensorCoreBase):
     def clone(self):
         return NumpyTensorCore(self.values.copy(), self.colors.copy(), self.name)  # ! Shallow Copies?
 
+    ## For Sampling
     def normalize(self):
         return NumpyTensorCore(1 / np.sum(self.values) * self.values, self.colors, self.name)
 
+    ## For ALS
     def reorder_colors(self, newColors):
         oldColors = self.colors.copy()
         oldValues = np.copy(self.values)
@@ -70,6 +72,18 @@ class NumpyTensorCore(TensorCoreBase):
 
         self.values = newValues
         self.colors = newColors
+
+
+    def sum_with(self, sumCore):
+        if set(self.colors)!=set(sumCore.colors):
+            print(self.colors, sumCore.colors)
+            raise ValueError("Colors of summands {} and {} do not match!".format(self.name, sumCore.name))
+        else:
+            self.reduce_colors(sumCore.colors)
+            return NumpyTensorCore(self.values + sumCore.values, self.colors, self.name)
+
+    def multiply(self, weight):
+        return NumpyTensorCore(weight * self.values, self.colors, self.name)
 
 def change_type(cCore, targetType="NumpyTensorCore"):
     if targetType == "NumpyTensorCore":
