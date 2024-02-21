@@ -1,26 +1,99 @@
-from tnreason.logic import coordinate_calculus as cc
+from tnreason import tensor
 
 import numpy as np
 
 
+def get_expression_string(expression):
+    if isinstance(expression, str):
+        return expression
+    elif len(expression) == 2:
+        assert isinstance(expression[0], str)
+        return expression[0] + "_" + get_expression_string(expression[1])
+    elif len(expression) == 3:
+        assert isinstance(expression[1], str)
+        return "(" + get_expression_string(expression[0]) + "_" + expression[1] + get_expression_string(
+            expression[2]) + ")"
+
+
+def create_conCore(expression, coreType="NumpyTensorCore"):
+    expressionString = get_expression_string(expression)
+
+    if isinstance(expression, str):
+        return {expressionString + "_conCore": tensor.get_core(coreType=coreType)(np.ones(2), [expressionString],
+                                                                                  expressionString + "_conCore")}
+    elif len(expression) == 2:
+        preExpressionString = get_expression_string(expression[1])
+        return {expressionString + "_conCore": tensor.get_core(coreType=coreType)(
+            get_unary_tensor(expression[0]),
+            [preExpressionString, expressionString],
+            expressionString + "_conCore")
+        }
+
+    elif len(expression) == 3:
+        leftExpressionString = get_expression_string(expression[0])
+        rightExpressionString = get_expression_string(expression[1])
+        return {expressionString + "_conCore": tensor.get_core(coreType=coreType)(get_binary_tensor(expression[1]),
+                                                                                  [leftExpressionString,
+                                                                                   rightExpressionString,
+                                                                                   expressionString],
+                                                                                  expressionString + "_conCore")}
+    else:
+        raise ValueError("Expression {} not understood!".format(expression))
+
+
+def create_conCores(expression, coreType="NumpyTensorCore"):
+    if isinstance(expression, str):
+        return create_conCore(expression, coreType=coreType)
+    elif len(expression) == 2:
+        return {**create_conCore(expression, coreType=coreType),
+                **create_conCores(expression[1], coreType=coreType)}
+    elif len(expression) == 3:
+        return {**create_conCore(expression, coreType=coreType),
+                **create_conCores(expression[0], coreType=coreType),
+                **create_conCores(expression[2], coreType=coreType)
+                }
+
+
+def create_headCore(expression, headType, weight=None, coreType="NumpyTensorCore"):
+    if headType == "truthEvaluation":
+        headValues = np.zeros(shape=(2))
+        headValues[1] = 1  # weight
+    elif headType == "weightedTruthEvaluation":
+        headValues = np.zeros(shape=(2))
+        headValues[1] = weight
+    elif headType == "expFactor":
+        headValues = create_expFactor_values(weight, False)
+    elif headType == "diffExpFactor":
+        headValues = create_expFactor_values(weight, True)
+    else:
+        raise ValueError("Headtype {} not understood!".format(headType))
+    expressionString = get_expression_string(expression)
+    return {expressionString + "_headCore": tensor.get_core(coreType=coreType)(headValues, [expressionString],
+                                                                               expressionString + "_headCore")}
+
+
+#####
+
 ## When only atoms in expressions (FormulaTensor)
-def create_subExpressionCores(expression, formulaKey):
+
+
+def create_subExpressionCores(expression, formulaKey="", coreType="NumpyTensorCore"):
     addCoreKey = str(formulaKey) + "_" + str(expression) + "_subCore"
     headColor = str(formulaKey) + "_" + str(expression)
 
     if isinstance(expression, str):
-        return {addCoreKey: cc.CoordinateCore(np.eye(2), [expression, headColor], addCoreKey)}
+        return {addCoreKey: tensor.get_core(coreType=coreType)(np.eye(2), [expression, headColor], addCoreKey)}
     elif len(expression) == 2:
         if expression[0] != "not":
             raise ValueError("Expression {} not understood!".format(expression))
         if isinstance(expression[1], str):
-            return {addCoreKey: cc.CoordinateCore(create_negation_tensor(),
-                                                  [expression[1], headColor],
-                                                  addCoreKey)}
+            return {addCoreKey: tensor.get_core(coreType=coreType)(create_negation_tensor(),
+                                                                   [expression[1], headColor],
+                                                                   addCoreKey)}
         else:
             partsDict = create_subExpressionCores(expression[1], formulaKey)
-            addCore = cc.CoordinateCore(create_negation_tensor(),
-                                        [formulaKey + "_" + str(expression[1]), headColor], addCoreKey)
+            addCore = tensor.get_core(coreType=coreType)(create_negation_tensor(),
+                                                         [formulaKey + "_" + str(expression[1]), headColor], addCoreKey)
             return {**partsDict, addCoreKey: addCore}
     elif len(expression) == 3:
         if isinstance(expression[0], str):
@@ -38,8 +111,9 @@ def create_subExpressionCores(expression, formulaKey):
             rightColor = formulaKey + "_" + str(expression[2])
 
         return {**partsDict0, **partsDict2,
-                addCoreKey: cc.CoordinateCore(get_binary_tensor(expression[1]), [leftColor, rightColor, headColor],
-                                              addCoreKey)}
+                addCoreKey: tensor.get_core(coreType=coreType)(get_binary_tensor(expression[1]),
+                                                               [leftColor, rightColor, headColor],
+                                                               addCoreKey)}
 
     else:
         raise ValueError("Expression {} has wrong length!".format(expression))
@@ -50,6 +124,7 @@ def get_unary_tensor(type):
         return np.eye(2)
     elif type == "not":
         return create_negation_tensor()
+
 
 def get_binary_tensor(type):
     if type == "and":
@@ -124,22 +199,6 @@ def create_biconditional_tensor():
     return bic_tensor
 
 
-def create_headCore(headType, weight, headColor):
-    if headType == "truthEvaluation":
-        headValues = np.zeros(shape=(2))
-        headValues[1] = 1  # weight
-    elif headType == "weightedTruthEvaluation":
-        headValues = np.zeros(shape=(2))
-        headValues[1] = weight
-    elif headType == "expFactor":
-        headValues = create_expFactor_values(weight, False)
-    elif headType == "diffExpFactor":
-        headValues = create_expFactor_values(weight, True)
-    else:
-        raise ValueError("Headtype {} not understood!".format(headType))
-    return cc.CoordinateCore(headValues, [headColor])
-
-
 def create_expFactor_values(weight, differentiated):
     values = np.zeros(shape=(2))
     if not differentiated:
@@ -149,11 +208,12 @@ def create_expFactor_values(weight, differentiated):
 
 
 def create_emptyCoresDict(variableList):
-    return {variableKey + "_trivialCore": cc.CoordinateCore(np.ones(2), [variableKey], variableKey + "_trivialCore")
+    return {variableKey + "_trivialCore": tensor.get_core(coreType=coreType)(np.ones(2), [variableKey],
+                                                                             variableKey + "_trivialCore")
             for variableKey in variableList}
 
 
-def create_evidenceCoresDict(evidenceDict):
+def create_evidenceCoresDict(evidenceDict, coreType="NumpyTensorCore"):
     evidenceCoresDict = {}
     for atomKey in evidenceDict:
         truthValues = np.zeros(shape=(2))
@@ -161,7 +221,8 @@ def create_evidenceCoresDict(evidenceDict):
             truthValues[1] = 1
         else:
             truthValues[0] = 1
-        evidenceCoresDict[atomKey + "_evidence"] = cc.CoordinateCore(truthValues, [atomKey], atomKey + "_evidence")
+        evidenceCoresDict[atomKey + "_evidence"] = tensor.get_core(coreType=coreType)(truthValues, [atomKey],
+                                                                                      atomKey + "_evidence")
     return evidenceCoresDict
 
 
@@ -214,10 +275,10 @@ def create_negationCoreDict(atoms, inprefix, outprefix):
 
     negationCoreDict = {}
     for atomKey in atoms:
-        negationCoreDict[outprefix + "_" + atomKey + "_neg"] = cc.CoordinateCore(negationMatrix,
-                                                                                 [inprefix + atomKey,
-                                                                                  outprefix + atomKey],
-                                                                                 outprefix + atomKey + "_neg")
+        negationCoreDict[outprefix + "_" + atomKey + "_neg"] = tensor.get_core(coreType=coreType)(negationMatrix,
+                                                                                                  [inprefix + atomKey,
+                                                                                                   outprefix + atomKey],
+                                                                                                  outprefix + atomKey + "_neg")
     return negationCoreDict
 
 
@@ -225,7 +286,7 @@ def create_deltaCore(colors, name=""):
     values = np.zeros(shape=[2 for i in range(len(colors))])
     values[tuple(0 for color in colors)] = 1
     values[tuple(1 for color in colors)] = 1
-    return cc.CoordinateCore(values, colors, name)
+    return tensor.get_core(coreType=coreType)(values, colors, name)
 
 
 def create_selectorCoresDict(candidatesDict):
@@ -243,7 +304,7 @@ def create_local_selectorCores(atoms, placeHolderKey):
     for i, atomKey in enumerate(atoms):
         coreValues = np.ones(shape=(len(atoms), 2))
         coreValues[i, 0] = 0
-        returnDict[placeHolderKey + "_" + atomKey + "_selector"] = cc.CoordinateCore(
+        returnDict[placeHolderKey + "_" + atomKey + "_selector"] = tensor.get_core(coreType=coreType)(
             coreValues, [placeHolderKey, placeHolderKey + "_" + atomKey],
             placeHolderKey + "_" + atomKey + "_selector")
     return returnDict
@@ -261,7 +322,7 @@ def dataCore_from_sampleDf(sampleDf, atomKey, dataColor):
             values[i, 0] = 1
         else:
             values[i, 1] = 1
-    return cc.CoordinateCore(values, [dataColor, atomKey])
+    return tensor.get_core(coreType=coreType)(values, [dataColor, atomKey])
 
 
 ## ConstraintCore Creation:
@@ -272,11 +333,12 @@ def create_constraintCoresDict(atoms, name):
         coreValues[:, 0] = np.ones(shape=(len(atoms)))
         coreValues[i, 0] = 0
         coreValues[i, 1] = 1
-        constraintCoresDict[name + "_" + atomKey + "_cconstraint"] = cc.CoordinateCore(core_values=coreValues,
-                                                                                       core_colors=[
-                                                                                           name + "_cconstraint",
-                                                                                           atomKey],
-                                                                                       name=name + "_" + atomKey + "_cconstraint")
+        constraintCoresDict[name + "_" + atomKey + "_cconstraint"] = tensor.get_core(coreType=coreType)(
+            core_values=coreValues,
+            core_colors=[
+                name + "_cconstraint",
+                atomKey],
+            name=name + "_" + atomKey + "_cconstraint")
     return constraintCoresDict
 
 

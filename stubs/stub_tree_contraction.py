@@ -81,7 +81,7 @@ def find_last_usage(color, contractionTree, coreDict):
 
 if __name__ == "__main__":
     contree = ["c1", ["c2", "c3"], "c4"]
-    from tnreason.contraction import generic_cores as gc
+    from tnreason.tensor import generic_cores as gc
 
     from tnreason.logic import coordinate_calculus as cc
 

@@ -1,12 +1,8 @@
 from matplotlib import pyplot as plt
 
 from tnreason.contraction import contraction_optimization as co
-from tnreason.contraction import bc_contraction_generation as cg
 from tnreason.contraction import contraction_visualization as cv
 
-from tnreason.logic import coordinate_calculus as cc
-
-import numpy as np
 
 class ChainContractorBase:
     """
@@ -151,13 +147,6 @@ class CoreContractor(ChainContractorBase):
         if verbose and len(contracted.values.shape) > 0:
             print("Missing contraction colors are {}.".format(contracted.colors))
         return contracted
-
-    ## Unused!
-
-    def generate_coreDict_from_formulaList(self, formulaList):
-        ## This should not be the job ob coreContractor, but of a representator!
-        for formula in formulaList:
-            self.coreDict = {**self.coreDict, **cg.generate_factor_dict(formula)}
 
     def contract_color(self, color):
         affectedCores, affectedKeys = find_affected(self.coreDict, color)

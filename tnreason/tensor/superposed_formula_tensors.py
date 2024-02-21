@@ -1,9 +1,7 @@
 from tnreason.logic import expression_utils as eu
 from tnreason.logic import coordinate_calculus as cc
 
-from tnreason.contraction import generic_cores as gc
-
-from tnreason.model import create_cores as crc
+from tnreason.tensor import generic_cores as gc, model_cores as crc
 
 import numpy as np
 

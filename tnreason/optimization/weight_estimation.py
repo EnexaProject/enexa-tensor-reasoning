@@ -7,11 +7,10 @@ from tnreason.contraction import expression_evaluation as ee
 
 import numpy as np
 
-from tnreason.logic import coordinate_calculus as cc
 from tnreason.representation import sampledf_to_cores as stoc
 
 from tnreason.model import tensor_model as tm
-from tnreason.model import formula_tensors as ft
+from tnreason.tensor import formula_tensors as ft
 
 
 class WeightEstimator:

@@ -1,4 +1,4 @@
-from tnreason.model import superposed_formula_tensors as sft
+from tnreason.tensor import superposed_formula_tensors as sft
 
 from tnreason.representation import pgmpy_inference as pinf
 

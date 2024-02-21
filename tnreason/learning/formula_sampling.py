@@ -1,7 +1,6 @@
 from tnreason.model import tensor_model as tm
-from tnreason.model import formula_tensors as ft
+from tnreason.tensor import formula_tensors as ft
 
-from tnreason.logic import expression_utils as eu
 from tnreason.logic import expression_generation as eg
 
 from tnreason.contraction import core_contractor as coc

@@ -1,5 +1,5 @@
 from tnreason.contraction import core_contractor as coc
-from tnreason.contraction import generic_cores as gc
+from tnreason.tensor import generic_cores as gc
 
 from tnreason.logic import coordinate_calculus as cc
 

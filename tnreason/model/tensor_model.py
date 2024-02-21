@@ -1,4 +1,4 @@
-from tnreason.model import formula_tensors as ft
+from tnreason.tensor import formula_tensors as ft
 from tnreason.model import model_visualization as mv
 
 from tnreason.logic import expression_utils as eu

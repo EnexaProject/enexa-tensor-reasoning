@@ -1,4 +1,4 @@
-from tnreason.contraction import bc_contraction_generation as bcg
+from stubs import bc_contraction_generation as bcg
 from tnreason.contraction import core_contractor as coc
 
 import numpy as np

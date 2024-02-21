@@ -1,5 +1,3 @@
-from tnreason.contraction import bc_contraction_generation as bcg
-from tnreason.contraction import core_contractor as coc
 import tnreason.contraction.expression_evaluation as ee
 
 from tnreason.model import generate_test_data as gtd

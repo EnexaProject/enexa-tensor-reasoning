@@ -1,6 +1,3 @@
-import tnreason.model.formula_tensors as ft
-
-import tnreason.logic.coordinate_calculus as cc
 import numpy as np
 
 import tnreason.contraction.core_contractor as coc

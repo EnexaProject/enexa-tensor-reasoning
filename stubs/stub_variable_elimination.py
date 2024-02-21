@@ -1,5 +1,5 @@
 import numpy as np
-from tnreason.contraction import generic_cores as gc
+from tnreason.tensor import generic_cores as gc
 
 
 class VariableEliminator:

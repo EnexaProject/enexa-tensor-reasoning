@@ -1,4 +1,4 @@
-from tnreason.model import  formula_tensors as ft
+from tnreason.tensor import formula_tensors as ft
 
 from tnreason.model import generate_test_data as gtd
 

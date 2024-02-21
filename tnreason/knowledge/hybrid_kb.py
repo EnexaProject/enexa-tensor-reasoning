@@ -1,7 +1,6 @@
 from tnreason.model import tensor_model as tm
 from tnreason.model import logic_model as lm
-from tnreason.model import formula_tensors as ft
-from tnreason.model import create_cores as crc
+from tnreason.tensor import model_cores as crc, formula_tensors as ft
 from tnreason.model import sampling as samp
 from tnreason.model import model_visualization as mov
 

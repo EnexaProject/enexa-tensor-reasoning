@@ -1,5 +1,5 @@
 import tnreason.model.generate_test_data as gtd
-import tnreason.model.formula_tensors as ft
+import tnreason.tensor.formula_tensors as ft
 
 import time
 
