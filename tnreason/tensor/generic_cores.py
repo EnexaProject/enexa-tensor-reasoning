@@ -51,6 +51,9 @@ class NumpyTensorCore(TensorCoreBase):
     def get_values_as_array(self):
         return self.values
 
+    def clone(self):
+        return NumpyTensorCore(self.values.copy(), self.colors.copy(), self.name) # ! Shallow Copies?
+
 
 def change_type(cCore, targetType="NumpyTensorCore"):
     if targetType == "NumpyTensorCore":

@@ -1,5 +1,5 @@
-from tnreason.contraction import layers as lay
-from tnreason.contraction import layered_contraction_generation as lcg
+from stubs import layers as lay, layered_contraction_generation as lcg
+
 
 class LayeredCoreContractor:
 

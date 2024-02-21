@@ -72,7 +72,7 @@ class DataTensor:
             for atomKey in self.atoms
         }
 
-    def compute_shannon_entropy(self, contractionMethod="TNChainContractor"):
+    def compute_shannon_entropy(self, contractionMethod="PgmpyVariableEliminator"):
         contractedData = contraction.get_contractor(contractionMethod)(
             {**self.dataCores.copy(),
              **change_color_in_coredict(self.dataCores, {self.dataColor: self.dataColor + "_out"})},

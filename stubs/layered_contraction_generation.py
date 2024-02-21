@@ -1,7 +1,7 @@
 from tnreason.logic import expression_utils as eu
 from tnreason.logic import coordinate_calculus as cc
 
-from tnreason.contraction import layers as lay
+from stubs import layers as lay
 
 import numpy as np
 

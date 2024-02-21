@@ -8,7 +8,7 @@ from tnreason.contraction import core_contractor as coc
 
 from tnreason.logic import expression_utils as eu
 
-from tnreason.knowledge import storage
+#from tnreason.knowledge import storage
 
 import numpy as np
 
