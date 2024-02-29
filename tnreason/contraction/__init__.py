@@ -5,5 +5,8 @@ def get_contractor(contractionMethod="TNChainContractor"):
     elif contractionMethod == "PgmpyVariableEliminator":
         from tnreason.contraction.pgmpy_contractor import PgmpyVariableEliminator
         return PgmpyVariableEliminator
+    elif contractionMethod == "NumpyEinsum":
+        from tnreason.contraction.numpy_contractor import NumpyEinsumContractor
+        return NumpyEinsumContractor
     else:
         raise ValueError("Contractor Type {} not supported.".format(contractionMethod))
