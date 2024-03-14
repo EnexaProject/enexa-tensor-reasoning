@@ -17,12 +17,16 @@ class NumpyEinsumContractor:
         self.variableNestedList = variableNestedList
         self.coreType = coreType
 
-    def create_naive_variableNestedList(self):
-        self.variableNestedList = []
+    def create_naive_variableNestedList(self, together=True):
+        closedColors = []
         for key in self.coreDict:
             for color in self.coreDict[key].colors:
-                if [color] not in self.variableNestedList and color not in self.openColors:
-                    self.variableNestedList.append([color])
+                if color not in closedColors and color not in self.openColors:
+                    closedColors.append(color)
+        if together:
+            self.variableNestedList = [closedColors]
+        else:
+            self.variableNestedList = [[color] for color in closedColors]
 
     def visualize(self, coreDict):
         cv.draw_contractionDiagram(coreDict)
