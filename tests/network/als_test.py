@@ -28,7 +28,14 @@ optimizer = als.ALS(
     targetCores=targetDict,
     openTargetColors=["a1"]
 )
+
 optimizer.random_initialize(["con1", "a1_update"], {"con1": 3, "a1_update": 2},
                             {"con1": ["c1"], "a1_update": ["a1"]})
-optimizer.alternating_optimization(["con1", "a1_update"])
-optimizer.optimize_core("con1")
+
+conoperator = optimizer.compute_conOperator(["a1"], [2])
+print(conoperator.values)
+
+print(optimizer.compute_residuum())
+residua = optimizer.alternating_optimization(["con1", "a1_update"], computeResiduum=True)
+print(residua)
+print(optimizer.compute_residuum())
