@@ -30,10 +30,16 @@ class ALS:
             self.networkCores[updateKey] = tensor.get_core(coreType)(np.random.random(size=upShape), upColors,
                                                                      updateKey)
 
-    def alternating_optimization(self, updateKeys, sweepNum=10, importanceList=[(None, 1)]):
+    def alternating_optimization(self, updateKeys, sweepNum=10, importanceList=[(None, 1)], computeResiduum=False):
+        if computeResiduum:
+            residua = np.empty((sweepNum, len(updateKeys)))
         for sweep in range(sweepNum):
-            for updateKey in updateKeys:
+            for i, updateKey in enumerate(updateKeys):
                 self.optimize_core(updateKey, importanceList=importanceList)
+                if computeResiduum:
+                    residua[sweep, i] = self.compute_residuum()
+        if computeResiduum:
+            return residua
 
     def compute_conOperator(self, updateColors, updateShape, importanceCores=None, weight=1):
         if importanceCores is None:
@@ -90,6 +96,16 @@ class ALS:
         solution, res, rank, s = np.linalg.lstsq(flattenedOperator, flattenedTarget)
 
         self.networkCores[updateKey] = tensor.get_core(coreType)(solution.reshape(updateShape), updateColors, updateKey)
+
+    def compute_residuum(self):
+        prediction = contraction.get_contractor(self.contractionMethod)(
+            self.networkCores, openColors=self.openTargetColors
+        ).contract()
+        target = contraction.get_contractor(self.contractionMethod)(
+            self.targetCores, openColors=self.openTargetColors
+        ).contract()
+        prediction.reorder_colors(target.colors)
+        return np.linalg.norm(prediction.values - target.values)
 
 
 def copy_cores(coreDict, suffix, exceptionColors):
