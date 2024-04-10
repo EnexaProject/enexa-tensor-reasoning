@@ -1,4 +1,4 @@
-def contract(coreDict, openColors, method=""):
+def contract(coreDict, openColors, method="PgmpyVariableEliminator"):
     if method == "NumpyEinsum":
         from tnreason.contraction.numpy_contractor import NumpyEinsumContractor
         contractor = NumpyEinsumContractor(coreDict=coreDict, openColors=openColors)
