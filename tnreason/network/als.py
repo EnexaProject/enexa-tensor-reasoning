@@ -10,12 +10,12 @@ defaultCoreType = "NumpyTensorCore"
 
 
 class ALS:
-    def __init__(self, networkCores, targetCores={}, openTargetColors=[], importanceCores={},
+    def __init__(self, networkCores, targetCores={}, openTargetColors=[], importanceList=[({}, 1)],
                  contractionMethod=defaultContractionMethod):
         self.networkCores = networkCores
         self.targetCores = targetCores
         self.openTargetColors = openTargetColors
-        self.importanceCores = importanceCores
+        self.importanceList = importanceList
         self.contractionMethod = contractionMethod
 
     def random_initialize(self, updateKeys, shapesDict={}, colorsDict={}, coreType=defaultCoreType):
@@ -30,21 +30,18 @@ class ALS:
             self.networkCores[updateKey] = tensor.get_core(coreType)(np.random.random(size=upShape), upColors,
                                                                      updateKey)
 
-    def alternating_optimization(self, updateKeys, sweepNum=10, importanceList=[(None, 1)], computeResiduum=False):
+    def alternating_optimization(self, updateKeys, sweepNum=10, computeResiduum=False):
         if computeResiduum:
             residua = np.empty((sweepNum, len(updateKeys)))
         for sweep in range(sweepNum):
             for i, updateKey in enumerate(updateKeys):
-                self.optimize_core(updateKey, importanceList=importanceList)
+                self.optimize_core(updateKey)
                 if computeResiduum:
                     residua[sweep, i] = self.compute_residuum()
         if computeResiduum:
             return residua
 
-    def compute_conOperator(self, updateColors, updateShape, importanceCores=None, weight=1):
-        if importanceCores is None:
-            importanceCores = self.importanceCores
-
+    def compute_conOperator(self, updateColors, updateShape, importanceCores={}, weight=1):
         trivialCores = mcore.create_emptyCoresDict(
             updateColors + [updateColor + "_out" for updateColor in updateColors],
             varDimDict={**{color: updateShape[i] for i, color in enumerate(updateColors)},
@@ -55,15 +52,13 @@ class ALS:
 
         return contraction.get_contractor(self.contractionMethod)({
             **importanceCores,
+            **copy_cores(importanceCores, "_out", self.openTargetColors),
             **self.networkCores,
             **copy_cores(self.networkCores, "_out", self.openTargetColors),
             **trivialCores
         }, openColors=updateColors + [updateColor + "_out" for updateColor in updateColors]).contract().multiply(weight)
 
-    def compute_conTarget(self, updateColors, updateShape, importanceCores=None, weight=1):
-        if importanceCores is None:
-            importanceCores = self.importanceCores
-
+    def compute_conTarget(self, updateColors, updateShape, importanceCores={}, weight=1):
         return contraction.get_contractor(self.contractionMethod)({
             **importanceCores,
             **self.networkCores,
@@ -73,16 +68,16 @@ class ALS:
                 varDimDict={color: updateShape[i] for i, color in enumerate(updateColors)}),
         }, openColors=updateColors).contract().multiply(weight)
 
-    def optimize_core(self, updateKey, coreType=defaultCoreType, importanceList=[(None, 1)]):
+    def optimize_core(self, updateKey, coreType=defaultCoreType):
         tbUpdated = self.networkCores.pop(updateKey)
         updateColors = tbUpdated.colors
         updateShape = tbUpdated.values.shape
 
-        conOperator = self.compute_conOperator(updateColors, updateShape, importanceCores=importanceList[0][0],
-                                               weight=importanceList[0][1])
-        conTarget = self.compute_conTarget(updateColors, updateShape, importanceCores=importanceList[0][0],
-                                           weight=importanceList[0][1])
-        for importanceCores, weight in importanceList[1:]:
+        conOperator = self.compute_conOperator(updateColors, updateShape, importanceCores=self.importanceList[0][0],
+                                               weight=self.importanceList[0][1])
+        conTarget = self.compute_conTarget(updateColors, updateShape, importanceCores=self.importanceList[0][0],
+                                           weight=self.importanceList[0][1])
+        for importanceCores, weight in self.importanceList[1:]:
             conOperator = conOperator.sum_with(
                 self.compute_conOperator(updateColors, updateShape, importanceCores, weight))
             conTarget = conTarget.sum_with(self.compute_conTarget(updateColors, updateShape, importanceCores, weight))
