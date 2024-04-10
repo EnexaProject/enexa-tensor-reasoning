@@ -3,6 +3,11 @@ def get_formula_cores(expression, alreadyCreated=[]):
     return enform.create_conCores(expression, alreadyCreated=alreadyCreated)
 
 
+def get_head_core(color, headType, weight=None, coreType="NumpyTensorCore", name=None):
+    import tnreason.encoding.formulas as enform
+    return enform.create_headCore(color=color, headType=headType, weight=weight, coreType=coreType, name=name)
+
+
 def get_neuron_cores(name, connectiveList, candidatesDict):
     import tnreason.encoding.neurons as enneur
     return enneur.create_neuron(name, connectiveList, candidatesDict)

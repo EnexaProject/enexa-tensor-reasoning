@@ -58,7 +58,6 @@ class Gibbs:
                 localProb = flattened / np.sum(flattened)
 
         newCore = np.zeros(shape=(np.prod(updateShape)))
-
         pos = np.where(np.random.multinomial(1, localProb) == 1)[0][0]
         newCore[pos] = 1
         self.networkCores[updateKey] = engine.get_core(defaultCoreType)(newCore, updateColors)

@@ -4,6 +4,7 @@ import numpy as np
 
 from tnreason.encoding import connectives as encon
 
+
 def create_conCore(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
     expressionString = get_expression_string(expression)
     if expressionString + "_conCore" in alreadyCreated:
@@ -37,7 +38,7 @@ def create_conCores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
         return create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated)
     elif len(expression) == 2:
         return {**create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated)
-                **create_conCores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated)}
+                  ** create_conCores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated)}
     elif len(expression) == 3:
         return {**create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated),
                 **create_conCores(expression[0], coreType=coreType, alreadyCreated=alreadyCreated),
@@ -45,7 +46,7 @@ def create_conCores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
                 }
 
 
-def create_headCore(expression, headType, weight=None, coreType="NumpyTensorCore"):
+def create_headCore(color, headType, weight=None, coreType="NumpyTensorCore", name=None):
     if headType == "truthEvaluation":
         headValues = np.zeros(shape=(2))
         headValues[1] = 1  # weight
@@ -58,9 +59,12 @@ def create_headCore(expression, headType, weight=None, coreType="NumpyTensorCore
         headValues = create_expFactor_values(weight, True)
     else:
         raise ValueError("Headtype {} not understood!".format(headType))
-    expressionString = get_expression_string(expression)
-    return {expressionString + "_headCore": engine.get_core(coreType=coreType)(headValues, [expressionString],
-                                                                               expressionString + "_headCore")}
+
+    if name is None:
+        name = color + "_headCore"
+
+    return {name: engine.get_core(coreType=coreType)(headValues, [color],
+                                                     name)}
 
 
 def create_expFactor_values(weight, differentiated):
