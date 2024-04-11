@@ -33,7 +33,7 @@ dataOptimizer = als.ALS(
     networkCores=networkCores,
     targetCores={"tarCore": engine.get_core()(values=np.ones(dataNum), colors=["dat"])},
     importanceList=[({"dataTensor": engine.get_core()(values=data, colors=["a1", "a2", "dat"])}, 1)],
-    openTargetColors=["dat"]
+    openTargetColors=["a1", "a2"]
 )
 
 

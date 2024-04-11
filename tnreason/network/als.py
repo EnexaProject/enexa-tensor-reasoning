@@ -52,7 +52,7 @@ class ALS:
 
         return contraction.get_contractor(self.contractionMethod)({
             **importanceCores,
-            **copy_cores(importanceCores, "_out", self.openTargetColors),
+            #**copy_cores(importanceCores, "_out", self.openTargetColors),
             **self.networkCores,
             **copy_cores(self.networkCores, "_out", self.openTargetColors),
             **trivialCores
