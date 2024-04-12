@@ -7,7 +7,7 @@ from tnreason import contraction
 
 from tnreason.logic import expression_utils as eu
 
-from tnreason.knowledge import storage
+from tnreason.encoding import storage
 
 from tnreason.network import distributions as dist
 
