@@ -14,10 +14,7 @@ class TensorFlowCore:
 
 
 class TensorFlowContractor:
-    def __init__(self, coreDict={}, openColors=[], visualize=False):
-        if visualize:
-            self.visualize(coreDict)
-
+    def __init__(self, coreDict={}, openColors=[]):
         self.tensorFlowCores = {
             key: TensorFlowCore(values=coreDict[key].values, colors=coreDict[key].colors, name=coreDict[key].name) for
             key in coreDict
