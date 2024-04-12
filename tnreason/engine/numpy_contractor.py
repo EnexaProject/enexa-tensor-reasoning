@@ -2,6 +2,8 @@ import numpy as np
 
 from tnreason.contraction import contraction_visualization as cv
 
+from tnreason.engine import  subscript_creation as subc
+
 from tnreason import tensor
 
 
@@ -52,31 +54,19 @@ class NumpyEinsumContractor:
 
 
 def einsum(conCoreDict, variables, coreType):
-    colorDict = get_colorDict([conCoreDict[key].colors for key in conCoreDict])
-    coreOrder = list(conCoreDict.keys())
-    colorOrder = list(colorDict.keys())
-    leftString = ",".join([
-        "".join([colorDict[color] for color in conCoreDict[key].colors])
-        for key in coreOrder
-    ])
-    rightString = "".join([colorDict[color] for color in colorOrder if color not in variables])
+
+    openVariables = []
+    for key in conCoreDict:
+        for color in conCoreDict[key].colors:
+            if color not in variables and color not in openVariables:
+                openVariables.append(color)
+
+    substring, coreOrder, colorDict, colorOrder = subc.get_substring(conCoreDict, openVariables)
     return tensor.get_core(coreType)(
-        np.einsum("->".join([leftString, rightString]), *[conCoreDict[key].values for key in coreOrder]),
+        np.einsum(substring, *[conCoreDict[key].values for key in coreOrder]),
         [color for color in colorOrder if color not in variables])
 
 
-def get_colorDict(nestedColorsList):
-    symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    colorDict = {}
-    i = 0
-    for colors in nestedColorsList:
-        for color in colors:
-            if color not in colorDict:
-                if i >= len(symbols):
-                    raise ValueError("Length of Contraction is too large for Einsum!")
-                colorDict[color] = symbols[i]
-                i += 1
-    return colorDict
 
 
 if __name__ == "__main__":
