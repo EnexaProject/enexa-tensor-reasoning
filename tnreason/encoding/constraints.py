@@ -1,7 +1,13 @@
 from tnreason import engine
 import numpy as np
 
-## ConstraintCore Creation:
+
+def create_constraints(specDict):
+    catCores = {}
+    for catName in specDict.keys():
+        catCores = {**catCores, **create_constraintCoresDict(specDict[catName], catName)}
+    return catCores
+
 def create_constraintCoresDict(atoms, name, coreType="NumpyTensorCore"):
     constraintCoresDict = {}
     for i, atomKey in enumerate(atoms):

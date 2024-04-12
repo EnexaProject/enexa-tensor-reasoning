@@ -5,6 +5,24 @@ import numpy as np
 from tnreason.encoding import connectives as encon
 
 
+def create_formulas(specDict, alreadyCreated=[]):
+    knowledgeCores = {}
+    for formulaName in specDict.keys():
+        if isinstance(specDict[formulaName][-1], float) or isinstance(specDict[formulaName][-1], int):
+            knowledgeCores = {**knowledgeCores,
+                              **create_headCore(get_expression_string(specDict[formulaName][0]), "expFactor", weight=
+                              specDict[formulaName][1]),
+                              **create_conCore(specDict[formulaName][0],
+                                               alreadyCreated=
+                                               list(knowledgeCores.keys()) + alreadyCreated)}
+        else:
+            knowledgeCores = {**knowledgeCores,
+                              **create_headCore(get_expression_string(specDict[formulaName]), "truthEvaluation"),
+                              **create_conCore(specDict[formulaName],
+                                               alreadyCreated=list(knowledgeCores.keys()) + alreadyCreated)}
+    return knowledgeCores
+
+
 def create_conCore(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
     expressionString = get_expression_string(expression)
     if expressionString + "_conCore" in alreadyCreated:
@@ -37,8 +55,8 @@ def create_conCores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
     if isinstance(expression, str):
         return create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated)
     elif len(expression) == 2:
-        return {**create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated)
-                  ** create_conCores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated)}
+        return {**create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated),
+                **create_conCores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated)}
     elif len(expression) == 3:
         return {**create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated),
                 **create_conCores(expression[0], coreType=coreType, alreadyCreated=alreadyCreated),

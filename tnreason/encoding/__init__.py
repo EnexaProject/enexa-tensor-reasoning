@@ -12,15 +12,35 @@ def get_neuron_cores(name, connectiveList, candidatesDict):
     import tnreason.encoding.neurons as enneur
     return enneur.create_neuron(name, connectiveList, candidatesDict)
 
+
 def get_architecture_cores(specDict):
     import tnreason.encoding.neurons as enneur
     return enneur.create_architecture(specDict)
+
 
 def load_architecture_cores(loadPath):
     import tnreason.encoding.storage as stor
     return get_architecture_cores(stor.load_from_yaml(loadPath))
 
 
+def get_knowledge_cores(specDict):
+    import tnreason.encoding.formulas as enform
+    import tnreason.encoding.constraints as encon
+
+    if "weightedFormulas" in specDict.keys():
+        knowledgeCores = enform.create_formulas(specDict["weightedFormulas"])
+        if "facts" in specDict.keys():
+            knowledgeCores = {**knowledgeCores,
+                              **enform.create_formulas(specDict["facts"], list(knowledgeCores.keys()))}
+    elif "facts" in specDict.keys():
+        knowledgeCores = enform.create_formulas(specDict["facts"])
+    else:
+        knowledgeCores = {}
+
+    if "categoricalConstraints" in specDict.keys():
+        knowledgeCores = {**knowledgeCores, **encon.create_constraints(specDict["categoricalConstraints"])}
+
+    return knowledgeCores
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ def create_architecture(specDict):
 
 
 def create_neuron(name, connectiveList, candidatesDict={}):
-    neuronCores = {name + "_conCore": create_connective_selectors(name, candidatesDict.keys(), connectiveList)}
+    neuronCores = {name + "_actCore": create_connective_selectors(name, candidatesDict.keys(), connectiveList)}
     for candidateKey in candidatesDict:
         neuronCores = {**neuronCores, **create_variable_selectors(
             name, candidateKey, candidatesDict[candidateKey])}
@@ -54,4 +54,4 @@ def create_connective_selectors(neuronName, candidateKeys, connectiveList, coreT
     else:
         raise ValueError("Number of candidates wrong in Neuron {}!".format(neuronName))
 
-    return engine.get_core(coreType)(values, [neuronName + "_conVar", *candidateKeys, neuronName])
+    return engine.get_core(coreType)(values, [neuronName + "_actVar", *candidateKeys, neuronName])
