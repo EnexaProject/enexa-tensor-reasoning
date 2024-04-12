@@ -27,7 +27,7 @@ sampler = gibbs.Gibbs(networkCores={**neuronCores,
                       importanceList=[pos_phase])
 
 sampler.ones_initialization(["pos1core", "pos2core"], {"pos1core": 1, "pos2core": 2},
-                            {"pos1core": ['cracyNeuron_pos1_selControl'], "pos2core": ['cracyNeuron_pos2_selControl']})
+                            {"pos1core": ['cracyNeuron_pos1_selVar'], "pos2core": ['cracyNeuron_pos2_selVar']})
 sampler.alternating_sampling(["pos1core", "pos2core"])
 
 print(sampler.networkCores["pos2core"].values)

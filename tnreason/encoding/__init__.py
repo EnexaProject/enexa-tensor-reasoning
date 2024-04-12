@@ -12,6 +12,16 @@ def get_neuron_cores(name, connectiveList, candidatesDict):
     import tnreason.encoding.neurons as enneur
     return enneur.create_neuron(name, connectiveList, candidatesDict)
 
+def get_architecture_cores(specDict):
+    import tnreason.encoding.neurons as enneur
+    return enneur.create_architecture(specDict)
+
+def load_architecture_cores(loadPath):
+    import tnreason.encoding.storage as stor
+    return get_architecture_cores(stor.load_from_yaml(loadPath))
+
+
+
 
 if __name__ == "__main__":
     print(get_formula_cores([["a", "imp", "b"], "or", "c"], alreadyCreated=['(a_imp_b)_conCore']))
