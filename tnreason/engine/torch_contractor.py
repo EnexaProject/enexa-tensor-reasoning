@@ -1,5 +1,7 @@
 import torch as tor
 
+from tnreason.engine import cores as cor
+
 from tnreason.engine import subscript_creation as subc
 
 
@@ -12,8 +14,8 @@ class TorchCore:
         self.colors = colors
         self.name = name
 
-    def values_to_numpy(self):
-        return self.values.numpy()
+    def to_NumpyTensorCore(self):
+        return cor.NumpyCore(self.values.numpy(), self.colors, self.name)
 
 
 class TorchContractor:
@@ -44,4 +46,4 @@ if __name__ == "__main__":
     print(result.values)
     print(result.colors)
 
-    print(result.values_to_numpy())
+    print(result.to_NumpyTensorCore())

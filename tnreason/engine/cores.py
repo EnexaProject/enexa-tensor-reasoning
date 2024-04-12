@@ -16,7 +16,7 @@ class TensorCoreBase:
         self.name = name
 
 
-class NumpyTensorCore(TensorCoreBase):
+class NumpyCore(TensorCoreBase):
 
     def reduced_contraction(self, core1, reductionColors=[]):
         colorDict = {color: alphabet[i] for i, color in enumerate(np.unique(self.colors + core1.colors))}
@@ -32,7 +32,7 @@ class NumpyTensorCore(TensorCoreBase):
 
         outValues = np.einsum(contractionString, self.values, core1.values)
 
-        return NumpyTensorCore(outValues, outColors, [self.name, "con", core1.name])
+        return NumpyCore(outValues, outColors, [self.name, "con", core1.name])
 
     def reduce_color(self, reductionColor):
         self.reduce_colors([reductionColor])
@@ -45,18 +45,18 @@ class NumpyTensorCore(TensorCoreBase):
             "".join([colorDict[color] for color in self.colors if color not in reductionColors])
         ])
 
-        return NumpyTensorCore(np.einsum(contractionString, self.values),
-                               [color for color in self.colors if color not in reductionColors], self.name)
+        return NumpyCore(np.einsum(contractionString, self.values),
+                         [color for color in self.colors if color not in reductionColors], self.name)
 
     def get_values_as_array(self):
         return self.values
 
     def clone(self):
-        return NumpyTensorCore(self.values.copy(), self.colors.copy(), self.name)  # ! Shallow Copies?
+        return NumpyCore(self.values.copy(), self.colors.copy(), self.name)  # ! Shallow Copies?
 
     ## For Sampling
     def normalize(self):
-        return NumpyTensorCore(1 / np.sum(self.values) * self.values, self.colors, self.name)
+        return NumpyCore(1 / np.sum(self.values) * self.values, self.colors, self.name)
 
     ## For ALS
     def reorder_colors(self, newColors):
@@ -73,20 +73,20 @@ class NumpyTensorCore(TensorCoreBase):
         self.values = newValues
         self.colors = newColors
 
-
     def sum_with(self, sumCore):
-        if set(self.colors)!=set(sumCore.colors):
+        if set(self.colors) != set(sumCore.colors):
             print(self.colors, sumCore.colors)
             raise ValueError("Colors of summands {} and {} do not match!".format(self.name, sumCore.name))
         else:
             self.reduce_colors(sumCore.colors)
-            return NumpyTensorCore(self.values + sumCore.values, self.colors, self.name)
+            return NumpyCore(self.values + sumCore.values, self.colors, self.name)
 
     def multiply(self, weight):
-        return NumpyTensorCore(weight * self.values, self.colors, self.name)
+        return NumpyCore(weight * self.values, self.colors, self.name)
+
 
 def change_type(cCore, targetType="NumpyTensorCore"):
     if targetType == "NumpyTensorCore":
-        return NumpyTensorCore(cCore.values, cCore.colors, cCore.name)
+        return NumpyCore(cCore.values, cCore.colors, cCore.name)
     else:
         raise TypeError("Type {} not understood!".format(targetType))
