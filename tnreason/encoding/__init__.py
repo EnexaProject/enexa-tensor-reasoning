@@ -13,7 +13,7 @@ def get_head_core(expression, headType, weight=None, coreType="NumpyTensorCore",
     return enform.create_headCore(expression=expression, headType=headType, weight=weight, coreType=coreType, name=name)
 
 
-def get_contraint_cores(constraintsDict, alreadyCreated=[]):
+def get_constraint_cores(constraintsDict, alreadyCreated=[]):
     import tnreason.encoding.constraints as encon
     return encon.create_constraints(constraintsDict)
 

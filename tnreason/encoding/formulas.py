@@ -25,9 +25,6 @@ def create_formulas(specDict, alreadyCreated=[]):
 
 def create_conCore(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
     expressionString = get_expression_string(expression)
-    if expressionString + "_conCore" in alreadyCreated:
-        return {}
-
     if isinstance(expression, str):
         return {}
     elif len(expression) == 2:
@@ -52,13 +49,15 @@ def create_conCore(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
 
 
 def create_conCores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
+    if get_expression_string(expression) + "_conCore" in alreadyCreated:
+        return {}
     if isinstance(expression, str):
-        return create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated)
+        return create_conCore(expression, coreType=coreType)
     elif len(expression) == 2:
-        return {**create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated),
+        return {**create_conCore(expression, coreType=coreType),
                 **create_conCores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated)}
     elif len(expression) == 3:
-        return {**create_conCore(expression, coreType=coreType, alreadyCreated=alreadyCreated),
+        return {**create_conCore(expression, coreType=coreType),
                 **create_conCores(expression[0], coreType=coreType, alreadyCreated=alreadyCreated),
                 **create_conCores(expression[2], coreType=coreType, alreadyCreated=alreadyCreated)
                 }

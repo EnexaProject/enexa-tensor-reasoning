@@ -3,8 +3,6 @@ from tnreason.model import model_visualization as mov
 
 from tnreason.tensor import model_cores as crc, formula_tensors as ft, tensor_model as tm
 
-from tnreason import contraction
-
 from tnreason.logic import expression_utils as eu
 
 from tnreason.encoding import storage
@@ -62,21 +60,22 @@ class HybridKnowledgeBase:
                 raise ValueError("The initialized Knowledge Base is inconsistent!")
 
     def create_cores(self):
-        self.structureCores = {**encoding.get_formulas_cores(
+        structureCores = {**encoding.get_formulas_cores(
             {**{key: self.weightedFormulasDict[key][0] for key in self.weightedFormulasDict},
              **{key: self.factsDict[key] for key in self.factsDict}}
-        ), **encoding.get_contraint_cores(self.categoricalConstraintsDict)}
-        self.factHeadCores = {}
+        ), **encoding.get_constraint_cores(self.categoricalConstraintsDict)}
+        factHeadCores = {}
         for key in self.factsDict:
-            self.factHeadCores = {**self.factHeadCores,
-                                  **encoding.get_head_core(expression=self.factsDict[key], headType="truthEvaluation")}
+            factHeadCores = {**factHeadCores,
+                             **encoding.get_head_core(expression=self.factsDict[key], headType="truthEvaluation")}
 
-        self.probHeadCores = {}
+        probHeadCores = {}
         for key in self.weightedFormulasDict:
-            self.probHeadCores = {**self.probHeadCores,
-                                  **encoding.get_head_core(expression=self.weightedFormulasDict[key][0],
-                                                           headType="expFactor",
-                                                           weight=self.weightedFormulasDict[key][1])}
+            probHeadCores = {**probHeadCores,
+                             **encoding.get_head_core(expression=self.weightedFormulasDict[key][0],
+                                                      headType="expFactor",
+                                                      weight=self.weightedFormulasDict[key][1])}
+        return {**structureCores, **factHeadCores, **probHeadCores}
 
     def include(self, secondHybridKB):
         ## Cannot handle key conflicts and does not include categoricalConstraints!
@@ -99,8 +98,10 @@ class HybridKnowledgeBase:
         self.atoms = list(set(self.atoms) | set(secondHybridKB.atoms))
 
     def is_satisfiable(self, contractionMethod=defaultContractionMethod):
-        return contraction.get_contractor(contractionMethod=contractionMethod)(
-            self.facts.get_cores(headType="truthEvaluation")).contract().values > 0
+        cores = encoding.get_formulas_cores(self.factsDict)
+        for key in self.factsDict:
+            cores = {**cores, **encoding.get_head_core(expression=self.factsDict[key], headType="truthEvaluation")}
+        return engine.contract(method=contractionMethod, coreDict=cores, openColors=[]).values > 0
 
     def ask_constraint(self, constraint):
         probability = self.ask(constraint, evidenceDict={})
@@ -143,25 +144,23 @@ class HybridKnowledgeBase:
         modelCores = {**self.formulaTensors.get_cores(),
                       **self.facts.get_cores(headType="truthEvaluation"),
                       **crc.create_evidenceCoresDict(evidenceDict)}
-        return contraction.get_contractor(contractionMethod=contractionMethod)(
-            {**modelCores,
-             **ft.FormulaTensor(queryFormula,
-                                headType="truthEvaluation").get_cores()}).contract().values / (
-                contraction.get_contractor(contractionMethod=contractionMethod)(
-                    modelCores).contract().values * 2 ** overheadCount)
+        return engine.contract(
+            coreDict={**modelCores, **ft.FormulaTensor(queryFormula, headType="truthEvaluation").get_cores()},
+            method=contractionMethod, openColors=[]).values / (
+                    engine.contract(coreDict=modelCores, method=contractionMethod, openColors=[]).values * 2 ** overheadCount)
 
     def query(self, variableList, evidenceDict={}, contractionMethod=defaultContractionMethod):
         disconnectedVariables = [variable for variable in variableList if
                                  variable not in self.atoms and variable not in evidenceDict]
 
-        return contraction.get_contractor(contractionMethod=contractionMethod)(
+        return engine.contract(method=contractionMethod, coreDict=
             {
                 **crc.create_emptyCoresDict(disconnectedVariables),
                 **self.formulaTensors.get_cores(),
                 **self.facts.get_cores(headType="truthEvaluation"),
                 **crc.create_evidenceCoresDict(evidenceDict)
             },
-            openColors=variableList).contract().normalize()
+            openColors=variableList).normalize()
 
     def exact_map_query(self, variableList, evidenceDict={}):
         distributionCore = self.query(variableList, evidenceDict)
