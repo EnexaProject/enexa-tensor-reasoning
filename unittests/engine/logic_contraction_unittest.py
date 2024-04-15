@@ -4,8 +4,8 @@ from tnreason.tensor import formula_tensors as ft
 from tnreason import engine
 
 
-testMethods = ["NumpyEinsum", "NumpyEinsum"]
-#testMethods = ["PgmpyVariableEliminator", "PgmpyVariableEliminator", "NumpyEinsum"]
+#testMethods = ["NumpyEinsum", "NumpyEinsum"]
+testMethods = ["PgmpyVariableEliminator", "NumpyEinsum", "TensorFlowEinsum", "TorchEinsum"]
 
 class TensorLogicTest(unittest.TestCase):
     def test_and(self):

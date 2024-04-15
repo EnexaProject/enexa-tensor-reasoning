@@ -1,15 +1,23 @@
-def contract(coreDict, openColors, method="PgmpyVariableEliminator"):
+def contract(coreDict, openColors, method="PgmpyVariableEliminator", outPut="NumpyTensorCore"):
     if method == "NumpyEinsum":
-        from tnreason.contraction.numpy_contractor import NumpyEinsumContractor
-        contractor = NumpyEinsumContractor(coreDict=coreDict, openColors=openColors)
-        return contractor.contract()
+        from tnreason.engine.numpy_contractor import NumpyEinsumContractor
+        return NumpyEinsumContractor(coreDict=coreDict, openColors=openColors).contract()
+    elif method == "TensorFlowEinsum":
+        from tnreason.engine.tensorflow_contractor import TensorFlowContractor
+        if outPut == "NumpyTensorCore":
+            return TensorFlowContractor(coreDict=coreDict, openColors=openColors).einsum().to_NumpyTensorCore()
+    elif method == "TorchEinsum":
+        from tnreason.engine.torch_contractor import TorchContractor
+        if outPut == "NumpyTensorCore":
+            return TorchContractor(coreDict=coreDict, openColors=openColors).einsum().to_NumpyTensorCore()
+
     elif method == "PgmpyVariableEliminator":
-        from tnreason.contraction.pgmpy_contractor import PgmpyVariableEliminator
-        contractor = PgmpyVariableEliminator(coreDict=coreDict, openColors=openColors)
-        return contractor.contract()
+        from tnreason.engine.pgmpy_contractor import PgmpyVariableEliminator
+        return PgmpyVariableEliminator(coreDict=coreDict, openColors=openColors).contract()
 
     else:
-        raise ValueError("Contractor Type {} not supported.".format(method))
+        raise ValueError("Contractor Type {} not supported with Output {}.".format(method, outPut))
+
 
 def get_core(coreType="NumpyTensorCore"):
     if coreType == "NumpyTensorCore":
