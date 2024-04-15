@@ -3,9 +3,19 @@ def get_formula_cores(expression, alreadyCreated=[]):
     return enform.create_conCores(expression, alreadyCreated=alreadyCreated)
 
 
-def get_head_core(color, headType, weight=None, coreType="NumpyTensorCore", name=None):
+def get_formulas_cores(expressionsDict, alreadyCreated=[]):
     import tnreason.encoding.formulas as enform
-    return enform.create_headCore(color=color, headType=headType, weight=weight, coreType=coreType, name=name)
+    return enform.create_formulas(expressionsDict, alreadyCreated=alreadyCreated)
+
+
+def get_head_core(expression, headType, weight=None, coreType="NumpyTensorCore", name=None):
+    import tnreason.encoding.formulas as enform
+    return enform.create_headCore(expression=expression, headType=headType, weight=weight, coreType=coreType, name=name)
+
+
+def get_contraint_cores(constraintsDict, alreadyCreated=[]):
+    import tnreason.encoding.constraints as encon
+    return encon.create_constraints(constraintsDict)
 
 
 def get_neuron_cores(name, connectiveList, candidatesDict):

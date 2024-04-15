@@ -64,7 +64,7 @@ def create_conCores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
                 }
 
 
-def create_headCore(color, headType, weight=None, coreType="NumpyTensorCore", name=None):
+def create_headCore(expression, headType, weight=None, coreType="NumpyTensorCore", name=None):
     if headType == "truthEvaluation":
         headValues = np.zeros(shape=(2))
         headValues[1] = 1  # weight
@@ -77,6 +77,8 @@ def create_headCore(color, headType, weight=None, coreType="NumpyTensorCore", na
         headValues = create_expFactor_values(weight, True)
     else:
         raise ValueError("Headtype {} not understood!".format(headType))
+
+    color = get_expression_string(expression)
 
     if name is None:
         name = color + "_headCore"

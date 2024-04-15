@@ -12,6 +12,8 @@ hybridKB = knowledge.HybridKnowledgeBase(weightedFormulasDict=expressionsDict,
                                                     "f3": "aasdfjaksödbfjklasghdfagsdfgajsfgahjsdgfjaasdfasdfasdfasdfasdfgsdf4",
                                                     "f4": "tev:TatbestandID_1000.0_SteuerinfoID_0.0(tid_sid)"},
                                          categoricalConstraintsDict={"c1": ["a1", "a2"]})
+
+hybridKB.create_cores()
 hybridKB.to_yaml("./model.yaml")
 print(hybridKB.ask("a1"))
 

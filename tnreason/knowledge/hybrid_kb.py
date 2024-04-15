@@ -13,11 +13,14 @@ from tnreason.network import distributions as dist
 
 import numpy as np
 
+from tnreason import engine
+from tnreason import encoding
+
 defaultContractionMethod = "PgmpyVariableEliminator"
 
 
 def from_yaml(loadPath):
-    modelSpec = storage.load_from_yaml(loadPath)
+    modelSpec = encoding.storage.load_from_yaml(loadPath)
 
     if "weightedFormulas" in modelSpec:
         weightedFormulas = modelSpec["weightedFormulas"]
@@ -57,6 +60,23 @@ class HybridKnowledgeBase:
         if not len(self.factsDict) == 0:
             if not self.is_satisfiable():
                 raise ValueError("The initialized Knowledge Base is inconsistent!")
+
+    def create_cores(self):
+        self.structureCores = {**encoding.get_formulas_cores(
+            {**{key: self.weightedFormulasDict[key][0] for key in self.weightedFormulasDict},
+             **{key: self.factsDict[key] for key in self.factsDict}}
+        ), **encoding.get_contraint_cores(self.categoricalConstraintsDict)}
+        self.factHeadCores = {}
+        for key in self.factsDict:
+            self.factHeadCores = {**self.factHeadCores,
+                                  **encoding.get_head_core(expression=self.factsDict[key], headType="truthEvaluation")}
+
+        self.probHeadCores = {}
+        for key in self.weightedFormulasDict:
+            self.probHeadCores = {**self.probHeadCores,
+                                  **encoding.get_head_core(expression=self.weightedFormulasDict[key][0],
+                                                           headType="expFactor",
+                                                           weight=self.weightedFormulasDict[key][1])}
 
     def include(self, secondHybridKB):
         ## Cannot handle key conflicts and does not include categoricalConstraints!
@@ -169,7 +189,7 @@ class HybridKnowledgeBase:
         return lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict).evaluate_evidence(evidenceDict)
 
     def to_yaml(self, savePath):
-        storage.save_as_yaml({
+        encoding.storage.save_as_yaml({
             "weightedFormulas": self.weightedFormulasDict,
             "facts": self.factsDict,
             "categoricalConstraints": self.categoricalConstraintsDict
