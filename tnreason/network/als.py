@@ -1,7 +1,5 @@
-from tnreason import contraction
-from tnreason import tensor
-
-from tnreason.tensor import model_cores as mcore
+from tnreason import engine
+from tnreason import encoding
 
 import numpy as np
 
@@ -10,13 +8,15 @@ defaultCoreType = "NumpyTensorCore"
 
 
 class ALS:
-    def __init__(self, networkCores, targetCores={}, openTargetColors=[], importanceList=[({}, 1)],
-                 contractionMethod=defaultContractionMethod):
+    def __init__(self, networkCores, importanceColors=[], importanceList=[({}, 1)],
+                 contractionMethod=defaultContractionMethod, targetCores={}):
         self.networkCores = networkCores
-        self.targetCores = targetCores
-        self.openTargetColors = openTargetColors
+
+        self.importanceColors = importanceColors
         self.importanceList = importanceList
         self.contractionMethod = contractionMethod
+
+        self.targetCores = targetCores
 
     def random_initialize(self, updateKeys, shapesDict={}, colorsDict={}, coreType=defaultCoreType):
         for updateKey in updateKeys:
@@ -27,7 +27,7 @@ class ALS:
             else:
                 upShape = shapesDict[updateKey]
                 upColors = colorsDict[updateKey]
-            self.networkCores[updateKey] = tensor.get_core(coreType)(np.random.random(size=upShape), upColors,
+            self.networkCores[updateKey] = engine.get_core(coreType)(np.random.random(size=upShape), upColors,
                                                                      updateKey)
 
     def alternating_optimization(self, updateKeys, sweepNum=10, computeResiduum=False):
@@ -42,7 +42,7 @@ class ALS:
             return residua
 
     def compute_conOperator(self, updateColors, updateShape, importanceCores={}, weight=1):
-        trivialCores = mcore.create_emptyCoresDict(
+        trivialCores = encoding.get_trivial_cores(
             updateColors + [updateColor + "_out" for updateColor in updateColors],
             varDimDict={**{color: updateShape[i] for i, color in enumerate(updateColors)},
                         **{color + "_out": updateShape[i] for i, color in enumerate(updateColors)}
@@ -50,23 +50,25 @@ class ALS:
             coreType=defaultCoreType
         )
 
-        return contraction.get_contractor(self.contractionMethod)({
-            **importanceCores,
-            #**copy_cores(importanceCores, "_out", self.openTargetColors),
-            **self.networkCores,
-            **copy_cores(self.networkCores, "_out", self.openTargetColors),
-            **trivialCores
-        }, openColors=updateColors + [updateColor + "_out" for updateColor in updateColors]).contract().multiply(weight)
+        return engine.contract(method=self.contractionMethod,
+                               coreDict={
+                                   **importanceCores,
+                                   **self.networkCores,
+                                   **copy_cores(self.networkCores, "_out", self.importanceColors),
+                                   **trivialCores
+                               }, openColors=updateColors + [updateColor + "_out" for updateColor in
+                                                             updateColors]).multiply(weight)
 
     def compute_conTarget(self, updateColors, updateShape, importanceCores={}, weight=1):
-        return contraction.get_contractor(self.contractionMethod)({
-            **importanceCores,
-            **self.networkCores,
-            **self.targetCores,
-            **mcore.create_emptyCoresDict(
-                updateColors,
-                varDimDict={color: updateShape[i] for i, color in enumerate(updateColors)}),
-        }, openColors=updateColors).contract().multiply(weight)
+        return engine.contract(method=self.contractionMethod,
+                               coreDict={
+                                   **importanceCores,
+                                   **self.networkCores,
+                                   **self.targetCores,
+                                   **encoding.get_trivial_cores(updateColors,
+                                                                varDimDict={color: updateShape[i] for i, color in
+                                                                            enumerate(updateColors)})
+                               }, openColors=updateColors).multiply(weight)
 
     def optimize_core(self, updateKey, coreType=defaultCoreType):
         tbUpdated = self.networkCores.pop(updateKey)
@@ -90,15 +92,15 @@ class ALS:
 
         solution, res, rank, s = np.linalg.lstsq(flattenedOperator, flattenedTarget)
 
-        self.networkCores[updateKey] = tensor.get_core(coreType)(solution.reshape(updateShape), updateColors, updateKey)
+        self.networkCores[updateKey] = engine.get_core(coreType)(solution.reshape(updateShape), updateColors, updateKey)
 
     def compute_residuum(self):
-        prediction = contraction.get_contractor(self.contractionMethod)(
-            self.networkCores, openColors=self.openTargetColors
-        ).contract()
-        target = contraction.get_contractor(self.contractionMethod)(
-            self.targetCores, openColors=self.openTargetColors
-        ).contract()
+        prediction = engine.contract(method=self.contractionMethod, coreDict=
+        self.networkCores, openColors=self.importanceColors
+                                     )
+        target = engine.contract(method=self.contractionMethod, coreDict=
+        self.targetCores, openColors=self.importanceColors
+                                 ).contract()
         prediction.reorder_colors(target.colors)
         return np.linalg.norm(prediction.values - target.values)
 

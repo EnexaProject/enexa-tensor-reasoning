@@ -21,7 +21,7 @@ importanceCores = ft.DataTensor(sampleDf)
 optimizer = als.ALS(
     sft.get_cores(),
     targetCores={},  # i.e. fitting the one tensor
-    openTargetColors=list(sampleDf.columns)
+    importanceColors=list(sampleDf.columns)
 )
 
 optimizer.random_initialize(

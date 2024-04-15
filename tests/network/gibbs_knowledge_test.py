@@ -30,7 +30,7 @@ dataOptimizer = gibbs.Gibbs(
     importanceList=
     [pos_phase]# neg_phase]
     ,
-    openTargetColors=["dat"]
+    importanceColors=["dat"]
 )
 
 dataOptimizer.ones_initialization(["estHead"], {"estHead": 2}, {"estHead": ["(a1_imp_a2)"]})

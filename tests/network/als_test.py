@@ -26,7 +26,7 @@ optimizer = als.ALS(
     {**hybridKB.facts.get_cores(),
      **hybridKB.formulaTensors.get_cores()},
     targetCores=targetDict,
-    openTargetColors=["a1"]
+    importanceColors=["a1"]
 )
 
 optimizer.random_initialize(["con1", "a1_update"], {"con1": 3, "a1_update": 2},

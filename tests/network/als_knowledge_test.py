@@ -35,7 +35,7 @@ dataOptimizer = als.ALS(
     importanceList=
         [pos_phase, neg_phase]
         ,
-    openTargetColors=["dat"]
+    importanceColors=["dat"]
 )
 
 operator = dataOptimizer.compute_conOperator(["(a1_imp_a2)"], [2])

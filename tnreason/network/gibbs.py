@@ -1,9 +1,4 @@
-from tnreason import contraction
-from tnreason import tensor
-
 from tnreason import engine
-
-from tnreason.tensor import model_cores as mcore
 
 import numpy as np
 
@@ -12,11 +7,11 @@ defaultCoreType = "NumpyTensorCore"
 
 
 class Gibbs:
-    def __init__(self, networkCores, openTargetColors=[], importanceList=[({}, 1)],
+    def __init__(self, networkCores, importanceColors=[], importanceList=[({}, 1)],
                  contractionMethod=defaultContractionMethod):
         self.networkCores = networkCores
 
-        self.openTargetColors = openTargetColors
+        self.importanceColors = importanceColors
         self.importanceList = importanceList
         self.contractionMethod = contractionMethod
 

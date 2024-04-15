@@ -28,7 +28,7 @@ from tnreason.network import als
 
 optimizer = als.ALS(networkCores={"mat":matrix, "lvec":leftVector, "rvec":rightVector},
                     targetCores={"tar":targetVector},
-                    openTargetColors=["t"])
+                    importanceColors=["t"])
 
 cores = optimizer.networkCores
 

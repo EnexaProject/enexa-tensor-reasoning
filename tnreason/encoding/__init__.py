@@ -13,10 +13,13 @@ def get_head_core(expression, headType, weight=None, coreType="NumpyTensorCore",
     return enform.create_headCore(expression=expression, headType=headType, weight=weight, coreType=coreType, name=name)
 
 
-def get_constraint_cores(constraintsDict, alreadyCreated=[]):
+def get_constraint_cores(constraintsDict):
     import tnreason.encoding.constraints as encon
     return encon.create_constraints(constraintsDict)
 
+def get_trivial_cores(variableList, coreType="NumpyTensorCore", varDimDict=None):
+    import tnreason.encoding.auxiliary as enaux
+    return enaux.create_emptyCoresDict(variableList, coreType=coreType, varDimDict=varDimDict)
 
 def get_neuron_cores(name, connectiveList, candidatesDict):
     import tnreason.encoding.neurons as enneur

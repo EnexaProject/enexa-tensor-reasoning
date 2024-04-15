@@ -20,7 +20,7 @@ rightVector = engine.get_core()(
 from tnreason.network import gibbs
 
 sampler = gibbs.Gibbs(networkCores={"mat": matrix, "lvec": leftVector, "rvec": rightVector},
-                      openTargetColors=["t"])
+                      importanceColors=["t"])
 positions = sampler.alternating_sampling(["lvec", "rvec"])
 
 print(matrix.values)
