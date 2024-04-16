@@ -3,7 +3,7 @@ from tnreason import engine
 
 import numpy as np
 
-from tnreason.network import als
+from tnreason.algorithms import als
 
 networkCores = {
     **encoding.get_formulas_cores({"f1":["a1", "imp", "a2"]})

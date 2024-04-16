@@ -20,7 +20,7 @@ hybridKB = knowledge.HybridKnowledgeBase(
 print(hybridKB.facts.get_cores().keys())
 print(hybridKB.formulaTensors.get_cores().keys())
 
-from tnreason.network import als
+from tnreason.algorithms import als
 
 optimizer = als.ALS(
     {**hybridKB.facts.get_cores(),

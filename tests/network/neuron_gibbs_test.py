@@ -19,7 +19,7 @@ data[1, 1, 1, 2] = 1
 data[1, 1, 0, 3] = 1
 pos_phase = ({"dataTensor": engine.get_core()(values=data, colors=["a1", "a2", "a3", "dat"])}, 1)
 
-from tnreason.network import gibbs
+from tnreason.algorithms import gibbs
 
 sampler = gibbs.Gibbs(networkCores={**neuronCores,
                                     **headCore

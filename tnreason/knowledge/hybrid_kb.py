@@ -1,6 +1,6 @@
 from tnreason import engine
 from tnreason import encoding
-from tnreason import network
+from tnreason import algorithms
 
 from tnreason.knowledge import logic_model as lm
 from tnreason.knowledge import knowledge_visualization as knv
@@ -130,15 +130,19 @@ class HybridKnowledgeBase:
         ## Need to support heating in distributions first!
         return self.gibbs_sample(variableList, evidenceDict)
 
-    def gibbs_sample(self, variableList, evidenceDict={}, sweepNum=10):
+    def gibbs_sample(self, variableList, evidenceDict={}, sweepNum=10, temperature=1):
         logRep = lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict)
         logRep.infer(evidenceDict=evidenceDict, simplify=True)
         weightedFormulas, facts = logRep.get_formulas_and_facts()
 
-        distribution = network.TNDistribution({**encoding.create_formulas_cores({**weightedFormulas, **facts}),
-                                               **encoding.get_constraint_cores(self.categoricalConstraintsDict)})
+        sampler = algorithms.Gibbs({**encoding.create_formulas_cores({**weightedFormulas, **facts}),
+                                    **encoding.get_constraint_cores(self.categoricalConstraintsDict)})
 
-        return distribution.gibbs_sampling(variableList, {variable: 2 for variable in variableList}, sweepNum=sweepNum)
+        sampler.ones_initialization(updateKeys=variableList, shapesDict={variable: 2 for variable in variableList},
+                                    colorsDict={variable : [variable] for variable in variableList})
+
+        return sampler.gibbs_sample(updateKeys=variableList, sweepNum=sweepNum, temperature=temperature)
+
 
     def evaluate_evidence(self, evidenceDict={}):
         return lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict).evaluate_evidence(evidenceDict)

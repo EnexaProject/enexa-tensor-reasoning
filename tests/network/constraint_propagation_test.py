@@ -1,6 +1,6 @@
 from tnreason import knowledge
 
-from tnreason.network import constraint_propagation as cp
+from tnreason.algorithms import constraint_propagation as cp
 
 import numpy as np
 

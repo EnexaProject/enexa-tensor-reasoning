@@ -1,7 +1,7 @@
 import unittest
 
 from tnreason import engine
-from tnreason.network import als
+from tnreason.algorithms import als
 
 import numpy as np
 

@@ -17,7 +17,7 @@ rightVector = engine.get_core()(
     colors=["a2"]
 )
 
-from tnreason.network import gibbs
+from tnreason.algorithms import gibbs
 
 sampler = gibbs.Gibbs(networkCores={"mat": matrix, "lvec": leftVector, "rvec": rightVector},
                       importanceColors=["t"])

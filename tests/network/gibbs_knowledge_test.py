@@ -3,7 +3,7 @@ from tnreason import engine
 
 import numpy as np
 
-from tnreason.network import gibbs
+from tnreason.algorithms import gibbs
 
 networkCores = {
     **encoding.get_formula_cores(["a1", "imp", "a2"])

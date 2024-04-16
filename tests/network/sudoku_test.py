@@ -1,4 +1,4 @@
-from tnreason.network import constraint_propagation as cp
+from tnreason.algorithms import constraint_propagation as cp
 from tnreason.tensor import model_cores as crc, formula_tensors as ft
 
 import numpy as np

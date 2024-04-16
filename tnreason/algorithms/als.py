@@ -100,7 +100,7 @@ class ALS:
                                      )
         target = engine.contract(method=self.contractionMethod, coreDict=
         self.targetCores, openColors=self.importanceColors
-                                 ).contract()
+                                 )
         prediction.reorder_colors(target.colors)
         return np.linalg.norm(prediction.values - target.values)
 
