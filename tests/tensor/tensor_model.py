@@ -9,7 +9,6 @@ tRep = tm.TensorRepresentation(
 coresDict = tRep.get_cores()
 print(coresDict.keys())
 
-
 from tnreason.contraction import contraction_visualization as cv
 
 cv.draw_contractionDiagram(coresDict)

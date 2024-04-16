@@ -20,7 +20,7 @@ importanceCores = ft.DataTensor(sampleDf)
 
 optimizer = als.ALS(
     sft.get_cores(),
-    targetCores={},  # i.e. fitting the one tensor
+    targetCores={},  # i.e. fitting the one encoding
     importanceColors=list(sampleDf.columns)
 )
 

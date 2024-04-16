@@ -2,9 +2,9 @@ from pgmpy.models import MarkovNetwork
 from pgmpy.factors.discrete import DiscreteFactor
 from pgmpy.inference import VariableElimination
 
-from tnreason.contraction import contraction_visualization as cv
-
 from tnreason.engine import numpy_contractor as cor
+from tnreason.engine import engine_visualization as cv
+
 
 class PgmpyVariableEliminator:
     def __init__(self, coreDict={}, openColors=[], visualize=False):

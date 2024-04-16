@@ -1,17 +1,17 @@
 import networkx as nx
 from matplotlib import pyplot as plt
 
-from tnreason.logic import expression_utils as eu
+from tnreason import encoding
 
 
 def get_edges_and_positions(expression):
-    expressionString = eu.get_expression_string(expression)
+    expressionString = encoding.get_formula_color(expression)
 
     if isinstance(expression, str):
         return [], {expressionString: 0}, [expressionString]
 
     elif len(expression) == 2:
-        preExpressionString = eu.get_expression_string(expression[1])
+        preExpressionString = encoding.get_formula_color(expression[1])
         edges, positions, subexpressions = get_edges_and_positions(expression[1])
 
         edges.append([preExpressionString, expressionString])
@@ -20,8 +20,8 @@ def get_edges_and_positions(expression):
         return edges, positions, subexpressions
 
     elif len(expression) == 3:
-        leftExpressionString = eu.get_expression_string(expression[0])
-        rightExpressionString = eu.get_expression_string(expression[2])
+        leftExpressionString = encoding.get_formula_color(expression[0])
+        rightExpressionString = encoding.get_formula_color(expression[2])
 
         leftEdges, leftPositions, leftSubexpressions = get_edges_and_positions(expression[0])
         rightEdges, rightPositions, rightSubexpressions = get_edges_and_positions(expression[2])
@@ -51,7 +51,6 @@ def visualize_knowledge(expressionsDict={},
     allExpressions = [expressionsDict[key][0] for key in expressionsDict]
     allExpressions.extend(list(factsDict.values()))
 
-
     for expression in allExpressions:
         expressionEdges, expressionPositions, subexpressions = get_edges_and_positions(expression)
         edges.extend(expressionEdges)
@@ -68,7 +67,7 @@ def visualize_knowledge(expressionsDict={},
     for nodeKey in pos:
         pos[nodeKey][0] = horPositions[nodeKey]
 
-    atoms = eu.get_all_variables(allExpressions)
+    atoms = encoding.get_all_variables(allExpressions)
 
     trueColor = "blue"
     falseColor = "red"
@@ -124,7 +123,7 @@ def visualize_knowledge(expressionsDict={},
 
 if __name__ == "__main__":
     visualize_knowledge(expressionsDict={"a": [["not", ["b", "and", "c"]], 2]},
-                        factsDict={"f1" : ["not", "c"],
-                                   "f3" : ["b", "and", ["not","c"]]},
+                        factsDict={"f1": ["not", "c"],
+                                   "f3": ["b", "and", ["not", "c"]]},
                         evidenceDict={"(b_and_c)": 1,
                                       "c": 0})

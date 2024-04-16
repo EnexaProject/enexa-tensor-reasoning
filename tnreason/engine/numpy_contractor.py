@@ -1,5 +1,3 @@
-from tnreason.contraction import contraction_visualization as cv
-
 from tnreason.engine import subscript_creation as subc
 
 import numpy as np
@@ -122,9 +120,6 @@ class NumpyEinsumContractor:
         else:
             self.variableNestedList = [[color] for color in closedColors]
 
-    def visualize(self, coreDict):
-        cv.draw_contractionDiagram(coreDict)
-
     def contract(self):
         if self.variableNestedList is None:
             self.create_naive_variableNestedList()
@@ -158,24 +153,4 @@ def einsum(conCoreDict, variables):
         [color for color in colorOrder if color not in variables])
 
 
-if __name__ == "__main__":
-    import tnreason.tensor.formula_tensors as ft
 
-    cores = ft.FormulaTensor(["c", "and", ["not", ["a", "or", "b"]]]).get_cores()
-    print(cores)
-
-    contractor = NumpyEinsumContractor(cores, openColors=["a", "b"])
-    contractor.create_naive_variableNestedList()
-    result = contractor.contract()
-
-    print(result.colors)
-    print(result.values)
-
-    print(cores)
-
-    contractor = NumpyEinsumContractor(cores, openColors=["a", "b"])
-    contractor.create_naive_variableNestedList()
-    result = contractor.contract()
-
-    print(result.colors)
-    print(result.values)
