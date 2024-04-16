@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from tnreason.engine import cores as cor
+from tnreason.engine import numpy_contractor as cor
 
 from tnreason.engine import subscript_creation as subc
 

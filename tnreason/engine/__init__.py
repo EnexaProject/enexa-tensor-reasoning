@@ -21,7 +21,7 @@ def contract(coreDict, openColors, method="PgmpyVariableEliminator", outPut="Num
 
 def get_core(coreType="NumpyTensorCore"):
     if coreType == "NumpyTensorCore":
-        from tnreason.engine.cores import NumpyCore
+        from tnreason.engine.numpy_contractor import NumpyCore
         return NumpyCore
     else:
         raise ValueError("Core Type {} not supported.".format(coreType))
