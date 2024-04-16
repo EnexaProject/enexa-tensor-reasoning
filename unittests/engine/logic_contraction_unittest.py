@@ -1,26 +1,24 @@
 import unittest
 
-from tnreason.tensor import formula_tensors as ft
 from tnreason import engine
 
+from tnreason import encoding
 
-#testMethods = ["NumpyEinsum", "NumpyEinsum"]
+# testMethods = ["NumpyEinsum", "NumpyEinsum"]
 testMethods = ["PgmpyVariableEliminator", "NumpyEinsum", "TensorFlowEinsum", "TorchEinsum"]
+
 
 class TensorLogicTest(unittest.TestCase):
     def test_and(self):
-        cores = ft.FormulaTensor(["a", "and", "b"]).get_cores()
-
+        cores = encoding.create_formulas_cores({"f1": ["a", "and", "b"]})
         for method in testMethods:
-            print(cores)
             contractionResult = engine.contract(coreDict=cores, openColors=["a"], method=method)
 
             self.assertEquals(contractionResult.values[0], 0)
             self.assertEquals(contractionResult.values[1], 1)
 
     def test_and_not(self):
-        cores = ft.FormulaTensor([["not", "a"], "and", ["b", "or", "c"]]).get_cores()
-
+        cores = encoding.create_formulas_cores({"f1": [["not", "a"], "and", ["b", "or", "c"]]})
         for method in testMethods:
             contractionResult = engine.contract(coreDict=cores, openColors=["a"], method=method)
 
@@ -28,8 +26,7 @@ class TensorLogicTest(unittest.TestCase):
             self.assertEquals(contractionResult.values[1], 0)
 
     def test_imp(self):
-        cores = ft.FormulaTensor(["a", "imp", "b"]).get_cores()
-
+        cores = encoding.create_formulas_cores({"a":["a", "imp", "b"]})
         for method in testMethods:
             contractionResult = engine.contract(coreDict=cores, openColors=["a", "b"], method=method)
             contractionResult.reorder_colors(["a", "b"])
@@ -40,9 +37,7 @@ class TensorLogicTest(unittest.TestCase):
             self.assertEquals(contractionResult.values[1, 1], 1)
 
     def test_eq(self):
-        cores = ft.FormulaTensor([["a", "eq", "b"], "and", ["not", "c"]]).get_cores()
-
-
+        cores = encoding.create_formulas_cores({"a":[["a", "eq", "b"], "and", ["not", "c"]]})
         for method in testMethods:
             contractionResult = engine.contract(coreDict=cores, openColors=["a", "b"], method=method)
             contractionResult.reorder_colors(["a", "b"])
@@ -53,8 +48,7 @@ class TensorLogicTest(unittest.TestCase):
             self.assertEquals(contractionResult.values[1, 1], 1)
 
     def test_xor(self):
-        cores = ft.FormulaTensor(["c1", "and", ["a", "xor", "b"]]).get_cores()
-
+        cores = encoding.create_formulas_cores({"xor":["c1", "and", ["a", "xor", "b"]]})
         for method in testMethods:
             contractionResult = engine.contract(coreDict=cores, openColors=["a", "b"], method=method)
             contractionResult.reorder_colors(["a", "b"])
@@ -65,9 +59,9 @@ class TensorLogicTest(unittest.TestCase):
             self.assertEquals(contractionResult.values[1, 1], 0)
 
     def test_disconnected_and(self):
-        cores0 = ft.FormulaTensor(["a", "and", "b"]).get_cores()
-        cores1 = {**ft.FormulaTensor(["a", "and", ["not", "c_2"]]).get_cores(),
-                  **ft.FormulaTensor("b").get_cores()}
+        cores0 = encoding.create_formulas_cores({"xor": ["a", "and", "b"]})
+        cores1 = encoding.create_formulas_cores({"f1":["a", "and", ["not", "c_2"]],
+                                                 "f2":"b"})
 
         for method in testMethods:
             result0 = engine.contract(coreDict=cores0, openColors=["a", "b"], method=method)
