@@ -27,7 +27,7 @@ print(neurons.create_architecture(loaded).keys())
 
 from tnreason import  encoding
 
-print(encoding.get_architecture_cores(loaded))
+print(encoding.create_architecture(loaded))
 print(encoding.load_architecture_cores("./funneur.yaml"))
 
 #print(get_neuron_cores(

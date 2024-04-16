@@ -47,7 +47,7 @@ class HybridKnowledgeBase:
 
     def create_cores(self):
         return {**encoding.create_formulas_cores({**self.weightedFormulasDict, **self.factsDict}),
-                **encoding.get_constraint_cores(self.categoricalConstraintsDict)}
+                **encoding.create_constraints(self.categoricalConstraintsDict)}
 
     def include(self, secondHybridKB):
 
@@ -63,7 +63,7 @@ class HybridKnowledgeBase:
 
     def is_satisfiable(self, contractionMethod=defaultContractionMethod):
         return engine.contract(method=contractionMethod, coreDict={**encoding.create_formulas_cores(self.factsDict),
-                                                                   **encoding.get_constraint_cores(
+                                                                   **encoding.create_constraints(
                                                                        self.categoricalConstraintsDict)},
                                openColors=[]).values > 0
 
@@ -102,9 +102,9 @@ class HybridKnowledgeBase:
     def ask(self, queryFormula, evidenceDict={}, contractionMethod=defaultContractionMethod):
 
         contracted = engine.contract(
-            coreDict={**encoding.create_formulas_cores(
-                {**self.weightedFormulasDict, **self.factsDict, **evidence_to_expressionsDict(evidenceDict)}),
-                      **encoding.get_constraint_cores(self.categoricalConstraintsDict),
+            coreDict={**encoding.create_formulas_cores({**self.weightedFormulasDict, **self.factsDict}),
+                      **encoding.create_evidence_cores(evidenceDict),
+                      **encoding.create_constraints(self.categoricalConstraintsDict),
                       **encoding.create_raw_formula_cores(queryFormula)
                       },
             method=contractionMethod, openColors=[encoding.get_formula_color(queryFormula)]).values
@@ -115,10 +115,9 @@ class HybridKnowledgeBase:
         return engine.contract(method=contractionMethod, coreDict={
             **encoding.create_emptyCoresDict([variable for variable in variableList if
                                               variable not in self.atoms and variable not in evidenceDict]),
-            **encoding.create_formulas_cores(
-                {**self.weightedFormulasDict, **self.factsDict,
-                 **evidence_to_expressionsDict(evidenceDict)}),
-            **encoding.get_constraint_cores(self.categoricalConstraintsDict)
+            **encoding.create_formulas_cores({**self.weightedFormulasDict, **self.factsDict}),
+            **encoding.create_evidence_cores(evidenceDict),
+            **encoding.create_constraints(self.categoricalConstraintsDict)
         }, openColors=variableList).normalize()
 
     def exact_map_query(self, variableList, evidenceDict={}):
@@ -136,13 +135,12 @@ class HybridKnowledgeBase:
         weightedFormulas, facts = logRep.get_formulas_and_facts()
 
         sampler = algorithms.Gibbs({**encoding.create_formulas_cores({**weightedFormulas, **facts}),
-                                    **encoding.get_constraint_cores(self.categoricalConstraintsDict)})
+                                    **encoding.create_constraints(self.categoricalConstraintsDict)})
 
         sampler.ones_initialization(updateKeys=variableList, shapesDict={variable: 2 for variable in variableList},
-                                    colorsDict={variable : [variable] for variable in variableList})
+                                    colorsDict={variable: [variable] for variable in variableList})
 
         return sampler.gibbs_sample(updateKeys=variableList, sweepNum=sweepNum, temperature=temperature)
-
 
     def evaluate_evidence(self, evidenceDict={}):
         return lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict).evaluate_evidence(evidenceDict)
@@ -164,9 +162,3 @@ class HybridKnowledgeBase:
                                        showFormula=showFormula,
                                        evidenceDict=evidenceDict,
                                        pos=pos)
-
-
-def evidence_to_expressionsDict(evidenceDict):
-    return {**{key: key for key in evidenceDict if evidenceDict[key]},
-            **{key: ["not", key] for key in evidenceDict if not evidenceDict[key]}
-            }

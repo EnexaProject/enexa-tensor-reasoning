@@ -3,7 +3,7 @@ from tnreason import engine
 
 import numpy as np
 
-neuronCores = encoding.get_neuron_cores(
+neuronCores = encoding.create_neuron(
     connectiveList=["imp"],
     candidatesDict={"pos1": ["a1"],
                     "pos2": ["a2", "a3"]},

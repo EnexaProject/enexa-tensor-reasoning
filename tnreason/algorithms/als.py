@@ -42,7 +42,7 @@ class ALS:
             return residua
 
     def compute_conOperator(self, updateColors, updateShape, importanceCores={}, weight=1):
-        trivialCores = encoding.get_trivial_cores(
+        trivialCores = encoding.create_emptyCoresDict(
             updateColors + [updateColor + "_out" for updateColor in updateColors],
             varDimDict={**{color: updateShape[i] for i, color in enumerate(updateColors)},
                         **{color + "_out": updateShape[i] for i, color in enumerate(updateColors)}
@@ -65,8 +65,8 @@ class ALS:
                                    **importanceCores,
                                    **self.networkCores,
                                    **self.targetCores,
-                                   **encoding.get_trivial_cores(updateColors,
-                                                                varDimDict={color: updateShape[i] for i, color in
+                                   **encoding.create_emptyCoresDict(updateColors,
+                                                                    varDimDict={color: updateShape[i] for i, color in
                                                                             enumerate(updateColors)})
                                }, openColors=updateColors).multiply(weight)
 
