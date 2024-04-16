@@ -27,7 +27,7 @@ targetVector = engine.get_core()(
 
 optimizer = als.ALS(networkCores={"mat":matrix, "lvec":leftVector, "rvec":rightVector},
                     targetCores={"tar":targetVector},
-                    openTargetColors=["t"])
+                    importanceColors=["t"])
 
 
 class HybridKBTest(unittest.TestCase):

@@ -6,11 +6,11 @@ import numpy as np
 from tnreason.network import als
 
 networkCores = {
-    **encoding.get_formula_cores(["a1", "imp", "a2"])
+    **encoding.get_formulas_cores({"f1":["a1", "imp", "a2"]})
 }
 
 targetCores = {
-    **als.copy_cores(encoding.get_formula_cores(["a1", "imp", "a2"]), "_tar", ["a1", "a2"]),
+    **als.copy_cores(encoding.get_formulas_cores({"f1":["a1", "imp", "a2"]}), "_tar", ["a1", "a2"]),
     "head": engine.get_core()(values=np.array([0, 1]), colors=["(a1_imp_a2)_tar"])
 }
 

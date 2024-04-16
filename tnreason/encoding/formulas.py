@@ -5,30 +5,30 @@ import numpy as np
 from tnreason.encoding import connectives as encon
 
 
-def create_formulas(specDict, alreadyCreated=[]):
+def create_formulas_cores(specDict, alreadyCreated=[]):
     knowledgeCores = {}
     for formulaName in specDict.keys():
         if isinstance(specDict[formulaName][-1], float) or isinstance(specDict[formulaName][-1], int):
             knowledgeCores = {**knowledgeCores,
-                              **create_headCore(get_expression_string(specDict[formulaName][0]), "expFactor", weight=
+                              **create_headCore(get_formula_color(specDict[formulaName][0]), "expFactor", weight=
                               specDict[formulaName][1]),
-                              **create_conCore(specDict[formulaName][0],
-                                               alreadyCreated=
+                              **create_raw_formula_cores(specDict[formulaName][0],
+                                                         alreadyCreated=
                                                list(knowledgeCores.keys()) + alreadyCreated)}
         else:
             knowledgeCores = {**knowledgeCores,
-                              **create_headCore(get_expression_string(specDict[formulaName]), "truthEvaluation"),
-                              **create_conCore(specDict[formulaName],
-                                               alreadyCreated=list(knowledgeCores.keys()) + alreadyCreated)}
+                              **create_headCore(get_formula_color(specDict[formulaName]), "truthEvaluation"),
+                              **create_raw_formula_cores(specDict[formulaName],
+                                                         alreadyCreated=list(knowledgeCores.keys()) + alreadyCreated)}
     return knowledgeCores
 
 
-def create_conCore(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
-    expressionString = get_expression_string(expression)
+def create_conCore(expression, coreType="NumpyTensorCore"):
+    expressionString = get_formula_color(expression)
     if isinstance(expression, str):
         return {}
     elif len(expression) == 2:
-        preExpressionString = get_expression_string(expression[1])
+        preExpressionString = get_formula_color(expression[1])
         return {expressionString + "_conCore": engine.get_core(coreType=coreType)(
             encon.get_unary_tensor(expression[0]),
             [preExpressionString, expressionString],
@@ -36,8 +36,8 @@ def create_conCore(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
         }
 
     elif len(expression) == 3:
-        leftExpressionString = get_expression_string(expression[0])
-        rightExpressionString = get_expression_string(expression[2])
+        leftExpressionString = get_formula_color(expression[0])
+        rightExpressionString = get_formula_color(expression[2])
         return {
             expressionString + "_conCore": engine.get_core(coreType=coreType)(encon.get_binary_tensor(expression[1]),
                                                                               [leftExpressionString,
@@ -48,18 +48,18 @@ def create_conCore(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
         raise ValueError("Expression {} not understood!".format(expression))
 
 
-def create_conCores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
-    if get_expression_string(expression) + "_conCore" in alreadyCreated:
+def create_raw_formula_cores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
+    if get_formula_color(expression) + "_conCore" in alreadyCreated:
         return {}
     if isinstance(expression, str):
         return create_conCore(expression, coreType=coreType)
     elif len(expression) == 2:
         return {**create_conCore(expression, coreType=coreType),
-                **create_conCores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated)}
+                **create_raw_formula_cores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated)}
     elif len(expression) == 3:
         return {**create_conCore(expression, coreType=coreType),
-                **create_conCores(expression[0], coreType=coreType, alreadyCreated=alreadyCreated),
-                **create_conCores(expression[2], coreType=coreType, alreadyCreated=alreadyCreated)
+                **create_raw_formula_cores(expression[0], coreType=coreType, alreadyCreated=alreadyCreated),
+                **create_raw_formula_cores(expression[2], coreType=coreType, alreadyCreated=alreadyCreated)
                 }
 
 
@@ -77,7 +77,7 @@ def create_headCore(expression, headType, weight=None, coreType="NumpyTensorCore
     else:
         raise ValueError("Headtype {} not understood!".format(headType))
 
-    color = get_expression_string(expression)
+    color = get_formula_color(expression)
 
     if name is None:
         name = color + "_headCore"
@@ -94,13 +94,13 @@ def create_expFactor_values(weight, differentiated):
     return values
 
 
-def get_expression_string(expression):
+def get_formula_color(expression):
     if isinstance(expression, str):
         return expression
     elif len(expression) == 2:
         assert isinstance(expression[0], str)
-        return expression[0] + "_" + get_expression_string(expression[1])
+        return expression[0] + "_" + get_formula_color(expression[1])
     elif len(expression) == 3:
         assert isinstance(expression[1], str)
-        return "(" + get_expression_string(expression[0]) + "_" + expression[1] + "_" + get_expression_string(
+        return "(" + get_formula_color(expression[0]) + "_" + expression[1] + "_" + get_formula_color(
             expression[2]) + ")"

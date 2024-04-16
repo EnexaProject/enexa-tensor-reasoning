@@ -84,6 +84,8 @@ class NumpyCore(TensorCoreBase):
     def multiply(self, weight):
         return NumpyCore(weight * self.values, self.colors, self.name)
 
+    def get_maximal_index(self):
+        return np.unravel_index(np.argmax(self.values.flatten()), self.values.shape)
 
 def change_type(cCore, targetType="NumpyTensorCore"):
     if targetType == "NumpyTensorCore":

@@ -9,6 +9,7 @@ expressionsDict = {
 }
 hybridKB = knowledge.HybridKnowledgeBase(weightedFormulasDict=expressionsDict,
                                          factsDict={"f2": ["not", "a2"],
+                                                    #"f3": "a2",
                                                     #"f3": "aasdfjaksödbfjklasghdfagsdfgajsfgahjsdgfjaasdfasdfasdfasdfasdfgsdf4",
                                                     "f4": "tev:TatbestandID_1000.0_SteuerinfoID_0.0(tid_sid)"},
                                          categoricalConstraintsDict={"c1": ["a1", "a2"]})

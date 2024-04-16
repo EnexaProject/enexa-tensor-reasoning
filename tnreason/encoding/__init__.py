@@ -1,12 +1,6 @@
-def get_formula_cores(expression, alreadyCreated=[]):
-    import tnreason.encoding.formulas as enform
-    return enform.create_conCores(expression, alreadyCreated=alreadyCreated)
-
-
-def get_formulas_cores(expressionsDict, alreadyCreated=[]):
-    import tnreason.encoding.formulas as enform
-    return enform.create_formulas(expressionsDict, alreadyCreated=alreadyCreated)
-
+from tnreason.encoding.formulas import create_formulas_cores, create_raw_formula_cores, get_formula_color
+from tnreason.encoding.auxiliary import create_emptyCoresDict, get_variables, get_all_variables
+from tnreason.encoding.storage import save_as_yaml, load_from_yaml
 
 def get_head_core(expression, headType, weight=None, coreType="NumpyTensorCore", name=None):
     import tnreason.encoding.formulas as enform
@@ -41,12 +35,12 @@ def get_knowledge_cores(specDict):
     import tnreason.encoding.constraints as encon
 
     if "weightedFormulas" in specDict.keys():
-        knowledgeCores = enform.create_formulas(specDict["weightedFormulas"])
+        knowledgeCores = enform.create_formulas_cores(specDict["weightedFormulas"])
         if "facts" in specDict.keys():
             knowledgeCores = {**knowledgeCores,
-                              **enform.create_formulas(specDict["facts"], list(knowledgeCores.keys()))}
+                              **enform.create_formulas_cores(specDict["facts"], list(knowledgeCores.keys()))}
     elif "facts" in specDict.keys():
-        knowledgeCores = enform.create_formulas(specDict["facts"])
+        knowledgeCores = enform.create_formulas_cores(specDict["facts"])
     else:
         knowledgeCores = {}
 
@@ -55,11 +49,3 @@ def get_knowledge_cores(specDict):
 
     return knowledgeCores
 
-
-if __name__ == "__main__":
-    print(get_formula_cores([["a", "imp", "b"], "or", "c"], alreadyCreated=['(a_imp_b)_conCore']))
-
-    print(get_neuron_cores(
-        "funneur", connectiveList=["not"],
-        candidatesDict={"sledz": ["jaszczur", "sikorka"]}
-    ))
