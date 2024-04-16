@@ -133,7 +133,7 @@ class NumpyEinsumContractor:
         if len(self.coreDict) == 1:
             return self.coreDict.popitem()[1]
         else:
-            return einsum(self.coreDict, [], self.coreType)
+            return einsum(self.coreDict, [])
 
     def recursive_contraction(self):
         for variables in self.variableNestedList:
@@ -142,10 +142,10 @@ class NumpyEinsumContractor:
     def contraction_step(self, variables):
         affectedKeys = [key for key in self.coreDict if not set(self.coreDict[key].colors).isdisjoint(set(variables))]
         contractionCores = {key: self.coreDict.pop(key) for key in affectedKeys}
-        self.coreDict["contracted_" + str(variables)] = einsum(contractionCores, variables, self.coreType)
+        self.coreDict["contracted_" + str(variables)] = einsum(contractionCores, variables)
 
 
-def einsum(conCoreDict, variables, coreType):
+def einsum(conCoreDict, variables):
     openVariables = []
     for key in conCoreDict:
         for color in conCoreDict[key].colors:

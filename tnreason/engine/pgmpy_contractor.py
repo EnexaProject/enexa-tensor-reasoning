@@ -4,7 +4,7 @@ from pgmpy.inference import VariableElimination
 
 from tnreason.contraction import contraction_visualization as cv
 
-from tnreason import  tensor
+from tnreason.engine import numpy_contractor as cor
 
 class PgmpyVariableEliminator:
     def __init__(self, coreDict={}, openColors=[], visualize=False):
@@ -29,7 +29,7 @@ class PgmpyVariableEliminator:
 
     def contract(self, outPutType="NumpyTensorCore"):
         result = VariableElimination(self.model).query(evidence={}, variables=self.openColors)
-        return tensor.get_core(coreType=outPutType)(result.values, result.variables)
+        return cor.NumpyCore(result.values, result.variables)
 
     def visualize(self, coreDict):
         cv.draw_contractionDiagram(coreDict)
