@@ -5,6 +5,8 @@ from tnreason import algorithms
 from tnreason.knowledge import logic_model as lm
 from tnreason.knowledge import knowledge_visualization as knv
 
+import pandas as pd
+
 defaultContractionMethod = "PgmpyVariableEliminator"
 
 
@@ -129,18 +131,32 @@ class HybridKnowledgeBase:
         ## Need to support heating in distributions first!
         return self.gibbs_sample(variableList, evidenceDict)
 
-    def gibbs_sample(self, variableList, evidenceDict={}, sweepNum=10, temperature=1):
-        logRep = lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict)
-        logRep.infer(evidenceDict=evidenceDict, simplify=True)
-        weightedFormulas, facts = logRep.get_formulas_and_facts()
+    def gibbs_sample(self, variableList, evidenceDict={}, sweepNum=10, temperature=1, filterWithLogic=False):
+        if filterWithLogic:
+            logRep = lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict)
+            logRep.infer(evidenceDict=evidenceDict, simplify=True)
+            weightedFormulas, facts = logRep.get_formulas_and_facts()
+        else:
+            weightedFormulas, facts = self.weightedFormulasDict, self.factsDict
 
         sampler = algorithms.Gibbs({**encoding.create_formulas_cores({**weightedFormulas, **facts}),
-                                    **encoding.create_constraints(self.categoricalConstraintsDict)})
+                                    **encoding.create_constraints(self.categoricalConstraintsDict),
+                                    **encoding.create_evidence_cores(evidenceDict)})
 
         sampler.ones_initialization(updateKeys=variableList, shapesDict={variable: 2 for variable in variableList},
                                     colorsDict={variable: [variable] for variable in variableList})
 
         return sampler.gibbs_sample(updateKeys=variableList, sweepNum=sweepNum, temperature=temperature)
+
+    def create_sampleDf(self, sampleNum, variableList=None, sweepNum=10, outType="int64"):
+        if variableList is None:
+            variableList = self.atoms
+        sampleDf = pd.DataFrame(columns=variableList)
+        for samplePos in range(sampleNum):
+            sampleDf = pd.concat(
+                [sampleDf,
+                 pd.DataFrame(self.gibbs_sample(variableList=variableList, sweepNum=sweepNum), index=[samplePos])])
+        return sampleDf.astype(outType)
 
     def evaluate_evidence(self, evidenceDict={}):
         return lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict).evaluate_evidence(evidenceDict)

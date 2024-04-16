@@ -66,7 +66,10 @@ def create_raw_formula_cores(expression, coreType="NumpyTensorCore", alreadyCrea
 def create_headCore(expression, headType, weight=None, coreType="NumpyTensorCore", name=None):
     if headType == "truthEvaluation":
         headValues = np.zeros(shape=(2))
-        headValues[1] = 1  # weight
+        headValues[1] = 1
+    elif headType == "falseEvaluation":
+        headValues = np.zeros(shape=(2))
+        headValues[0] = 1
     elif headType == "weightedTruthEvaluation":
         headValues = np.zeros(shape=(2))
         headValues[1] = weight

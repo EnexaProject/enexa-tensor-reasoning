@@ -3,6 +3,13 @@ from tnreason import engine
 import numpy as np
 
 
+def create_data_cores(sampleDf, atomKeys, atomColorDict=None, coreType="NumpyTensorCore", dataColor="j"):
+    if atomColorDict is None:
+        atomColorDict = {atomKey: atomKey for atomKey in atomKeys}
+    return {atomKey + "_dataCore": dataCore_from_sampleDf(sampleDf, atomColorDict[atomKey], dataColor, coreType=coreType)
+            for atomKey in atomKeys}
+
+
 ## DataCore Creation
 def dataCore_from_sampleDf(sampleDf, atomKey, dataColor, coreType="NumpyTensorCore"):
     if atomKey not in sampleDf.keys():
