@@ -27,7 +27,7 @@ class PgmpyVariableEliminator:
                 DiscreteFactor(coresDict[coreKey].colors, coresDict[coreKey].values.shape, coresDict[coreKey].values)
             )
 
-    def contract(self, outPutType="NumpyTensorCore"):
+    def contract(self):
         result = VariableElimination(self.model).query(evidence={}, variables=self.openColors)
         return cor.NumpyCore(result.values, result.variables)
 
