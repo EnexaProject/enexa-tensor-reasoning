@@ -33,7 +33,7 @@ def measure_contraction(method, tensorNetwork, openColors):
 if __name__ == "__main__":
     random_network = create_random_tensor_network(18, 20, 3, 2)
 
-    nodeNum = 20
+    nodeNum = 10
     edgeLength = 3
     nodeDim = 2
 
@@ -41,6 +41,9 @@ if __name__ == "__main__":
     openNums = [5]
 
     import tensorflow as tf
+    import torch
+    import pgmpy
+    
     methods = ["NumpyEinsum", "TensorFlowEinsum", "TorchEinsum", "PgmpyVariableEliminator"]
     contractionTimes = np.empty((len(edgeNums), len(openNums), len(methods)))
 
@@ -69,5 +72,5 @@ if __name__ == "__main__":
     plt.yscale("log")
     plt.legend()
 
-    plt.savefig("./conTimes_{}_{}_{}.png".format(nodeNum, edgeLength, openNums[0]))
+    #plt.savefig("./conTimes_{}_{}_{}.png".format(nodeNum, edgeLength, openNums[0]))
     plt.show()

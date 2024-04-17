@@ -98,59 +98,12 @@ def change_type(cCore, targetType="NumpyTensorCore"):
 
 
 class NumpyEinsumContractor:
-    def __init__(self, coreDict={}, openColors=[], variableNestedList=None, visualize=False,
-                 coreType="NumpyTensorCore"):
-        if visualize:
-            self.visualize(coreDict)
-
+    def __init__(self, coreDict={}, openColors=[]):
         self.coreDict = {key: coreDict[key].clone() for key in coreDict}
         self.openColors = openColors
 
-        self.variableNestedList = variableNestedList
-        self.coreType = coreType
-
-    def create_naive_variableNestedList(self, together=True):
-        closedColors = []
-        for key in self.coreDict:
-            for color in self.coreDict[key].colors:
-                if color not in closedColors and color not in self.openColors:
-                    closedColors.append(color)
-        if together:
-            self.variableNestedList = [closedColors]
-        else:
-            self.variableNestedList = [[color] for color in closedColors]
-
     def contract(self):
-        if self.variableNestedList is None:
-            self.create_naive_variableNestedList()
-        for variables in self.variableNestedList:
-            self.contraction_step(variables)
-        if len(self.coreDict) == 1:
-            return self.coreDict.popitem()[1]
-        else:
-            return einsum(self.coreDict, [])
-
-    def recursive_contraction(self):
-        for variables in self.variableNestedList:
-            self.contraction_step(variables)
-
-    def contraction_step(self, variables):
-        affectedKeys = [key for key in self.coreDict if not set(self.coreDict[key].colors).isdisjoint(set(variables))]
-        contractionCores = {key: self.coreDict.pop(key) for key in affectedKeys}
-        self.coreDict["contracted_" + str(variables)] = einsum(contractionCores, variables)
-
-
-def einsum(conCoreDict, variables):
-    openVariables = []
-    for key in conCoreDict:
-        for color in conCoreDict[key].colors:
-            if color not in variables and color not in openVariables:
-                openVariables.append(color)
-
-    substring, coreOrder, colorDict, colorOrder = subc.get_substring(conCoreDict, openVariables)
-    return NumpyCore(
-        np.einsum(substring, *[conCoreDict[key].values for key in coreOrder]),
-        [color for color in colorOrder if color not in variables])
-
-
-
+        substring, coreOrder, colorDict, colorOrder = subc.get_substring(self.coreDict, self.openColors)
+        return NumpyCore(
+            np.einsum(substring, *[self.coreDict[key].values for key in coreOrder]),
+            [color for color in colorOrder if color in self.openColors])
