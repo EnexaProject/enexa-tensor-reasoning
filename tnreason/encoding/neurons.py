@@ -16,7 +16,46 @@ def create_architecture(specDict):
 
 
 def create_solution_expression(specDict, solutionDict):
-    pass
+    fixedNeurons = fix_neurons(specDict, solutionDict)
+    headNeurons = get_headKeys(fixedNeurons)
+
+    if len(headNeurons) != 1:
+        print("WARNING: Headneurons are {}.".format(headNeurons))
+    return {headKey: replace_neuronnames(headKey, fixedNeurons) for headKey in headNeurons}
+
+
+def replace_neuronnames(currentNeuronName, fixedNeurons):
+    if currentNeuronName not in fixedNeurons:
+        return currentNeuronName  ## Then an atom
+    currentNeuron = fixedNeurons[currentNeuronName]
+    arity = len(currentNeuron[1])
+    if arity == 1:
+        return [currentNeuron[0], replace_neuronnames(currentNeuron[1][0], fixedNeurons)]
+    elif arity == 2:
+        return [replace_neuronnames(currentNeuron[1][0], fixedNeurons), currentNeuron[0],
+                replace_neuronnames(currentNeuron[1][1], fixedNeurons)]
+    else:
+        raise ValueError("Neuronname {} has unsuported arity {}!".format(currentNeuronName, arity))
+
+
+def get_headKeys(fixedNeurons):
+    headKeys = set(fixedNeurons.keys())
+    for formulaKey in fixedNeurons:
+        for inNeuron in fixedNeurons[formulaKey][1]:
+            if inNeuron in headKeys:
+                headKeys.remove(inNeuron)
+    return headKeys
+
+
+def fix_neurons(specDict, solutionDict):
+    rawFormulas = {}
+    for neuronName in specDict:
+        rawFormulas[neuronName] = [specDict[neuronName]["connectiveList"][solutionDict[neuronName + "_actVar"]],
+                                   [specDict[neuronName]["candidatesList"][i][
+                                        solutionDict[neuronName + "_p" + str(i) + "_selVar"]] for i in
+                                    range(len(specDict[neuronName]["candidatesList"]))]
+                                   ]
+    return rawFormulas
 
 
 def find_atoms(specDict):
@@ -33,7 +72,7 @@ def find_selection_dimDict(specDict):
         dimDict.update({neuronName + "_actVar": len(specDict[neuronName]["connectiveList"]),
                         **{neuronName + "_p" + str(i) + "_selVar": len(candidates)
                            for i, candidates in enumerate(specDict[neuronName]["candidatesList"])}})
-        return dimDict
+    return dimDict
 
 
 def create_neuron(name, connectiveList, candidatesDict={}):

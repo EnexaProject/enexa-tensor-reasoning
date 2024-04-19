@@ -41,8 +41,9 @@ class ALS:
         if computeResiduum:
             return residua
 
-    def get_argmax(self, updateKeys):
-        return {key : np.argmax(self.networkCores[key].values) for key in updateKeys}
+    def get_color_argmax(self, updateKeys):
+        # ! Only working for vectors #
+        return {self.networkCores[key].colors[0]: np.argmax(self.networkCores[key].values) for key in updateKeys}
 
     def compute_conOperator(self, updateColors, updateShape, importanceCores={}, weight=1):
         trivialCores = encoding.create_emptyCoresDict(
@@ -70,7 +71,7 @@ class ALS:
                                    **self.targetCores,
                                    **encoding.create_emptyCoresDict(updateColors,
                                                                     varDimDict={color: updateShape[i] for i, color in
-                                                                            enumerate(updateColors)})
+                                                                                enumerate(updateColors)})
                                }, openColors=updateColors).multiply(weight)
 
     def optimize_core(self, updateKey, coreType=defaultCoreType):

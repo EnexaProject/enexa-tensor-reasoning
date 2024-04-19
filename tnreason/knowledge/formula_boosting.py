@@ -16,13 +16,13 @@ class FormulaBooster:
         updateShapes = {key + "_parCore": colorDims[key] for key in colorDims}
         updateColors = {key + "_parCore": [key] for key in colorDims}
         updateCoreKeys = list(updateShapes.keys())
-
+        print(colorDims)
         if specDict["method"] == "als":
             sampler = algorithms.ALS(networkCores=networkCores, importanceColors=importanceColors,
                                      importanceList=importanceList, targetCores={})
             sampler.random_initialize(updateKeys=updateCoreKeys, shapesDict=updateShapes, colorsDict=updateColors)
             sampler.alternating_optimization(updateKeys=updateCoreKeys, sweepNum=specDict["sweeps"])
-            solutionDict = sampler.get_argmax(updateKeys=updateCoreKeys)
+            solutionDict = sampler.get_color_argmax(updateKeys=updateCoreKeys)
 
         elif specDict["method"] == "gibbs":
             sampler = algorithms.Gibbs(networkCores=networkCores, importanceColors=importanceColors,

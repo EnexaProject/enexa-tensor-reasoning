@@ -7,15 +7,22 @@ architectureDict = {
             ["a1", "a2"],
             ["a3", "a4", "a2"]
         ]
+    },
+    "neur2": {
+        "connectiveList": ["imp", "eq"],
+        "candidatesList": [
+            ["neur1"],
+            ["a4", "a2"]
+        ]
     }
 }
 
 specDict = {
-    "method" : "gibbs",
+    "method" : "als",
     "sweeps" : 10
 }
 
 kb = knowledge.from_yaml("./fun.yaml")
 
 fBooster = knowledge.FormulaBooster(kb)
-fBooster.find_candidate(architectureDict, specDict)
+print(fBooster.find_candidate(architectureDict, specDict))
