@@ -9,9 +9,11 @@ class EntropyMaximizer:
         self.backCores = backCores
         self.expressionsDict = expressionsDict
         self.satisfactionDict = satisfactionDict
-
+        for key in self.satisfactionDict:
+            assert self.satisfactionDict[key] <= 1 and self.satisfactionDict[
+                key] >= 0, "Empirical satisfaction rate {} of key {} is wrong.".format(self.satisfactionDict[key], key)
         self.formulaCores = encoding.create_formulas_cores({
-            key: [expressionsDict[key], 0] for key in expressionsDict
+            key: expressionsDict[key] + [0] for key in expressionsDict
         })
 
         self.contractionMethod = contractionMethod
@@ -46,7 +48,6 @@ class EntropyMaximizer:
                                              coreDict={**self.backCores,
                                                        **{key: self.formulaCores[key] for key in self.formulaCores if
                                                           key != optColor + "_headCore"}}, openColors=[optColor]).values
-
         if negValue != 0 and posValue != 0:
             return np.log((negValue / posValue) * (empRate / (1 - empRate)))
         elif negValue == 0 or posValue == 0:

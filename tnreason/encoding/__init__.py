@@ -14,7 +14,7 @@ def load_architecture_cores(loadPath):
 
 
 def create_evidence_cores(evidenceDict):
-    return create_formulas_cores({**{key: key for key in evidenceDict if evidenceDict[key]},
+    return create_formulas_cores({**{key: [key] for key in evidenceDict if evidenceDict[key]},
                                   **{key: ["not", key] for key in evidenceDict if not evidenceDict[key]}
                                   })
 

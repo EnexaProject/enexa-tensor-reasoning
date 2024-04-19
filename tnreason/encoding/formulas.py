@@ -4,19 +4,19 @@ import numpy as np
 
 from tnreason.encoding import connectives as encon
 
-
 connectiveFixCoreSuffix = "_conCore"
+headCoreSuffix = "_headCore"
 
 def create_formulas_cores(specDict, alreadyCreated=[]):
     knowledgeCores = {}
     for formulaName in specDict.keys():
         if isinstance(specDict[formulaName][-1], float) or isinstance(specDict[formulaName][-1], int):
             knowledgeCores = {**knowledgeCores,
-                              **create_headCore(get_formula_color(specDict[formulaName][0]), "expFactor", weight=
-                              specDict[formulaName][1]),
-                              **create_raw_formula_cores(specDict[formulaName][0],
+                              **create_headCore(get_formula_color(specDict[formulaName][:-1]), "expFactor", weight=
+                              specDict[formulaName][-1]),
+                              **create_raw_formula_cores(specDict[formulaName][:-1],
                                                          alreadyCreated=
-                                               list(knowledgeCores.keys()) + alreadyCreated)}
+                                                         list(knowledgeCores.keys()) + alreadyCreated)}
         else:
             knowledgeCores = {**knowledgeCores,
                               **create_headCore(get_formula_color(specDict[formulaName]), "truthEvaluation"),
@@ -25,10 +25,32 @@ def create_formulas_cores(specDict, alreadyCreated=[]):
     return knowledgeCores
 
 
+def create_raw_formula_cores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
+    if get_formula_color(expression) + connectiveFixCoreSuffix in alreadyCreated:
+        return {}
+    if isinstance(expression, str):
+        return {}
+    elif len(expression) == 1:
+        assert isinstance(expression[0], str)
+        return {}
+
+    elif len(expression) == 2:
+        return {**create_conCore(expression, coreType=coreType),
+                **create_raw_formula_cores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated)}
+    elif len(expression) == 3:
+        return {**create_conCore(expression, coreType=coreType),
+                **create_raw_formula_cores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated),
+                **create_raw_formula_cores(expression[2], coreType=coreType, alreadyCreated=alreadyCreated)
+                }
+    else:
+        raise ValueError("Expression {} not understood!".format(expression))
+
+
 def create_conCore(expression, coreType="NumpyTensorCore"):
     expressionString = get_formula_color(expression)
     if isinstance(expression, str):
         return {}
+
     elif len(expression) == 2:
         preExpressionString = get_formula_color(expression[1])
         return {expressionString + connectiveFixCoreSuffix: engine.get_core(coreType=coreType)(
@@ -38,31 +60,17 @@ def create_conCore(expression, coreType="NumpyTensorCore"):
         }
 
     elif len(expression) == 3:
-        leftExpressionString = get_formula_color(expression[0])
+        leftExpressionString = get_formula_color(expression[1])
         rightExpressionString = get_formula_color(expression[2])
         return {
-            expressionString + connectiveFixCoreSuffix: engine.get_core(coreType=coreType)(encon.get_binary_tensor(expression[1]),
-                                                                              [leftExpressionString,
-                                                                               rightExpressionString,
-                                                                               expressionString],
-                                                                              expressionString + connectiveFixCoreSuffix)}
+            expressionString + connectiveFixCoreSuffix: engine.get_core(coreType=coreType)(
+                encon.get_binary_tensor(expression[0]),
+                [leftExpressionString,
+                 rightExpressionString,
+                 expressionString],
+                expressionString + connectiveFixCoreSuffix)}
     else:
         raise ValueError("Expression {} not understood!".format(expression))
-
-
-def create_raw_formula_cores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
-    if get_formula_color(expression) + connectiveFixCoreSuffix in alreadyCreated:
-        return {}
-    if isinstance(expression, str):
-        return create_conCore(expression, coreType=coreType)
-    elif len(expression) == 2:
-        return {**create_conCore(expression, coreType=coreType),
-                **create_raw_formula_cores(expression[1], coreType=coreType, alreadyCreated=alreadyCreated)}
-    elif len(expression) == 3:
-        return {**create_conCore(expression, coreType=coreType),
-                **create_raw_formula_cores(expression[0], coreType=coreType, alreadyCreated=alreadyCreated),
-                **create_raw_formula_cores(expression[2], coreType=coreType, alreadyCreated=alreadyCreated)
-                }
 
 
 def create_headCore(expression, headType, weight=None, coreType="NumpyTensorCore", name=None):
@@ -85,7 +93,7 @@ def create_headCore(expression, headType, weight=None, coreType="NumpyTensorCore
     color = get_formula_color(expression)
 
     if name is None:
-        name = color + "_headCore"
+        name = color + headCoreSuffix
 
     return {name: engine.get_core(coreType=coreType)(headValues, [color],
                                                      name)}
@@ -102,10 +110,10 @@ def create_expFactor_values(weight, differentiated):
 def get_formula_color(expression):
     if isinstance(expression, str):
         return expression
-    elif len(expression) == 2:
-        assert isinstance(expression[0], str)
-        return expression[0] + "_" + get_formula_color(expression[1])
-    elif len(expression) == 3:
-        assert isinstance(expression[1], str)
-        return "(" + get_formula_color(expression[0]) + "_" + expression[1] + "_" + get_formula_color(
-            expression[2]) + ")"
+    elif len(expression)==1:
+        assert isinstance(expression[0],str)
+        return expression[0]
+    else:
+        if not isinstance(expression[0], str):
+            raise ValueError("Connective {} has wrong type!".format(expression[0]))
+        return "(" + expression[0] + "_" + "_".join([get_formula_color(entry) for entry in expression[1:]]) + ")"

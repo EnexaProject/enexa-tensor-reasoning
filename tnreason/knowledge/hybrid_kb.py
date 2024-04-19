@@ -35,14 +35,12 @@ def from_yaml(loadPath):
 
 class HybridKnowledgeBase:
     def __init__(self, weightedFormulasDict={}, factsDict={}, categoricalConstraintsDict={}):
-        self.weightedFormulasDict = {key: [weightedFormulasDict[key][0], float(weightedFormulasDict[key][1])]
+        self.weightedFormulasDict = {key: weightedFormulasDict[key][:-1] + [float(weightedFormulasDict[key][-1])]
                                      for key in weightedFormulasDict}
         self.factsDict = factsDict.copy()
         self.categoricalConstraintsDict = categoricalConstraintsDict.copy()
 
-        self.atoms = list(
-            encoding.get_all_variables([weightedFormulasDict[key][0] for key in weightedFormulasDict] +
-                                       [factsDict[key] for key in factsDict]))
+        self.atoms = encoding.get_all_variables({**self.weightedFormulasDict, **self.factsDict})
         if not len(self.factsDict) == 0:
             if not self.is_satisfiable():
                 raise ValueError("The initialized Knowledge Base is inconsistent!")
@@ -135,6 +133,7 @@ class HybridKnowledgeBase:
 
     def gibbs_sample(self, variableList, evidenceDict={}, sweepNum=10, temperature=1, filterWithLogic=False):
         if filterWithLogic:
+            ## Not working on new representation!
             logRep = lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict)
             logRep.infer(evidenceDict=evidenceDict, simplify=True)
             weightedFormulas, facts = logRep.get_formulas_and_facts()
@@ -160,8 +159,9 @@ class HybridKnowledgeBase:
                  pd.DataFrame(self.gibbs_sample(variableList=variableList, sweepNum=sweepNum), index=[samplePos])])
         return sampleDf.astype(outType)
 
-    def evaluate_evidence(self, evidenceDict={}):
-        return lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict).evaluate_evidence(evidenceDict)
+    ## NOT WORKING: Logic Model not on new formats
+    #def evaluate_evidence(self, evidenceDict={}):
+    #    return lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict).evaluate_evidence(evidenceDict)
 
     def to_yaml(self, savePath):
         encoding.storage.save_as_yaml({

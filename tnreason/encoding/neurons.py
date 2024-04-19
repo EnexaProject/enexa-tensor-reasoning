@@ -3,9 +3,6 @@ from tnreason.encoding import connectives
 
 import numpy as np
 
-connectiveKey = "connectives"
-candidatesKey = "candidates"
-
 connectiveSelColorSuffix = "_actVar"
 connectiveSelCoreSuffix = "_actCore"
 
@@ -19,9 +16,9 @@ def create_architecture(specDict):
     architectureCores = {}
     for neuronName in specDict.keys():
         architectureCores = {**architectureCores,
-                             **create_neuron(neuronName, specDict[neuronName][connectiveKey], {
+                             **create_neuron(neuronName, specDict[neuronName][0], {
                                  posPrefix + str(i): posCandidates for i, posCandidates in
-                                 enumerate(specDict[neuronName][candidatesKey])
+                                 enumerate(specDict[neuronName][1:])
                              })}
     return architectureCores
 
@@ -29,7 +26,6 @@ def create_architecture(specDict):
 def create_solution_expression(specDict, solutionDict):
     fixedNeurons = fix_neurons(specDict, solutionDict)
     headNeurons = get_headKeys(fixedNeurons)
-
     if len(headNeurons) != 1:
         print("WARNING: Headneurons are {}.".format(headNeurons))
     return {headKey: replace_neuronnames(headKey, fixedNeurons) for headKey in headNeurons}
@@ -38,21 +34,16 @@ def create_solution_expression(specDict, solutionDict):
 def replace_neuronnames(currentNeuronName, fixedNeurons):
     if currentNeuronName not in fixedNeurons:
         return currentNeuronName  ## Then an atom
-    currentNeuron = fixedNeurons[currentNeuronName]
-    arity = len(currentNeuron[1])
-    if arity == 1:
-        return [currentNeuron[0], replace_neuronnames(currentNeuron[1][0], fixedNeurons)]
-    elif arity == 2:
-        return [replace_neuronnames(currentNeuron[1][0], fixedNeurons), currentNeuron[0],
-                replace_neuronnames(currentNeuron[1][1], fixedNeurons)]
-    else:
-        raise ValueError("Neuronname {} has unsuported arity {}!".format(currentNeuronName, arity))
+    currentNeuron = fixedNeurons[currentNeuronName].copy()
+    currentNeuron = [currentNeuron[0]] + [replace_neuronnames(currentNeuron[i], fixedNeurons) for i in
+                                          range(1, len(currentNeuron))]
+    return currentNeuron
 
 
 def get_headKeys(fixedNeurons):
     headKeys = set(fixedNeurons.keys())
     for formulaKey in fixedNeurons:
-        for inNeuron in fixedNeurons[formulaKey][1]:
+        for inNeuron in fixedNeurons[formulaKey][1:]:
             if inNeuron in headKeys:
                 headKeys.remove(inNeuron)
     return headKeys
@@ -61,19 +52,16 @@ def get_headKeys(fixedNeurons):
 def fix_neurons(specDict, solutionDict):
     rawFormulas = {}
     for neuronName in specDict:
-        rawFormulas[neuronName] = [
-            specDict[neuronName][connectiveKey][solutionDict[neuronName + connectiveSelColorSuffix]],
-            [specDict[neuronName][candidatesKey][i][
-                 solutionDict[neuronName + "_p" + str(i) + candidatesColorSuffix]] for i in
-             range(len(specDict[neuronName][candidatesKey]))]
-            ]
+        rawFormulas[neuronName] = [specDict[neuronName][0][solutionDict[neuronName + connectiveSelColorSuffix]]] + [
+            specDict[neuronName][i][solutionDict[neuronName + "_" + posPrefix + str(i - 1) + candidatesColorSuffix]]
+            for i in range(1, len(specDict[neuronName]))]
     return rawFormulas
 
 
 def find_atoms(specDict):
     atoms = set()
     for neuronName in specDict.keys():
-        for positionList in specDict[neuronName][candidatesKey]:
+        for positionList in specDict[neuronName][1:]:
             atoms = atoms | set(positionList)
     return list(atoms)
 
@@ -81,9 +69,9 @@ def find_atoms(specDict):
 def find_selection_dimDict(specDict):
     dimDict = {}
     for neuronName in specDict:
-        dimDict.update({neuronName + connectiveSelColorSuffix: len(specDict[neuronName][connectiveKey]),
-                        **{neuronName + "_p" + str(i) + candidatesColorSuffix: len(candidates)
-                           for i, candidates in enumerate(specDict[neuronName][candidatesKey])}})
+        dimDict.update({neuronName + connectiveSelColorSuffix: len(specDict[neuronName][0]),
+                        **{neuronName + "_" + posPrefix + str(i) + candidatesColorSuffix: len(candidates)
+                           for i, candidates in enumerate(specDict[neuronName][1:])}})
     return dimDict
 
 
@@ -127,6 +115,8 @@ def create_connective_selectors(neuronName, candidateKeys, connectiveList, coreT
         for i, connectiveKey in enumerate(connectiveList):
             values[i] = connectives.get_binary_tensor(connectiveKey)
     else:
-        raise ValueError("Number of candidates wrong in Neuron {}!".format(neuronName))
+        raise ValueError(
+            "Number {} of candidates wrong in Neuron {} with connectives {}!".format(len(candidateKeys), neuronName,
+                                                                                     connectiveList))
 
     return engine.get_core(coreType)(values, [neuronName + connectiveSelColorSuffix, *candidateKeys, neuronName])

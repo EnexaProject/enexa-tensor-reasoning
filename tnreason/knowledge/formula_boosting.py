@@ -2,6 +2,8 @@ from tnreason import algorithms
 from tnreason import encoding
 
 
+parameterCoreSuffix = "_parCore"
+
 class FormulaBooster:
     def __init__(self, knowledgeBase):
         self.knowledgeBase = knowledgeBase
@@ -13,8 +15,8 @@ class FormulaBooster:
                           ({**self.knowledgeBase.create_cores()}, -1 / self.knowledgeBase.partitionFunction())]
 
         colorDims = encoding.find_selection_dimDict(architectureDict)
-        updateShapes = {key + "_parCore": colorDims[key] for key in colorDims}
-        updateColors = {key + "_parCore": [key] for key in colorDims}
+        updateShapes = {key + parameterCoreSuffix: colorDims[key] for key in colorDims}
+        updateColors = {key + parameterCoreSuffix: [key] for key in colorDims}
         updateCoreKeys = list(updateShapes.keys())
         if specDict["method"] == "als":
             sampler = algorithms.ALS(networkCores=networkCores, importanceColors=importanceColors,
