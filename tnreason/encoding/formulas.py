@@ -5,6 +5,8 @@ import numpy as np
 from tnreason.encoding import connectives as encon
 
 
+connectiveFixCoreSuffix = "_conCore"
+
 def create_formulas_cores(specDict, alreadyCreated=[]):
     knowledgeCores = {}
     for formulaName in specDict.keys():
@@ -29,27 +31,27 @@ def create_conCore(expression, coreType="NumpyTensorCore"):
         return {}
     elif len(expression) == 2:
         preExpressionString = get_formula_color(expression[1])
-        return {expressionString + "_conCore": engine.get_core(coreType=coreType)(
+        return {expressionString + connectiveFixCoreSuffix: engine.get_core(coreType=coreType)(
             encon.get_unary_tensor(expression[0]),
             [preExpressionString, expressionString],
-            expressionString + "_conCore")
+            expressionString + connectiveFixCoreSuffix)
         }
 
     elif len(expression) == 3:
         leftExpressionString = get_formula_color(expression[0])
         rightExpressionString = get_formula_color(expression[2])
         return {
-            expressionString + "_conCore": engine.get_core(coreType=coreType)(encon.get_binary_tensor(expression[1]),
+            expressionString + connectiveFixCoreSuffix: engine.get_core(coreType=coreType)(encon.get_binary_tensor(expression[1]),
                                                                               [leftExpressionString,
                                                                                rightExpressionString,
                                                                                expressionString],
-                                                                              expressionString + "_conCore")}
+                                                                              expressionString + connectiveFixCoreSuffix)}
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 
 
 def create_raw_formula_cores(expression, coreType="NumpyTensorCore", alreadyCreated=[]):
-    if get_formula_color(expression) + "_conCore" in alreadyCreated:
+    if get_formula_color(expression) + connectiveFixCoreSuffix in alreadyCreated:
         return {}
     if isinstance(expression, str):
         return create_conCore(expression, coreType=coreType)
