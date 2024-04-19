@@ -15,6 +15,27 @@ def create_architecture(specDict):
     return architectureCores
 
 
+def create_solution_expression(specDict, solutionDict):
+    pass
+
+
+def find_atoms(specDict):
+    atoms = set()
+    for neuronName in specDict.keys():
+        for positionList in specDict[neuronName]["candidatesList"]:
+            atoms = atoms | set(positionList)
+    return list(atoms)
+
+
+def find_selection_dimDict(specDict):
+    dimDict = {}
+    for neuronName in specDict:
+        dimDict.update({neuronName + "_actVar": len(specDict[neuronName]["connectiveList"]),
+                        **{neuronName + "_p" + str(i) + "_selVar": len(candidates)
+                           for i, candidates in enumerate(specDict[neuronName]["candidatesList"])}})
+        return dimDict
+
+
 def create_neuron(name, connectiveList, candidatesDict={}):
     neuronCores = {name + "_actCore": create_connective_selectors(name, candidatesDict.keys(), connectiveList)}
     for candidateKey in candidatesDict:
@@ -27,7 +48,8 @@ def create_variable_selectors(
         neuronName, candidateKey, variables, coreType="NumpyTensorCore"):
     cSelectorDict = {}
     for i, variableKey in enumerate(variables):
-        values = np.ones(shape=(len(variables), 2, 2))  # control, atom (subexpression), formulatruth (headexpression)
+        values = np.ones(
+            shape=(len(variables), 2, 2))  # control, atom (subexpression), formulatruth (headexpression)
         values[i, 0, 1] = 0
         values[i, 1, 0] = 0
 

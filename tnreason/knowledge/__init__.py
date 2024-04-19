@@ -2,3 +2,4 @@
 
 from tnreason.knowledge.hybrid_kb import HybridKnowledgeBase, from_yaml
 from tnreason.knowledge.weight_estimation import EmpiricalDistribution, EntropyMaximizer
+from tnreason.knowledge.formula_boosting import FormulaBooster

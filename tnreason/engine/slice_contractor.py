@@ -21,9 +21,7 @@ class SliceContractor:
         values = [(1, set(), set())]
         for key in self.coreDict:
             values = slice_contraction(values, self.coreDict[key].values)
-        print(values)
         values = reduce_colors(values, allColors - set(self.openColors))
-        print(values)
         return SliceCore(values, self.openColors)
 
 

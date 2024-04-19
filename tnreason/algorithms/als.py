@@ -41,6 +41,9 @@ class ALS:
         if computeResiduum:
             return residua
 
+    def get_argmax(self, updateKeys):
+        return {key : np.argmax(self.networkCores[key].values) for key in updateKeys}
+
     def compute_conOperator(self, updateColors, updateShape, importanceCores={}, weight=1):
         trivialCores = encoding.create_emptyCoresDict(
             updateColors + [updateColor + "_out" for updateColor in updateColors],

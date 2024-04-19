@@ -50,6 +50,8 @@ class HybridKnowledgeBase:
     def create_cores(self):
         return {**encoding.create_formulas_cores({**self.weightedFormulasDict, **self.factsDict}),
                 **encoding.create_constraints(self.categoricalConstraintsDict)}
+    def partitionFunction(self, contractionMethod=defaultContractionMethod):
+        return engine.contract(method=contractionMethod, coreDict=self.create_cores(), openColors=[]).values
 
     def include(self, secondHybridKB):
 
