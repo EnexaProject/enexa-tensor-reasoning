@@ -24,5 +24,7 @@ specDict = {
 
 kb = knowledge.from_yaml("./fun.yaml")
 
+sampleDf = kb.create_sampleDf(10)
+
 fBooster = knowledge.FormulaBooster(kb)
-print(fBooster.find_candidate(architectureDict, specDict))
+print(fBooster.find_candidate(architectureDict, specDict, sampleDf))

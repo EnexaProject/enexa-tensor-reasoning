@@ -43,7 +43,8 @@ class ALS:
 
     def get_color_argmax(self, updateKeys):
         # ! Only working for vectors #
-        return {self.networkCores[key].colors[0]: np.argmax(self.networkCores[key].values) for key in updateKeys}
+        return {self.networkCores[key].colors[0]: np.argmax(np.abs(self.networkCores[key].values)) for key in
+                updateKeys}
 
     def compute_conOperator(self, updateColors, updateShape, importanceCores={}, weight=1):
         trivialCores = encoding.create_emptyCoresDict(

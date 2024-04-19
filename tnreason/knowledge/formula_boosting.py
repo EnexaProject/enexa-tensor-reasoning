@@ -6,17 +6,16 @@ class FormulaBooster:
     def __init__(self, knowledgeBase):
         self.knowledgeBase = knowledgeBase
 
-    def find_candidate(self, architectureDict, specDict):
+    def find_candidate(self, architectureDict, specDict, sampleDf):
         networkCores = {**encoding.create_architecture(architectureDict)}
         importanceColors = encoding.find_atoms(architectureDict)
-        importanceList = [({}, 1),
+        importanceList = [({**encoding.create_data_cores(sampleDf, importanceColors)}, 1 / sampleDf.values.shape[0]),
                           ({**self.knowledgeBase.create_cores()}, -1 / self.knowledgeBase.partitionFunction())]
 
         colorDims = encoding.find_selection_dimDict(architectureDict)
         updateShapes = {key + "_parCore": colorDims[key] for key in colorDims}
         updateColors = {key + "_parCore": [key] for key in colorDims}
         updateCoreKeys = list(updateShapes.keys())
-        print(colorDims)
         if specDict["method"] == "als":
             sampler = algorithms.ALS(networkCores=networkCores, importanceColors=importanceColors,
                                      importanceList=importanceList, targetCores={})
