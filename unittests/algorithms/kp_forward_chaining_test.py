@@ -5,7 +5,7 @@ from tnreason import encoding
 
 
 rules = {
-    "f1" : ["a1","imp","a2"],
+    "f1" : ["imp","a1","a2"],
 }
 
 class FCTest(unittest.TestCase):

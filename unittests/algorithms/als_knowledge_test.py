@@ -8,11 +8,11 @@ import numpy as np
 from tnreason.algorithms import als
 
 networkCores = {
-    **encoding.create_formulas_cores({"f1":["a1", "imp", "a2"]})
+    **encoding.create_formulas_cores({"f1": ["imp", "a1", "a2"]})
 }
 
 targetCores = {
-    **als.copy_cores(encoding.create_formulas_cores({"f1":["a1", "imp", "a2"]}), "_tar", ["a1", "a2"]),
+    **als.copy_cores(encoding.create_formulas_cores({"f1": ["imp", "a1", "a2"]}), "_tar", ["a1", "a2"]),
     "head": engine.get_core()(values=np.array([0, 1]), colors=["(a1_imp_a2)_tar"])
 }
 
@@ -42,22 +42,22 @@ class HybridKBTest(unittest.TestCase):
         operator = engine.contract(coreDict={
             **networkCores,
             **als.copy_cores(networkCores, "_out", ["a1", "a2"])},
-            openColors=["(a1_imp_a2)", "(a1_imp_a2)_out"])
+            openColors=["(imp_a1_a2)", "(imp_a1_a2)_out"])
 
-        conOperator = optimizer.compute_conOperator(updateColors=["(a1_imp_a2)"], updateShape=[2])
+        conOperator = optimizer.compute_conOperator(updateColors=["(imp_a1_a2)"], updateShape=[2])
 
         self.assertEquals(operator.values[0, 0], conOperator.values[0, 0])
         self.assertEquals(operator.values[0, 1], conOperator.values[0, 1])
 
     def test_world_recovery(self):
-        optimizer.random_initialize(["estHead"], {"estHead": 2}, {"estHead": ["(a1_imp_a2)"]})
+        optimizer.random_initialize(["estHead"], {"estHead": 2}, {"estHead": ["(imp_a1_a2)"]})
         optimizer.alternating_optimization(["estHead"], computeResiduum=False, sweepNum=1)
 
         self.assertEquals(optimizer.networkCores["estHead"].values[0], 0)
         self.assertEquals(optimizer.networkCores["estHead"].values[1], 1)
 
     def test_data_recovery(self):
-        dataOptimizer.random_initialize(["estHead"], {"estHead": 2}, {"estHead": ["(a1_imp_a2)"]})
+        dataOptimizer.random_initialize(["estHead"], {"estHead": 2}, {"estHead": ["(imp_a1_a2)"]})
         dataOptimizer.alternating_optimization(["estHead"], computeResiduum=False, sweepNum=1)
         self.assertEquals(dataOptimizer.networkCores["estHead"].values[0], 0)
         self.assertEquals(dataOptimizer.networkCores["estHead"].values[1], 1)
