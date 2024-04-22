@@ -14,11 +14,11 @@ architectureDict = {
 }
 
 specDict = {
-    "method": "als",
+    "method": "gibbs",
     "sweeps": 10
 }
 
-kb = knowledge.HybridKnowledgeBase(weightedFormulasDict={
+kb = knowledge.HybridKnowledgeBase(weightedFormulas={
     "f1": [
         "eq",
         ["or", "a", "b"],

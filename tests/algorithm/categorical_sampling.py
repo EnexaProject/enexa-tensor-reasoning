@@ -2,8 +2,8 @@ from tnreason import knowledge
 
 hybridKB = knowledge.HybridKnowledgeBase(
     {},  # "f1":[["a1","and",["not","a3"]], 10]},
-    factsDict={"fact1": ["a1", "or", "a2"]},
-    categoricalConstraintsDict={
+    facts={"fact1": ["a1", "or", "a2"]},
+    categoricalConstraints={
         "c1": ["a1", "a2", "a3"],
         "c2": ["a4"]
     }

@@ -1,0 +1,36 @@
+categoricalConstraintsDict:
+  c1:
+  - a1
+  - a3
+factsDict:
+  f2:
+  - not
+  - a2
+weightedFormulasDict:
+  e0:
+  - imp
+  - a1
+  - a2
+  - 2.123
+  e1:
+  - eq
+  - a4
+  - - not
+    - a1
+  - 2
+  e2:
+  - xor
+  - a4
+  - - a5
+    - eq
+    - a1
+  - 2
+  e3:
+  - or
+  - a6
+  - - not
+    - a1
+  - 2
+  e4:
+  - a3
+  - 100

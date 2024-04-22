@@ -10,9 +10,9 @@ import pandas as pd
 defaultContractionMethod = "PgmpyVariableEliminator"
 
 
-def from_yaml(loadPath):
+def load_kb_from_yaml(loadPath):
     modelSpec = encoding.load_from_yaml(loadPath)
-
+    print(modelSpec)
     if "weightedFormulas" in modelSpec:
         weightedFormulas = modelSpec["weightedFormulas"]
     else:
@@ -28,17 +28,17 @@ def from_yaml(loadPath):
     else:
         categoricalConstraints = {}
 
-    return HybridKnowledgeBase(weightedFormulasDict=weightedFormulas,
-                               factsDict=facts,
-                               categoricalConstraintsDict=categoricalConstraints)
+    return HybridKnowledgeBase(weightedFormulas=weightedFormulas,
+                               facts=facts,
+                               categoricalConstraints=categoricalConstraints)
 
 
 class HybridKnowledgeBase:
-    def __init__(self, weightedFormulasDict={}, factsDict={}, categoricalConstraintsDict={}):
-        self.weightedFormulasDict = {key: weightedFormulasDict[key][:-1] + [float(weightedFormulasDict[key][-1])]
-                                     for key in weightedFormulasDict}
-        self.factsDict = factsDict.copy()
-        self.categoricalConstraintsDict = categoricalConstraintsDict.copy()
+    def __init__(self, weightedFormulas={}, facts={}, categoricalConstraints={}):
+        self.weightedFormulasDict = {key: weightedFormulas[key][:-1] + [float(weightedFormulas[key][-1])]
+                                     for key in weightedFormulas}
+        self.factsDict = facts.copy()
+        self.categoricalConstraintsDict = categoricalConstraints.copy()
 
         self.atoms = encoding.get_all_variables({**self.weightedFormulasDict, **self.factsDict})
         if not len(self.factsDict) == 0:

@@ -3,7 +3,7 @@ import unittest
 from tnreason import encoding
 from tnreason import knowledge
 
-generatingKB = knowledge.HybridKnowledgeBase(weightedFormulasDict=
+generatingKB = knowledge.HybridKnowledgeBase(weightedFormulas=
 {
     "f1": ["imp","a","b", 2.567],
     "f2": ["imp","a","c", 2.222],

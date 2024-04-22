@@ -15,7 +15,9 @@ class Gibbs:
         self.importanceList = importanceList
         self.contractionMethod = contractionMethod
 
-    def ones_initialization(self, updateKeys, shapesDict, colorsDict):
+    def ones_initialization(self, updateKeys, shapesDict, colorsDict=None):
+        if colorsDict is None:
+            colorsDict = {key: key for key in updateKeys}
         for updateKey in updateKeys:
             if updateKey in self.networkCores.keys():
                 print("Warning: Key {} has been reinitialized in Gibbs!".format(updateKey))
@@ -24,7 +26,7 @@ class Gibbs:
             self.networkCores[updateKey] = engine.get_core(defaultCoreType)(np.random.random(size=upShape), upColors,
                                                                             updateKey)
 
-    def alternating_sampling(self, updateKeys, sweepNum=10, temperature=1, computeResiduum=False):
+    def alternating_sampling(self, updateKeys, sweepNum=10, temperature=1):
         positions = np.empty(shape=(sweepNum, len(updateKeys)))
         for sweep in range(sweepNum):
             for i, updateKey in enumerate(updateKeys):
@@ -34,6 +36,11 @@ class Gibbs:
     def gibbs_sample(self, updateKeys, sweepNum=10, temperature=1):
         positions = self.alternating_sampling(updateKeys=updateKeys, sweepNum=sweepNum, temperature=temperature)
         return {updateKeys[i]: positions[-1, i] for i in range(len(updateKeys))}
+
+    def annealed_sample(self, updateKeys, annealingPattern=[(10, 1)]):
+        for rep, (sweepNum, temperature) in enumerate(annealingPattern):
+            sample = self.gibbs_sample(updateKeys=updateKeys, sweepNum=sweepNum, temperature=temperature)
+        return sample
 
     def sample_core(self, updateKey, temperature):
         tbUpdated = self.networkCores.pop(updateKey)

@@ -1,8 +1,8 @@
 from tnreason import algorithms
 from tnreason import encoding
 
-
 parameterCoreSuffix = "_parCore"
+
 
 class FormulaBooster:
     def __init__(self, knowledgeBase):
@@ -29,9 +29,15 @@ class FormulaBooster:
             sampler = algorithms.Gibbs(networkCores=networkCores, importanceColors=importanceColors,
                                        importanceList=importanceList)
             sampler.ones_initialization(updateKeys=updateCoreKeys, shapesDict=updateShapes, colorsDict=updateColors)
-            solutionDict = sampler.gibbs_sample(updateKeys=updateCoreKeys, sweepNum=specDict["sweeps"])
-
+            if "annealingPattern" in specDict:
+                sampleDict = sampler.annealed_sample(updateKeys=updateCoreKeys,
+                                                     annealingPattern=specDict["annealingPattern"])
+            elif "sweeps" in specDict:
+                sampleDict = sampler.gibbs_sample(updateKeys=updateCoreKeys, sweepNum=specDict["sweeps"])
+            else:
+                raise ValueError("Bad parameter specification for Gibbs: {}".format(specDict))
+            solutionDict = {key[:-8]: int(sampleDict[key]) for key in
+                            sampleDict}  # Drop parameterCoreSuffix and ensure int output
         else:
             raise ValueError("Sampling Method {} not known!".format(specDict["method"]))
-
         return encoding.create_solution_expression(architectureDict, solutionDict)

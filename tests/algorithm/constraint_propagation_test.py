@@ -6,11 +6,11 @@ import numpy as np
 
 hybridKB = knowledge.HybridKnowledgeBase(
     {},  # "f1":[["a1","and",["not","a3"]], 10]},
-    factsDict={"funfact" : ["a6", "or", "a7"],
+    facts={"funfact" : ["a6", "or", "a7"],
                 "fact1": ["a1", "xor", "a2"],
                "fact2" : "a4",
                 "fact3" : "a1"},
-    categoricalConstraintsDict={
+    categoricalConstraints={
         "c1": ["a1", "a2", "a3"],
         "c2": ["a4"]
     }

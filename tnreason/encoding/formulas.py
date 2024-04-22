@@ -7,6 +7,7 @@ from tnreason.encoding import connectives as encon
 connectiveFixCoreSuffix = "_conCore"
 headCoreSuffix = "_headCore"
 
+
 def create_formulas_cores(specDict, alreadyCreated=[]):
     knowledgeCores = {}
     for formulaName in specDict.keys():
@@ -110,10 +111,16 @@ def create_expFactor_values(weight, differentiated):
 def get_formula_color(expression):
     if isinstance(expression, str):
         return expression
-    elif len(expression)==1:
-        assert isinstance(expression[0],str)
+    elif len(expression) == 1:
+        assert isinstance(expression[0], str)
         return expression[0]
     else:
         if not isinstance(expression[0], str):
             raise ValueError("Connective {} has wrong type!".format(expression[0]))
         return "(" + expression[0] + "_" + "_".join([get_formula_color(entry) for entry in expression[1:]]) + ")"
+
+
+def create_evidence_cores(evidenceDict):
+    return create_formulas_cores({**{key: [key] for key in evidenceDict if evidenceDict[key]},
+                                  **{key: ["not", key] for key in evidenceDict if not evidenceDict[key]}
+                                  })
