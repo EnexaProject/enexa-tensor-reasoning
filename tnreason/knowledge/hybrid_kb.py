@@ -9,22 +9,29 @@ import pandas as pd
 
 defaultContractionMethod = "PgmpyVariableEliminator"
 
+probFormulasKey = "weightedFormulas"
+logFormulasKey = "facts"
+categoricalsKey = "categoricalConstraints"
+
+entailedString = "entailed"
+contradictingString = "contradicting"
+contingentString = "contingent"
 
 def load_kb_from_yaml(loadPath):
     modelSpec = encoding.load_from_yaml(loadPath)
     print(modelSpec)
-    if "weightedFormulas" in modelSpec:
-        weightedFormulas = modelSpec["weightedFormulas"]
+    if probFormulasKey in modelSpec:
+        weightedFormulas = modelSpec[probFormulasKey]
     else:
         weightedFormulas = {}
 
-    if "facts" in modelSpec:
-        facts = modelSpec["facts"]
+    if logFormulasKey in modelSpec:
+        facts = modelSpec[logFormulasKey]
     else:
         facts = {}
 
-    if "categoricalConstraints" in modelSpec:
-        categoricalConstraints = modelSpec["categoricalConstraints"]
+    if categoricalsKey in modelSpec:
+        categoricalConstraints = modelSpec[categoricalsKey]
     else:
         categoricalConstraints = {}
 
@@ -48,6 +55,7 @@ class HybridKnowledgeBase:
     def create_cores(self):
         return {**encoding.create_formulas_cores({**self.weightedFormulasDict, **self.factsDict}),
                 **encoding.create_constraints(self.categoricalConstraintsDict)}
+
     def partitionFunction(self, contractionMethod=defaultContractionMethod):
         return engine.contract(method=contractionMethod, coreDict=self.create_cores(), openColors=[]).values
 
@@ -72,24 +80,25 @@ class HybridKnowledgeBase:
     def ask_constraint(self, constraint):
         probability = self.ask(constraint, evidenceDict={})
         if probability > 0.9999:
-            return "entailed"
+            return entailedString
         elif probability == 0:
-            return "contradicting"
+            return contradictingString
         else:
-            return "contingent"
+            return contingentstring
 
     def tell_constraint(self, constraint, constraintKey=None):
         if constraintKey is None:
             constraintKey = "c" + str(len(self.factsDict))
         answer = self.ask_constraint(constraint)
-        if answer == "entailed":
+        if answer == entailedString:
             print("{} is redundant to the Knowledge Base and has not been added.".format(constraint))
-            return "not added"
-        elif answer == "contradicting":
+            return entailedString
+        elif answer == contradictingString:
             print("{} would make the Knowledge Base inconsistent and has not been added.".format(constraint))
-            return "not added"
+            return contradictingString
         else:
             self.factsDict[constraintKey] = constraint
+            return contingentString
 
     def tell(self, formula, weight, formulaKey=None):
         if formulaKey is None:
@@ -127,18 +136,8 @@ class HybridKnowledgeBase:
         maxIndex = distributionCore.get_maximal_index()
         return {variable: maxIndex[i] for i, variable in enumerate(distributionCore.colors)}
 
-    def annealed_map_query(self, variableList, evidenceDict={}, annealingPattern=[(10, 1), (5, 0.1), (2, 0.01)]):
-        ## Need to support heating in distributions first!
-        return self.gibbs_sample(variableList, evidenceDict)
-
-    def gibbs_sample(self, variableList, evidenceDict={}, sweepNum=10, temperature=1, filterWithLogic=False):
-        if filterWithLogic:
-            ## Not working on new representation!
-            logRep = lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict)
-            logRep.infer(evidenceDict=evidenceDict, simplify=True)
-            weightedFormulas, facts = logRep.get_formulas_and_facts()
-        else:
-            weightedFormulas, facts = self.weightedFormulasDict, self.factsDict
+    def annealed_sample(self, variableList, evidenceDict={}, annealingPattern=[[10, 1]]):
+        weightedFormulas, facts = self.weightedFormulasDict, self.factsDict
 
         sampler = algorithms.Gibbs({**encoding.create_formulas_cores({**weightedFormulas, **facts}),
                                     **encoding.create_constraints(self.categoricalConstraintsDict),
@@ -147,27 +146,24 @@ class HybridKnowledgeBase:
         sampler.ones_initialization(updateKeys=variableList, shapesDict={variable: 2 for variable in variableList},
                                     colorsDict={variable: [variable] for variable in variableList})
 
-        return sampler.gibbs_sample(updateKeys=variableList, sweepNum=sweepNum, temperature=temperature)
+        return sampler.annealed_sample(updateKeys=variableList, annealingPattern=annealingPattern)
 
-    def create_sampleDf(self, sampleNum, variableList=None, sweepNum=10, outType="int64"):
+    def create_sampleDf(self, sampleNum, variableList=None, annealingPattern=[[10, 1]], outType="int64"):
         if variableList is None:
             variableList = self.atoms
         sampleDf = pd.DataFrame(columns=variableList)
         for samplePos in range(sampleNum):
             sampleDf = pd.concat(
                 [sampleDf,
-                 pd.DataFrame(self.gibbs_sample(variableList=variableList, sweepNum=sweepNum), index=[samplePos])])
+                 pd.DataFrame(self.annealed_sample(variableList=variableList, annealingPattern=annealingPattern),
+                              index=[samplePos])])
         return sampleDf.astype(outType)
-
-    ## NOT WORKING: Logic Model not on new formats
-    #def evaluate_evidence(self, evidenceDict={}):
-    #    return lm.LogicRepresentation(self.weightedFormulasDict, self.factsDict).evaluate_evidence(evidenceDict)
 
     def to_yaml(self, savePath):
         encoding.storage.save_as_yaml({
-            "weightedFormulas": self.weightedFormulasDict,
-            "facts": self.factsDict,
-            "categoricalConstraints": self.categoricalConstraintsDict
+            probFormulasKey: self.weightedFormulasDict,
+            logFormulasKey: self.factsDict,
+            categoricalsKey: self.categoricalConstraintsDict
         }, savePath)
 
     def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,

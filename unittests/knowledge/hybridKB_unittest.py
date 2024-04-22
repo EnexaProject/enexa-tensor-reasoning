@@ -60,7 +60,7 @@ class HybridKBTest(unittest.TestCase):
                           hybridKB.ask("a1"))
 
         for rep in range(sampleRepetition):
-            sample = hybridKB.annealed_map_query(["a1"])
+            sample = hybridKB.annealed_sample(["a1"])
             self.assertEquals(0, sample["a1"])
 
         for rep in range(sampleRepetition):
@@ -76,7 +76,7 @@ class HybridKBTest(unittest.TestCase):
                           hybridKB.ask(["not", "a1"]))
 
         for rep in range(sampleRepetition):
-            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            sample = hybridKB.annealed_sample(["a1", "a2"])
             self.assertTrue((int(sample["a1"]) + int(sample["a2"])) == 2)
 
         for rep in range(sampleRepetition):
@@ -92,7 +92,7 @@ class HybridKBTest(unittest.TestCase):
                           hybridKB.ask(["and", ["not", "a1"], ["not", "a2"]]))
 
         for rep in range(sampleRepetition):
-            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            sample = hybridKB.annealed_sample(["a1", "a2"])
             self.assertTrue((int(sample["a1"]) + int(sample["a2"])) >= 1)
 
         for rep in range(sampleRepetition):
@@ -108,7 +108,7 @@ class HybridKBTest(unittest.TestCase):
                           hybridKB.ask(["and", "a1", "a2"]))
 
         for rep in range(sampleRepetition):
-            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            sample = hybridKB.annealed_sample(["a1", "a2"])
             self.assertEquals(1 - sample["a1"], sample["a2"])
 
         for rep in range(sampleRepetition):
@@ -124,7 +124,7 @@ class HybridKBTest(unittest.TestCase):
                           hybridKB.ask(["and", "a1", ["not", "a2"]]))
 
         for rep in range(sampleRepetition):
-            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            sample = hybridKB.annealed_sample(["a1", "a2"])
             self.assertEquals(sample["a1"], sample["a2"])
 
         for rep in range(sampleRepetition):
@@ -140,7 +140,7 @@ class HybridKBTest(unittest.TestCase):
                           hybridKB.ask(["and", "a1", ["not", "a2"]]))
 
         for rep in range(sampleRepetition):
-            sample = hybridKB.annealed_map_query(["a1", "a2"])
+            sample = hybridKB.annealed_sample(["a1", "a2"])
             self.assertEquals(0, int(sample["a1"]) - int(sample["a1"]) * int(sample["a2"]))
 
         for rep in range(sampleRepetition):
@@ -153,8 +153,8 @@ class HybridKBTest(unittest.TestCase):
             weightedFormulas={"f1": ["a1", 2]},
             facts={"constraint1": ["imp", "a1", "a2"]}
         )
-        self.assertEquals(3, len(hybridKB.annealed_map_query(["a3", "a4", "a1"])))
-        self.assertEquals(3, len(hybridKB.annealed_map_query(["fun1", "fun4", "fun5"])))
+        self.assertEquals(3, len(hybridKB.annealed_sample(["a3", "a4", "a1"])))
+        self.assertEquals(3, len(hybridKB.annealed_sample(["fun1", "fun4", "fun5"])))
 
     # def test_evidence_evaluation(self):
     #     hybridKB = knowledge.HybridKnowledgeBase(
@@ -176,7 +176,7 @@ class HybridKBTest(unittest.TestCase):
             sample = hybridKB.exact_map_query(["a1", "a2", "a3"])
             self.assertTrue(int(sample["a1"]) + int(sample["a2"]) + int(sample["a3"]) == 1)
         for rep in range(sampleRepetition):
-            sample = hybridKB.annealed_map_query(["a1", "a2", "a3"])
+            sample = hybridKB.annealed_sample(["a1", "a2", "a3"])
             self.assertTrue(int(sample["a1"]) + int(sample["a2"]) + int(sample["a3"]) == 1)
 
 
