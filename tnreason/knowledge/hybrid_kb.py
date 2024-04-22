@@ -2,8 +2,8 @@ from tnreason import engine
 from tnreason import encoding
 from tnreason import algorithms
 
-from tnreason.knowledge import logic_model as lm
 from tnreason.knowledge import knowledge_visualization as knv
+from tnreason.knowledge import batch_evaluation as be
 
 import pandas as pd
 
@@ -17,9 +17,9 @@ entailedString = "entailed"
 contradictingString = "contradicting"
 contingentString = "contingent"
 
+
 def load_kb_from_yaml(loadPath):
     modelSpec = encoding.load_from_yaml(loadPath)
-    print(modelSpec)
     if probFormulasKey in modelSpec:
         weightedFormulas = modelSpec[probFormulasKey]
     else:
@@ -52,9 +52,15 @@ class HybridKnowledgeBase:
             if not self.is_satisfiable():
                 raise ValueError("The initialized Knowledge Base is inconsistent!")
 
-    def create_cores(self):
-        return {**encoding.create_formulas_cores({**self.weightedFormulasDict, **self.factsDict}),
-                **encoding.create_constraints(self.categoricalConstraintsDict)}
+    def create_cores(self, evidenceDict={}, propagationReduction=True):
+        if propagationReduction:
+            propagator = be.KnowledgePropagator(self, evidenceDict=evidenceDict)
+            propagator.evaluate()
+            return propagator.find_carrying_cores()
+        else:
+            return {**encoding.create_formulas_cores({**self.weightedFormulasDict, **self.factsDict}),
+                    **encoding.create_constraints(self.categoricalConstraintsDict),
+                    **encoding.create_evidence_cores(evidenceDict)}
 
     def partitionFunction(self, contractionMethod=defaultContractionMethod):
         return engine.contract(method=contractionMethod, coreDict=self.create_cores(), openColors=[]).values
@@ -84,7 +90,7 @@ class HybridKnowledgeBase:
         elif probability == 0:
             return contradictingString
         else:
-            return contingentstring
+            return contingentString
 
     def tell_constraint(self, constraint, constraintKey=None):
         if constraintKey is None:

@@ -107,10 +107,10 @@ class SudokuTest(unittest.TestCase):
             verbose=False
         )
         propagator.propagate_cores()
-        evidenceDict, multipleAssignmentColors, redundantCores, remainingCores = propagator.find_evidence_and_redundant_cores()
+        assignmentDict = propagator.find_assignments()
 
-        self.assertTrue(evidenceDict["square_1_0_0"] == num)
-        self.assertTrue(not evidenceDict["a_0_0_0_0_1"])
+        self.assertTrue(assignmentDict["square_1_0_0"] == num)
+        self.assertTrue(not assignmentDict["a_0_0_0_0_1"])
 
     def test_num3(self):
         num = 3
@@ -128,10 +128,10 @@ class SudokuTest(unittest.TestCase):
             verbose=False
         )
         propagator.propagate_cores()
-        evidenceDict, multipleAssignmentColors, redundantCores, remainingCores = propagator.find_evidence_and_redundant_cores()
+        assignmentDict = propagator.find_assignments()
 
-        self.assertTrue(evidenceDict["square_1_0_0"] == num)
-        self.assertTrue(not evidenceDict["a_0_0_0_0_1"])
+        self.assertTrue(assignmentDict["square_1_0_0"] == num)
+        self.assertTrue(not assignmentDict["a_0_0_0_0_1"])
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,12 +1,12 @@
-categoricalConstraintsDict:
+categoricalConstraints:
   c1:
   - a1
   - a3
-factsDict:
+facts:
   f2:
   - not
   - a2
-weightedFormulasDict:
+weightedFormulas:
   e0:
   - imp
   - a1
@@ -21,8 +21,8 @@ weightedFormulasDict:
   e2:
   - xor
   - a4
-  - - a5
-    - eq
+  - - eq
+    - a5
     - a1
   - 2
   e3:

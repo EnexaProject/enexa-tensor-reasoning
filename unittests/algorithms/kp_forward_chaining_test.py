@@ -20,9 +20,9 @@ class FCTest(unittest.TestCase):
             verbose=False
         )
         propagator.propagate_cores()
-        evidenceDict, multipleAssignmentColors, redundantCores, remainingCores = propagator.find_evidence_and_redundant_cores()
+        assignmentDict = propagator.find_assignments()
 
-        self.assertTrue(evidenceDict["a2"] == 1)
+        self.assertTrue(assignmentDict["a2"] == 1)
 
     def test_refutation(self):
         preEvidence = {
@@ -35,9 +35,9 @@ class FCTest(unittest.TestCase):
             verbose=False
         )
         propagator.propagate_cores()
-        evidenceDict, multipleAssignmentColors, redundantCores, remainingCores = propagator.find_evidence_and_redundant_cores()
+        assignmentDict = propagator.find_assignments()
 
-        self.assertTrue(evidenceDict["a1"] == 0)
+        self.assertTrue(assignmentDict["a1"] == 0)
 
 if __name__ == "__main__":
     unittest.main()

@@ -7,9 +7,11 @@ from queue import Queue
 defaultContractionMethod = "PgmpyVariableEliminator"
 defaultCoreType = "NumpyTensorCore"
 
+domainCoreSuffix = "_domainCore"
+
 
 class ConstraintPropagator:
-    def __init__(self, binaryCoresDict, domainCoresDict=None, verbose=True):
+    def __init__(self, binaryCoresDict, domainCoresDict=None, verbose=False):
         self.verbose = verbose
         self.binaryCoresDict = binaryCoresDict
 
@@ -20,16 +22,17 @@ class ConstraintPropagator:
 
         self.coreQueue = Queue()
         self.create_affectionDict()
+        self.assignments = None
 
     def initialize_domainCoresDict(self):
         self.domainCoresDict = {}
         for coreKey in self.binaryCoresDict:
             for i, color in enumerate(self.binaryCoresDict[coreKey].colors):
-                if color + "_domainCore" not in self.domainCoresDict:
-                    self.domainCoresDict[color + "_domainCore"] = engine.get_core(coreType=defaultCoreType)(
+                if color + domainCoreSuffix not in self.domainCoresDict:
+                    self.domainCoresDict[color + domainCoreSuffix] = engine.get_core(coreType=defaultCoreType)(
                         np.ones(self.binaryCoresDict[coreKey].values.shape[i]),
                         [color],
-                        color + "_domainCore")
+                        color + domainCoreSuffix)
 
     def create_affectionDict(self):
         self.colorAffectionDict = {}
@@ -40,8 +43,10 @@ class ConstraintPropagator:
                 else:
                     self.colorAffectionDict[color] = [coreKey]
 
-    def propagate_cores(self):
-        for coreKey in list(self.binaryCoresDict.keys()):
+    def propagate_cores(self, coreOrder=None):
+        if coreOrder is None:
+            coreOrder = list(self.binaryCoresDict.keys())
+        for coreKey in coreOrder:
             self.coreQueue.put(coreKey)
         while not self.coreQueue.empty():
             self.propagation_step(self.coreQueue.get())
@@ -53,22 +58,32 @@ class ConstraintPropagator:
         for color in self.binaryCoresDict[coreKey].colors:
             contracted = engine.contract(method=defaultContractionMethod, coreDict=
             {coreKey: self.binaryCoresDict[coreKey],
-             **{otherColor + "_domainCore": self.domainCoresDict[otherColor + "_domainCore"] for otherColor in
+             **{otherColor + domainCoreSuffix: self.domainCoresDict[otherColor + domainCoreSuffix] for otherColor in
                 self.binaryCoresDict[coreKey].colors if otherColor != color}},
                                          openColors=[color]
                                          ).values
-            colorChanged = False
             for i in range(len(contracted)):
-                if contracted[i] == 0 and self.domainCoresDict[color + "_domainCore"].values[i] == 1:
-                    self.domainCoresDict[color + "_domainCore"].values[i] = 0
-                    colorChanged = True
-            if colorChanged:
-                changedColors.append(color)
+                if contracted[i] == 0 and self.domainCoresDict[color + domainCoreSuffix].values[i] == 1:
+                    self.domainCoresDict[color + domainCoreSuffix].values[i] = 0
+                    if color not in changedColors:
+                        changedColors.append(color)
 
         for changedColor in changedColors:
             for key in self.colorAffectionDict[changedColor]:
                 if key not in list(self.coreQueue.queue) and key != coreKey:
                     self.coreQueue.put(key)
+
+    def find_assignments(self):
+        self.assignments = {
+            self.domainCoresDict[key].colors[0]: np.where(self.domainCoresDict[key].values == 1)[0][0]
+            for key in self.domainCoresDict if np.sum(self.domainCoresDict[key].values) == 1}
+        return self.assignments
+
+    def find_redundant_cores(self):
+        if self.assignments is None:
+            self.find_assignments()
+        return {key for key in self.binaryCoresDict if
+                all([color in self.assignments for color in self.binaryCoresDict[key].colors])}
 
     def find_evidence_and_redundant_cores(self):
         evidenceDict = {}
