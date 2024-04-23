@@ -1,0 +1,13 @@
+import unittest
+
+from algorithms.kp_sudoku_test import SudokuTest
+from algorithms.kp_forward_chaining_test import FCTest
+from algorithms.als_matrix_test import AlsMatrixTest
+from algorithms.als_knowledge_test import AlsKnowledgeTest
+
+from engine.logic_contraction_unittest import TensorLogicTest
+
+from knowledge.entropy_maximization_unittest import EntropyMaximationTest
+from knowledge.hybridKB_unittest import HybridKBTest
+
+unittest.main()

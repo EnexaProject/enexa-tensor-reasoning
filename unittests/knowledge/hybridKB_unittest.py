@@ -17,13 +17,13 @@ class HybridKBTest(unittest.TestCase):
             knowledge.HybridKnowledgeBase(facts={"c1": ["a1"], "c2": ["not", "a1"]})
 
     def test_ask_constraint_entailed(self):
-        self.assertEquals("entailed",
+        self.assertEqual("entailed",
                           knowledge.HybridKnowledgeBase(weightedFormulas={"e": ["a1", 2]},
                                                         facts={"c1": ["a1"]}).ask_constraint("a1")
                           )
 
     def test_ask_constraint_contradicted(self):
-        self.assertEquals("contradicting",
+        self.assertEqual("contradicting",
                           knowledge.HybridKnowledgeBase(
                               weightedFormulas={"e": ["imp", ["eq", "a1", "a2"], ["xor", "a3", "a1"], 2]},
                               facts={"c1": ["and", "a1", "a2"]}).ask_constraint(
@@ -31,7 +31,7 @@ class HybridKBTest(unittest.TestCase):
                           )
 
     def test_map_query(self):
-        self.assertEquals({"a1": 1, "a2": 0},
+        self.assertEqual({"a1": 1, "a2": 0},
                           knowledge.HybridKnowledgeBase(
                               weightedFormulas={"e": ["imp", ["eq", "a1", "a2"], ["xor", "a3", "a1"], 2]},
                               facts={"c1": "a1",
@@ -39,13 +39,13 @@ class HybridKBTest(unittest.TestCase):
                           )
 
     def test_empty_dicts(self):
-        self.assertEquals(1,
+        self.assertEqual(1,
                           knowledge.HybridKnowledgeBase(
                               weightedFormulas={}, facts={}).query(["a1"], evidenceDict={"a1": 1}).values[1])
-        self.assertEquals(0.5,
+        self.assertEqual(0.5,
                           knowledge.HybridKnowledgeBase(
                               weightedFormulas={}, facts={}).query(["a1"], evidenceDict={}).values[1])
-        self.assertEquals(0.125,
+        self.assertEqual(0.125,
                           knowledge.HybridKnowledgeBase(
                               weightedFormulas={}, facts={}).query(["a1", "a3", "a2"], evidenceDict={}).values[
                               1, 0, 1])
@@ -56,23 +56,23 @@ class HybridKBTest(unittest.TestCase):
             weightedFormulas={},
             facts={"constraint1": ["not", "a1"]}
         )
-        self.assertEquals(0,
+        self.assertEqual(0,
                           hybridKB.ask("a1"))
 
         for rep in range(sampleRepetition):
             sample = hybridKB.annealed_sample(["a1"])
-            self.assertEquals(0, sample["a1"])
+            self.assertEqual(0, sample["a1"])
 
         for rep in range(sampleRepetition):
             sample = hybridKB.exact_map_query(["a1"])
-            self.assertEquals(0, sample["a1"])
+            self.assertEqual(0, sample["a1"])
 
     def test_and(self):
         hybridKB = knowledge.HybridKnowledgeBase(
             weightedFormulas={"f1": ["a1", 1]},
             facts={"constraint1": ["and", "a1", "a2"]}
         )
-        self.assertEquals(0,
+        self.assertEqual(0,
                           hybridKB.ask(["not", "a1"]))
 
         for rep in range(sampleRepetition):
@@ -88,7 +88,7 @@ class HybridKBTest(unittest.TestCase):
             weightedFormulas={},
             facts={"constraint1": ["or", "a1", "a2"]}
         )
-        self.assertEquals(0,
+        self.assertEqual(0,
                           hybridKB.ask(["and", ["not", "a1"], ["not", "a2"]]))
 
         for rep in range(sampleRepetition):
@@ -104,48 +104,48 @@ class HybridKBTest(unittest.TestCase):
             weightedFormulas={},
             facts={"constraint1": ["xor", "a1", "a2"]}
         )
-        self.assertEquals(0,
+        self.assertEqual(0,
                           hybridKB.ask(["and", "a1", "a2"]))
 
         for rep in range(sampleRepetition):
             sample = hybridKB.annealed_sample(["a1", "a2"])
-            self.assertEquals(1 - sample["a1"], sample["a2"])
+            self.assertEqual(1 - sample["a1"], sample["a2"])
 
         for rep in range(sampleRepetition):
             sample = hybridKB.exact_map_query(["a1", "a2"])
-            self.assertEquals(1 - sample["a1"], sample["a2"])
+            self.assertEqual(1 - sample["a1"], sample["a2"])
 
     def test_eq(self):
         hybridKB = knowledge.HybridKnowledgeBase(
             weightedFormulas={},
             facts={"constraint1": ["eq", "a1", "a2"]}
         )
-        self.assertEquals(0,
+        self.assertEqual(0,
                           hybridKB.ask(["and", "a1", ["not", "a2"]]))
 
         for rep in range(sampleRepetition):
             sample = hybridKB.annealed_sample(["a1", "a2"])
-            self.assertEquals(sample["a1"], sample["a2"])
+            self.assertEqual(sample["a1"], sample["a2"])
 
         for rep in range(sampleRepetition):
             sample = hybridKB.exact_map_query(["a1", "a2"])
-            self.assertEquals(sample["a1"], sample["a2"])
+            self.assertEqual(sample["a1"], sample["a2"])
 
     def test_imp(self):
         hybridKB = knowledge.HybridKnowledgeBase(
             weightedFormulas={},
             facts={"constraint1": ["imp", "a1", "a2"]}
         )
-        self.assertEquals(0,
+        self.assertEqual(0,
                           hybridKB.ask(["and", "a1", ["not", "a2"]]))
 
         for rep in range(sampleRepetition):
             sample = hybridKB.annealed_sample(["a1", "a2"])
-            self.assertEquals(0, int(sample["a1"]) - int(sample["a1"]) * int(sample["a2"]))
+            self.assertEqual(0, int(sample["a1"]) - int(sample["a1"]) * int(sample["a2"]))
 
         for rep in range(sampleRepetition):
             sample = hybridKB.exact_map_query(["a1", "a2"])
-            self.assertEquals(0, int(sample["a1"]) - int(sample["a1"]) * int(sample["a2"]))
+            self.assertEqual(0, int(sample["a1"]) - int(sample["a1"]) * int(sample["a2"]))
 
     ##
     def test_unseen_atoms(self):
@@ -153,18 +153,18 @@ class HybridKBTest(unittest.TestCase):
             weightedFormulas={"f1": ["a1", 2]},
             facts={"constraint1": ["imp", "a1", "a2"]}
         )
-        self.assertEquals(3, len(hybridKB.annealed_sample(["a3", "a4", "a1"])))
-        self.assertEquals(3, len(hybridKB.annealed_sample(["fun1", "fun4", "fun5"])))
+        self.assertEqual(3, len(hybridKB.annealed_sample(["a3", "a4", "a1"])))
+        self.assertEqual(3, len(hybridKB.annealed_sample(["fun1", "fun4", "fun5"])))
 
-    # def test_evidence_evaluation(self):
-    #     hybridKB = knowledge.HybridKnowledgeBase(
-    #         weightedFormulasDict={"f1": ["a1", 2]},
-    #         factsDict={"constraint1": ["imp","a1","a2"]}
-    #     )
-    #     entailed, contradicted, contingent = hybridKB.evaluate_evidence({"a1": 1, "a2": 0})
-    #     self.assertEquals(entailed, ["f1"])
-    #     self.assertEquals(contradicted, ["constraint1"])
-    #     self.assertEquals(contingent, [])
+    def test_evidence_evaluation(self):
+        hybridKB = knowledge.HybridKnowledgeBase(
+                 weightedFormulas={"f1": ["a1", 2]},
+                 facts={"constraint1": ["imp","a1","a2"]}
+             )
+        entailedDict = hybridKB.evaluate_evidence({"a1": 0, "a2": 1})
+        self.assertTrue(entailedDict["a1"]==0)
+        self.assertTrue(entailedDict["a2"]==1)
+        self.assertTrue(entailedDict["(imp_a1_a2)"]==1)
 
     def test_categorical_constraint(self):
         hybridKB = knowledge.HybridKnowledgeBase(

@@ -37,7 +37,7 @@ dataOptimizer = als.ALS(
 )
 
 
-class HybridKBTest(unittest.TestCase):
+class AlsKnowledgeTest(unittest.TestCase):
     def test_operator_check(self):
         operator = engine.contract(coreDict={
             **networkCores,
@@ -46,18 +46,18 @@ class HybridKBTest(unittest.TestCase):
 
         conOperator = optimizer.compute_conOperator(updateColors=["(imp_a1_a2)"], updateShape=[2])
 
-        self.assertEquals(operator.values[0, 0], conOperator.values[0, 0])
-        self.assertEquals(operator.values[0, 1], conOperator.values[0, 1])
+        self.assertEqual(operator.values[0, 0], conOperator.values[0, 0])
+        self.assertEqual(operator.values[0, 1], conOperator.values[0, 1])
 
     def test_world_recovery(self):
         optimizer.random_initialize(["estHead"], {"estHead": 2}, {"estHead": ["(imp_a1_a2)"]})
         optimizer.alternating_optimization(["estHead"], computeResiduum=False, sweepNum=1)
 
-        self.assertEquals(optimizer.networkCores["estHead"].values[0], 0)
-        self.assertEquals(optimizer.networkCores["estHead"].values[1], 1)
+        self.assertEqual(optimizer.networkCores["estHead"].values[0], 0)
+        self.assertEqual(optimizer.networkCores["estHead"].values[1], 1)
 
     def test_data_recovery(self):
         dataOptimizer.random_initialize(["estHead"], {"estHead": 2}, {"estHead": ["(imp_a1_a2)"]})
         dataOptimizer.alternating_optimization(["estHead"], computeResiduum=False, sweepNum=1)
-        self.assertEquals(dataOptimizer.networkCores["estHead"].values[0], 0)
-        self.assertEquals(dataOptimizer.networkCores["estHead"].values[1], 1)
+        self.assertEqual(dataOptimizer.networkCores["estHead"].values[0], 0)
+        self.assertEqual(dataOptimizer.networkCores["estHead"].values[1], 1)

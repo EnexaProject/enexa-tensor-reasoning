@@ -30,7 +30,7 @@ optimizer = als.ALS(networkCores={"mat":matrix, "lvec":leftVector, "rvec":rightV
                     importanceColors=["t"])
 
 
-class HybridKBTest(unittest.TestCase):
+class AlsMatrixTest(unittest.TestCase):
 
     def test_residuum_decay(self):
         residua = optimizer.alternating_optimization(["lvec","rvec"], computeResiduum=True)

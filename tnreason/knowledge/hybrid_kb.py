@@ -172,9 +172,13 @@ class HybridKnowledgeBase:
             categoricalsKey: self.categoricalConstraintsDict
         }, savePath)
 
+    def evaluate_evidence(self, evidenceDict):
+        propagator = be.KnowledgePropagator(self, evidenceDict=evidenceDict)
+        return propagator.evaluate()
+
     def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
                   pos=None):
-        return knv.visualize_knowledge(self.weightedFormulasDict,
+        return knv.visualize_knowledge(expressionsDict=self.weightedFormulasDict,
                                        factsDict=self.factsDict,
                                        strengthMultiplier=strengthMultiplier,
                                        strengthCutoff=strengthCutoff,

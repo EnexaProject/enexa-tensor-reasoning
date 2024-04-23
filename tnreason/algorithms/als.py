@@ -95,7 +95,7 @@ class ALS:
         flattenedOperator = conOperator.values.reshape(resultDim, resultDim)
         flattenedTarget = conTarget.values.flatten()
 
-        solution, res, rank, s = np.linalg.lstsq(flattenedOperator, flattenedTarget)
+        solution, res, rank, s = np.linalg.lstsq(flattenedOperator, flattenedTarget, rcond=None)
 
         self.networkCores[updateKey] = engine.get_core(coreType)(solution.reshape(updateShape), updateColors, updateKey)
 

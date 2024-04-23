@@ -14,7 +14,7 @@ sampleNum = 200
 sampleDf = generatingKB.create_sampleDf(sampleNum)
 
 
-class HybridKBTest(unittest.TestCase):
+class EntropyMaximationTest(unittest.TestCase):
     def test_convergence(self):
         expressionsDict = {"f1": ["imp","a","b"], "f2": ["imp","a","c"], "f3": ["a"]}
         satisfactionDict = knowledge.EmpiricalDistribution(sampleDf).get_satisfactionDict(expressionsDict)
@@ -33,5 +33,5 @@ class HybridKBTest(unittest.TestCase):
                                                       }))
         values = entropyMaximizer.alternating_optimization(sweepNum=2)
 
-        self.assertEquals(0, values["f1"][0])
-        self.assertEquals(0, values["f1"][1])
+        self.assertEqual(0, values["f1"][0])
+        self.assertEqual(0, values["f1"][1])

@@ -24,6 +24,7 @@ class KnowledgePropagator:
         self.propagator.initialize_domainCoresDict()
         self.propagator.propagate_cores(coreOrder=variables)
         self.entailedDict = self.propagator.find_assignments()
+        return self.entailedDict
 
     def find_carrying_cores(self, variables=None, variablesShape={}):
         if variables is None:
