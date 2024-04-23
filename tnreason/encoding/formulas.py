@@ -117,7 +117,17 @@ def get_formula_color(expression):
     else:
         if not isinstance(expression[0], str):
             raise ValueError("Connective {} has wrong type!".format(expression[0]))
-        return "(" + expression[0] + "_" + "_".join([get_formula_color(entry) for entry in expression[1:]]) + ")"
+        return "(" + expression[0] + "_" + "_".join(
+            [get_formula_color(entry) for entry in expression if is_subexpression(entry)]) + ")"
+
+
+def is_subexpression(expression):
+    if type(expression) == list:
+        return True
+    elif type(expression) == str:
+        return not expression in ["id", "not", "and", "or", "xor", "imp", "eq"]
+    else:
+        return False
 
 
 def create_evidence_cores(evidenceDict):

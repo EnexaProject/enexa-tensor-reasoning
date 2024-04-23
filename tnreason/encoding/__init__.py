@@ -1,5 +1,5 @@
 from tnreason.encoding.formulas import create_formulas_cores, create_raw_formula_cores, get_formula_color, \
-    create_headCore, create_evidence_cores
+    create_headCore, create_evidence_cores, is_subexpression
 from tnreason.encoding.constraints import create_constraints
 from tnreason.encoding.auxiliary import create_emptyCoresDict, get_variables, get_all_variables
 from tnreason.encoding.storage import save_as_yaml, load_from_yaml

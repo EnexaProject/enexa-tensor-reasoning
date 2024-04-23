@@ -176,13 +176,7 @@ class HybridKnowledgeBase:
         propagator = be.KnowledgePropagator(self, evidenceDict=evidenceDict)
         return propagator.evaluate()
 
-    def visualize(self, evidenceDict={}, strengthMultiplier=4, strengthCutoff=10, fontsize=10, showFormula=True,
-                  pos=None):
+    def visualize(self, evidenceDict={}):
         return knv.visualize_knowledge(expressionsDict=self.weightedFormulasDict,
                                        factsDict=self.factsDict,
-                                       strengthMultiplier=strengthMultiplier,
-                                       strengthCutoff=strengthCutoff,
-                                       fontsize=fontsize,
-                                       showFormula=showFormula,
-                                       evidenceDict=evidenceDict,
-                                       pos=pos)
+                                       evidenceDict=evidenceDict)

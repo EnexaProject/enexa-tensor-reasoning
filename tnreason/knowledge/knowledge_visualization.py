@@ -4,52 +4,65 @@ from matplotlib import pyplot as plt
 from tnreason import encoding
 
 
+def visualize_knowledge(expressionsDict={},
+                        factsDict={},
+                        categoricalConstraints={},
+                        evidenceDict={},
+                        title="Visualization of the Knowledge Base",
+                        savePath=None):
+    graph, pos, atoms = visualize_subexpressions(expressionsDict=expressionsDict, factsDict=factsDict,
+                                                 categoricalConstraints=categoricalConstraints,
+                                                 evidenceDict=evidenceDict)
+    draw_with_evidence(graph, pos, evidenceDict, atoms, title=title, savePath=savePath)
+
+
+def visualize_with_differing_evidence(expressionsDict={},
+                        factsDict={},
+                        categoricalConstraints={},
+                        evidenceList=[],
+                        title="Visualization of the Knowledge Base",
+                        saveBasePath="../../tests/visualization"):
+    graph, pos, atoms = visualize_subexpressions(expressionsDict=expressionsDict, factsDict=factsDict,
+                                                 categoricalConstraints=categoricalConstraints,
+                                                 evidenceDict={})
+    for i, evidenceDict in enumerate(evidenceList):
+        draw_with_evidence(graph, pos, evidenceDict, atoms, title=title, savePath=saveBasePath+str(i)+".png")
+
+
 def get_edges_and_positions(expression):
     expressionString = encoding.get_formula_color(expression)
 
     if isinstance(expression, str):
         return [], {expressionString: 0}, [expressionString]
+    else:
+        edges, positions, subExpressions = [], {}, [expressionString]
+        for subExpression in expression:
+            if encoding.is_subexpression(subExpression):
+                subEdges, subPositions, subSubExpressions = get_edges_and_positions(subExpression)
+                edges = edges + subEdges
+                positions = {**positions, **subPositions}
+                subExpressions = subExpressions + subSubExpressions
 
-    elif len(expression) == 2:
-        preExpressionString = encoding.get_formula_color(expression[1])
-        edges, positions, subexpressions = get_edges_and_positions(expression[1])
+                edges.append([encoding.get_formula_color(expression), encoding.get_formula_color(subExpression)])
 
-        edges.append([preExpressionString, expressionString])
-        positions[expressionString] = positions[preExpressionString] + 1
-        subexpressions.append(expressionString)
-        return edges, positions, subexpressions
+        positions[encoding.get_formula_color(expression)] = 1 + max(
+            [positions[encoding.get_formula_color(subExpression)] for subExpression in expression if
+             encoding.is_subexpression(subExpression)])
 
-    elif len(expression) == 3:
-        leftExpressionString = encoding.get_formula_color(expression[0])
-        rightExpressionString = encoding.get_formula_color(expression[2])
-
-        leftEdges, leftPositions, leftSubexpressions = get_edges_and_positions(expression[0])
-        rightEdges, rightPositions, rightSubexpressions = get_edges_and_positions(expression[2])
-
-        leftEdges.extend(rightEdges)
-        leftPositions = {**leftPositions,
-                         **rightPositions}
-        leftSubexpressions.extend(rightSubexpressions)
-
-        leftSubexpressions.append(expressionString)
-        leftPositions[expressionString] = max(leftPositions[leftExpressionString],
-                                              leftPositions[rightExpressionString]) + 1
-        leftEdges.append([leftExpressionString, expressionString])
-        leftEdges.append([rightExpressionString, expressionString])
-
-        return leftEdges, leftPositions, leftSubexpressions
+        return edges, positions, subExpressions
 
 
-def visualize_knowledge(expressionsDict={},
-                        factsDict={},
-                        categoricalConstraints={},
-                        evidenceDict={}):
+def visualize_subexpressions(expressionsDict={},
+                             factsDict={},
+                             categoricalConstraints={},
+                             evidenceDict={}):
     edges = []
     horPositions = {}
     nodes = []
 
-    allExpressions = [expressionsDict[key][0] for key in expressionsDict]
-    allExpressions.extend(list(factsDict.values()))
+    allExpressions = list(expressionsDict.values()) + list(factsDict.values()) + [[key] for key in evidenceDict]
+    for key in categoricalConstraints:
+        allExpressions = allExpressions + categoricalConstraints[key]
 
     for expression in allExpressions:
         expressionEdges, expressionPositions, subexpressions = get_edges_and_positions(expression)
@@ -67,8 +80,11 @@ def visualize_knowledge(expressionsDict={},
     for nodeKey in pos:
         pos[nodeKey][0] = horPositions[nodeKey]
 
-    atoms = encoding.get_all_variables(allExpressions)
+    atoms = encoding.get_all_variables({**expressionsDict, **factsDict})
+    return graph, pos, atoms
 
+
+def draw_with_evidence(graph, pos, evidenceDict, atoms, title, savePath=None):
     trueColor = "blue"
     falseColor = "red"
     neutralColor = "gray"
@@ -89,7 +105,7 @@ def visualize_knowledge(expressionsDict={},
                            node_color=falseColor,
                            alpha=hidden_node_alpha)
     nx.draw_networkx_nodes(graph, pos,
-                           nodelist=[atomKey for atomKey in nodes if
+                           nodelist=[atomKey for atomKey in graph.nodes if
                                      atomKey not in evidenceDict and atomKey not in atoms],
                            node_size=1000,
                            node_color=neutralColor,
@@ -113,17 +129,33 @@ def visualize_knowledge(expressionsDict={},
                            node_color=neutralColor,
                            alpha=visible_node_alpha)
 
-    # nx.draw_networkx_nodes(graph, pos, nodes)
-
-    nx.draw_networkx_labels(graph, pos, {nodeKey: nodeKey for nodeKey in nodes})
+    nx.draw_networkx_labels(graph, pos, {nodeKey: get_symbol(nodeKey) for nodeKey in graph.nodes})
+    edges = [edge for edge in graph.edges if edge[0] != edge[1]]
     nx.draw_networkx_edges(graph, pos, edges)
 
+    plt.title(title, fontsize=15)
+    if savePath is not None:
+        plt.savefig(savePath)
     plt.show()
 
 
+def get_symbol(expressionString):
+    connectiveDict = {
+        "and": "and",
+        "not": "not"
+    }
+    if not "_" in expressionString:
+        return expressionString
+    else:
+        connective = expressionString.split("_")[0][1:]
+        if connective in connectiveDict:
+            return connectiveDict[connective]
+        return connective
+
+
 if __name__ == "__main__":
-    visualize_knowledge(expressionsDict={"a": [["not", ["b", "and", "c"]], 2]},
-                        factsDict={"f1": ["not", "c"],
-                                   "f3": ["b", "and", ["not", "c"]]},
-                        evidenceDict={"(b_and_c)": 1,
-                                      "c": 0})
+    visualize_with_differing_evidence(
+        expressionsDict={"e1": ["not", ["and", "b", "c"], 2]},
+                        factsDict={"f1": ["c"]},
+                        categoricalConstraints={"c1": ["e", "c"]},
+                        evidenceList=[{"c":0},{"c":1,"e":0}])
