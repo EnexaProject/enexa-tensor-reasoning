@@ -1,7 +1,7 @@
 from tnreason import knowledge
 
 testKB = knowledge.load_kb_from_yaml("./test_kb.yaml")
-cores = testKB.create_cores({"a1":0})
+cores = testKB.create_cores({"a1":0}, propagationReduction=True)
 
 print('(imp_a1_a2)_headCore' in cores)
 print(cores)

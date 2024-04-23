@@ -2,33 +2,35 @@ from tnreason import encoding
 from tnreason.encoding.formulas import headCoreSuffix
 
 from tnreason import algorithms
-from tnreason.algorithms.constraint_propagation import domainCoreSuffix
 
 
 class KnowledgePropagator:
     def __init__(self, knowledgeBase, evidenceDict={}):
         self.atoms = knowledgeBase.atoms
-        print(self.atoms)
         self.knowledgeCores = {
             **encoding.create_formulas_cores({**knowledgeBase.weightedFormulasDict, **knowledgeBase.factsDict}),
             **encoding.create_constraints(knowledgeBase.categoricalConstraintsDict),
             **encoding.create_evidence_cores(evidenceDict)}
+
+        self.propagator = algorithms.ConstraintPropagator(binaryCoresDict=self.knowledgeCores)
+
         self.knownHeads = get_evidence_headKeys(evidenceDict) + [
             encoding.get_formula_color(knowledgeBase.factsDict[key]) + headCoreSuffix for key in
             knowledgeBase.factsDict]
 
-    def evaluate(self):
-        propagator = algorithms.ConstraintPropagator(binaryCoresDict=self.knowledgeCores)
-        propagator.initialize_domainCoresDict()
-        propagator.propagate_cores(coreOrder=self.knownHeads)
+    def evaluate(self, variables=None):
+        if variables is None:
+            variables = self.knownHeads
+        self.propagator.initialize_domainCoresDict()
+        self.propagator.propagate_cores(coreOrder=variables)
+        self.entailedDict = self.propagator.find_assignments()
 
-        self.entailedDict = propagator.find_assignments()
-
-    def find_carrying_cores(self):
-        return {key: self.knowledgeCores[key] for key in self.knowledgeCores if not
-        all([color in self.entailedDict for color in self.knowledgeCores[key].colors]) and all([
-            color not in self.atoms for color in self.knowledgeCores[key].colors
-        ])}
+    def find_carrying_cores(self, variables=None, variablesShape={}):
+        if variables is None:
+            variables = self.atoms
+        return self.propagator.find_variable_cone(variables, {**variablesShape,
+                                                              **{variable: 2 for variable in variables if
+                                                                 variable not in variablesShape}})
 
 
 def get_evidence_headKeys(evidenceDict):

@@ -67,6 +67,9 @@ class ConstraintPropagator:
                     self.domainCoresDict[color + domainCoreSuffix].values[i] = 0
                     if color not in changedColors:
                         changedColors.append(color)
+                    if np.sum(self.domainCoresDict[color + domainCoreSuffix].values) == 0:
+                        raise ValueError(
+                            "Inconsistent Knowledge Base: Color {} has no possible assignments!".format(color))
 
         for changedColor in changedColors:
             for key in self.colorAffectionDict[changedColor]:
@@ -85,26 +88,26 @@ class ConstraintPropagator:
         return {key for key in self.binaryCoresDict if
                 all([color in self.assignments for color in self.binaryCoresDict[key].colors])}
 
-    def find_evidence_and_redundant_cores(self):
-        evidenceDict = {}
-        multipleAssignmentColors = []
-        for colorKey in self.domainCoresDict:
-            color = colorKey[:-11]
-            if color not in evidenceDict and color not in multipleAssignmentColors:
-                assignmentsNum = np.sum(self.domainCoresDict[colorKey].values)
-                if assignmentsNum == 0:
-                    raise ValueError("Inconsistent Knowledge Base: Color {} has no possible assignments!".format(color))
-                elif assignmentsNum == 1:
-                    evidenceDict[color] = np.where(self.domainCoresDict[colorKey].values == 1)[0][0]
-                    if self.verbose:
-                        print("Color {} has only possible assignment {}.".format(color,
-                                                                                 evidenceDict[color]))
-                else:
-                    multipleAssignmentColors.append(color)
-                    if self.verbose:
-                        print("Color {} has multiple assignments.".format(color))
-        redundantCores = [coreKey for coreKey in list(self.binaryCoresDict.keys()) if
-                          all(color in evidenceDict for color in self.binaryCoresDict[coreKey].colors)]
-        remainingCores = [coreKey for coreKey in list(self.binaryCoresDict.keys()) if coreKey not in redundantCores]
-        return evidenceDict, multipleAssignmentColors, \
-            redundantCores, remainingCores
+    def find_variable_cone(self, variables,
+                           variableShapes={}):  ## Add variables to domainCoreDict when they are not there!
+        for variable in variables:
+            if variable + domainCoreSuffix not in self.domainCoresDict:
+                self.domainCoresDict[variable + domainCoreSuffix] = engine.get_core(coreType=defaultCoreType)(
+                    np.ones(variableShapes[variable]), [variable], variable + domainCoreSuffix)
+        variablesQueue = Queue()
+        for variable in variables:
+            variablesQueue.put(variable)
+        coneCores = {}
+        while not variablesQueue.empty():
+            variable = variablesQueue.get()
+            coneCores[variable + domainCoreSuffix] = self.domainCoresDict[variable + domainCoreSuffix]
+            if np.sum(self.domainCoresDict[variable + domainCoreSuffix].values) == 1:
+                pass
+            else:
+                for key in self.binaryCoresDict:
+                    if variable in self.binaryCoresDict[key].colors:
+                        coneCores[key] = self.binaryCoresDict[key]
+                        for color in self.binaryCoresDict[key].colors:
+                            if color != variable and color + domainCoreSuffix not in coneCores:
+                                coneCores[color + domainCoreSuffix] = self.domainCoresDict[color + domainCoreSuffix]
+        return coneCores

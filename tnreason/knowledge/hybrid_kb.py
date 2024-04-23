@@ -52,7 +52,7 @@ class HybridKnowledgeBase:
             if not self.is_satisfiable():
                 raise ValueError("The initialized Knowledge Base is inconsistent!")
 
-    def create_cores(self, evidenceDict={}, propagationReduction=True):
+    def create_cores(self, evidenceDict={}, propagationReduction=False):
         if propagationReduction:
             propagator = be.KnowledgePropagator(self, evidenceDict=evidenceDict)
             propagator.evaluate()
