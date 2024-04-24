@@ -6,7 +6,7 @@ import numpy as np
 answerCoreSuffix = "_answerCore"
 
 
-class LocalContractor:
+class BinaryContractionPropagator:
     """
     Generalizing the Constraint Propagation
         Avoid multiple elements in queue -> Usage of sets
@@ -90,7 +90,7 @@ if __name__ == "__main__":
                    "net2": encoding.create_formulas_cores({"f2": ["a"],
                                                            "f3": ["imp", "a", "c"]})}
 
-    lCon = LocalContractor(subNetworks, queryVariables={"q1": ["a"],
+    lCon = BinaryContractionPropagator(subNetworks, queryVariables={"q1": ["a"],
                                                         "q3": ["c"],
                                                         "q2": ["b", "c"]})
 
