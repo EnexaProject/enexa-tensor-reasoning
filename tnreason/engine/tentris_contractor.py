@@ -8,13 +8,14 @@ import numpy as np
 
 
 class TentrisCore:
-    def __init__(self, values, colors, name=None, inType="Numpy"):
-        if inType == "Numpy":
+    def __init__(self, values, colors, name=None, inType="Hypertrie"):
+        if inType == "Hypertrie":
+            self.values = values
+        elif inType == "Numpy":
             self.values_from_numpy(array=values)
         elif inType == "rdf":
             self.values_from_rdf(path=values)
-        else:
-            self.values = values
+
         self.colors = colors
         self.name = name
 
@@ -58,9 +59,11 @@ class TentrisContractor:
 
     def einsum(self):
         substring, coreOrder, colorDict, colorOrder = subc.get_substring(self.tentrisCores, self.openColors)
-        return TentrisCore(values=tentris.einsumsum(subscript=substring,
-                                                    operands=[self.tentrisCores[key].values for key in coreOrder]
-                                                    ),
+        with tentris.einsumsum(subscript=substring, operands=[self.tentrisCores[key].values for key in coreOrder]) as e:
+            resultValues = Hypertrie(dtype=float, depth=len(self.openColors))
+            e.try_extend_hypertrie(resultValues)
+
+        return TentrisCore(values=resultValues,
                            colors=[color for color in colorOrder if color in self.openColors],
                            inType="Hypertrie")
 
