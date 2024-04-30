@@ -1,9 +1,14 @@
 # knowledge/__init__.py
 
+from tnreason.knowledge.inductive import HybridLearner
 from tnreason.knowledge.deductive import HybridInferer
-from tnreason.knowledge.weight_estimation import EmpiricalDistribution, EntropyMaximizer
+
+from tnreason.knowledge.weight_estimation import EntropyMaximizer
+from tnreason.knowledge.empirical import EmpiricalDistribution
 from tnreason.knowledge.formula_boosting import FormulaBooster
 from tnreason.knowledge.batch_evaluation import KnowledgePropagator
+
+from tnreason.knowledge.knowledge_visualization import visualize_knowledge
 
 from tnreason import encoding
 
@@ -59,9 +64,9 @@ class HybridKnowledgeBase:
 
     def include(self, secondHybridKB):
         self.weightedFormulas = {**self.weightedFormulas,
-                                 **secondHybridKB.weightedFormulasDict}
+                                 **secondHybridKB.weightedFormulas}
         self.facts = {**self.facts,
-                      **secondHybridKB.factsDict}
+                      **secondHybridKB.facts}
         self.categoricalConstraints = {**self.categoricalConstraints,
                                        **secondHybridKB.categoricalConstraints}
         self.evidence = {**self.evidence,
@@ -77,3 +82,8 @@ class HybridKnowledgeBase:
             return {**encoding.create_formulas_cores(self.facts),
                     **encoding.create_evidence_cores(self.evidence),
                     **encoding.create_constraints(self.categoricalConstraints)}
+
+    def visualize(self, evidenceDict={}):
+        return visualize_knowledge(expressionsDict=self.weightedFormulas,
+                                       factsDict=self.facts,
+                                       evidenceDict=evidenceDict)

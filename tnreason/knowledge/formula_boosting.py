@@ -9,7 +9,9 @@ class FormulaBooster:
         self.knowledgeBase = knowledgeBase
         self.specDict = specDict
 
-    def find_candidate(self, architectureDict, sampleDf):
+    def find_candidate(self, sampleDf):
+        architectureDict = self.specDict["architecture"]
+
         networkCores = {**encoding.create_architecture(architectureDict)}
         importanceColors = encoding.find_atoms(architectureDict)
         importanceList = [({**encoding.create_data_cores(sampleDf, importanceColors)}, 1 / sampleDf.values.shape[0]),
@@ -47,6 +49,6 @@ class FormulaBooster:
 
 
     def test_candidate(self):
-        if "acceptanceCriterion" not in self.specDict:
+        if self.specDict["acceptanceCriterion"] == "always":
             return True
 
