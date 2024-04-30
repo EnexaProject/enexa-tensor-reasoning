@@ -3,12 +3,12 @@ import unittest
 from tnreason import encoding
 from tnreason import knowledge
 
-generatingKB = knowledge.HybridKnowledgeBase(weightedFormulas=
+generatingKB = knowledge.HybridInferer(knowledge.HybridKnowledgeBase(weightedFormulas=
 {
     "f1": ["imp","a","b", 2.567],
     "f2": ["imp","a","c", 2.222],
     "f3": ["a", 1.78]
-})
+}))
 
 sampleNum = 200
 sampleDf = generatingKB.create_sampleDf(sampleNum)

@@ -18,7 +18,7 @@ specDict = {
     "sweeps": 10
 }
 
-kb = knowledge.HybridInferer(weightedFormulas={
+kb = knowledge.HybridKnowledgeBase(weightedFormulas={
     "f1": [
         "eq",
         ["or", "a", "b"],
@@ -33,7 +33,8 @@ kb = knowledge.HybridInferer(weightedFormulas={
     ]
 })
 
-sampleDf = kb.create_sampleDf(10)
+sampleDf = knowledge.HybridInferer(kb).create_sampleDf(10)
 
 fBooster = knowledge.FormulaBooster(kb)
-print(fBooster.find_candidate(architectureDict, specDict, sampleDf))
+fBooster.find_candidate()
+

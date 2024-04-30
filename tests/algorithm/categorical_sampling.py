@@ -1,6 +1,6 @@
 from tnreason import knowledge
 
-hybridKB = knowledge.HybridKnowledgeBase(
+hybridKB = knowledge.HybridInferer(
     {},  # "f1":[["a1","and",["not","a3"]], 10]},
     facts={"fact1": ["a1", "or", "a2"]},
     categoricalConstraints={

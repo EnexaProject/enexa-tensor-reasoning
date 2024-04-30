@@ -1,7 +1,7 @@
 from tnreason import knowledge
 from tnreason import encoding
 
-generatingKB = knowledge.HybridKnowledgeBase(weightedFormulas=
+generatingKB = knowledge.HybridInferer(weightedFormulas=
 {
     "f1": ["imp","a","b", 2.567],
     "f2": ["imp","a","c", 2.222],
@@ -52,8 +52,8 @@ formuladict = {
 
 
 
-knowledge.HybridKnowledgeBase(weightedFormulas=formuladict)
-generatingKB = knowledge.HybridKnowledgeBase(weightedFormulas=
+knowledge.HybridInferer(weightedFormulas=formuladict)
+generatingKB = knowledge.HybridInferer(weightedFormulas=
 {
     "f1": ["imp","a","b", 2.567],
     "f2": ["imp","a","c", 2.222],

@@ -8,15 +8,14 @@ class KnowledgePropagator:
     def __init__(self, knowledgeBase, evidenceDict={}):
         self.atoms = knowledgeBase.atoms
         self.knowledgeCores = {
-            **encoding.create_formulas_cores({**knowledgeBase.weightedFormulasDict, **knowledgeBase.factsDict}),
-            **encoding.create_constraints(knowledgeBase.categoricalConstraintsDict),
+            **knowledgeBase.create_cores(),
             **encoding.create_evidence_cores(evidenceDict)}
 
         self.propagator = algorithms.ConstraintPropagator(binaryCoresDict=self.knowledgeCores)
 
         self.knownHeads = get_evidence_headKeys(evidenceDict) + [
-            encoding.get_formula_color(knowledgeBase.factsDict[key]) + headCoreSuffix for key in
-            knowledgeBase.factsDict]
+            encoding.get_formula_color(knowledgeBase.facts[key]) + headCoreSuffix for key in
+            knowledgeBase.facts]
 
     def evaluate(self, variables=None):
         if variables is None:

@@ -4,7 +4,7 @@ from tnreason.algorithms import constraint_propagation as cp
 
 import numpy as np
 
-hybridKB = knowledge.HybridKnowledgeBase(
+hybridKB = knowledge.HybridInferer(
     {},  # "f1":[["a1","and",["not","a3"]], 10]},
     facts={"funfact" : ["a6", "or", "a7"],
                 "fact1": ["a1", "xor", "a2"],

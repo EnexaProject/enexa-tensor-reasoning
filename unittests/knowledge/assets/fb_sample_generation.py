@@ -1,7 +1,7 @@
 from tnreason import knowledge
 from tnreason import encoding
 
-kb = knowledge.HybridKnowledgeBase(
+kb = knowledge.HybridInferer(
     **encoding.load_from_yaml("./fb_backKb.yaml")
 )
 

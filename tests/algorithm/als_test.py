@@ -9,7 +9,7 @@ targetDict = {
     "t2": cc.CoordinateCore(np.random.binomial(20, 0.8, size=(2, 2, 5)), ["a1", "b23", "c4"])
 }
 
-hybridKB = knowledge.HybridKnowledgeBase(
+hybridKB = knowledge.HybridInferer(
     {},  # "f1":[["a1","and",["not","a3"]], 10]},
     facts={"fact1": ["a1", "or", "a2"]},
     categoricalConstraints={

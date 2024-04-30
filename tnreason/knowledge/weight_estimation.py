@@ -5,7 +5,7 @@ import numpy as np
 
 
 class EntropyMaximizer:
-    def __init__(self, expressionsDict, satisfactionDict, backCores, contractionMethod="NumpyEinsum"):
+    def __init__(self, expressionsDict, satisfactionDict, backCores={}, contractionMethod="NumpyEinsum"):
         self.backCores = backCores
         self.expressionsDict = expressionsDict
         self.satisfactionDict = satisfactionDict
