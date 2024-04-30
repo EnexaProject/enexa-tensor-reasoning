@@ -60,7 +60,7 @@ class TentrisContractor:
     def einsum(self):
         substring, coreOrder, colorDict, colorOrder = subc.get_substring(self.tentrisCores, self.openColors)
         with tentris.einsumsum(subscript=substring, operands=[self.tentrisCores[key].values for key in coreOrder]) as e:
-            resultValues = Hypertrie(dtype=float, depth=len(self.openColors))
+            resultValues = Hypertrie(dtype=e.result_dtype, depth=e.result_depth)
             e.try_extend_hypertrie(resultValues)
 
         return TentrisCore(values=resultValues,
