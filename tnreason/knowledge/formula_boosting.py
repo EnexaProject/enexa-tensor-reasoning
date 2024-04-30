@@ -45,10 +45,10 @@ class FormulaBooster:
         else:
             raise ValueError("Sampling Method {} not known!".format(self.specDict["method"]))
 
-        self.candidate = encoding.create_solution_expression(architectureDict, solutionDict)
+        self.candidates = encoding.create_solution_expression(architectureDict, solutionDict)
 
 
-    def test_candidate(self):
+    def test_candidates(self):
         if self.specDict["acceptanceCriterion"] == "always":
             return True
 

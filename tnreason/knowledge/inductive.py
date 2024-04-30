@@ -12,24 +12,30 @@ class HybridLearner:
     def get_kb(self):
         return self.hybridKB
 
-    def boost_formula(self, specDict, sampleDf, stepName="boostStep"):
+    def boost_formula(self, specDict, sampleDf, stepName="_boostStep"):
         booster = fb.FormulaBooster(self.hybridKB, specDict)
         booster.find_candidate(sampleDf)
-        if booster.test_candidate():
+        print("Learned formulas: {}".format(booster.candidates))
+        if booster.test_candidates():
+            print("Accepted formulas.")
             self.hybridKB.include(
-                knowledge.HybridKnowledgeBase(weightedFormulas={stepName:
-                                                                    booster.candidate}))
+                knowledge.HybridKnowledgeBase(weightedFormulas={
+                    candidateKey + stepName: booster.candidates[candidateKey] + [0] for candidateKey in
+                    booster.candidates}))
             if "calibrationSweeps" not in specDict:
                 specDict["calibrationSweeps"] = 10
             self.calibrate_weights_on_data(specDict, sampleDf=sampleDf)
 
-
     def calibrate_weights_on_data(self, specDict, sampleDf, formulaKeys=None):
         if formulaKeys is None:
             formulaKeys = self.hybridKB.weightedFormulas.keys()
-        satDict = knowledge.EmpiricalDistribution(sampleDf).get_satisfactionDict({
-            key: self.hybridKB.weightedFormulas[key][:-1] for key in formulaKeys})
 
-        calibrator = wees.EntropyMaximizer(self.hybridKB, satisfactionDict=satDict)
+        tboFormulas = {
+            key: self.hybridKB.weightedFormulas[key][:-1] for key in formulaKeys}
+
+        satDict = knowledge.EmpiricalDistribution(sampleDf).get_satisfactionDict(tboFormulas)
+        calibrator = wees.EntropyMaximizer(expressionsDict=tboFormulas, satisfactionDict=satDict,
+                                           backCores=self.hybridKB.create_cores(hardOnly=True))
 
         solutionDict = calibrator.alternating_optimization(sweepNum=specDict["calibrationSweeps"])
+        print(solutionDict)

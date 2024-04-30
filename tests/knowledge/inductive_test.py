@@ -7,12 +7,14 @@ genKB = knowledge.HybridKnowledgeBase(facts={
 genKB.include(
     knowledge.HybridKnowledgeBase(
         weightedFormulas = {
-            "wf1" : ["imp", "a1", "a2", 2.1424]
+            "wf1" : ["imp", "a1", "a2", 12.1424]
         }
     )
 )
 sampleDf = knowledge.HybridInferer(genKB).create_sampleDf(10)
 
+
+print(sampleDf)
 
 learner = knowledge.HybridLearner(genKB)
 
