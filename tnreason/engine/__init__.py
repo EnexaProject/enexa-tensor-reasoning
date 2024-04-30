@@ -1,6 +1,9 @@
 from tnreason.engine.engine_visualization import draw_contractionDiagram
 
-def contract(coreDict, openColors, method="PgmpyVariableEliminator", outPut="NumpyTensorCore"):
+defaultCoreType="NumpyTensorCore"
+defaultContractionMethod = "PgmpyVariableEliminator"
+
+def contract(coreDict, openColors, method=defaultContractionMethod, outPut=defaultCoreType):
     if method == "NumpyEinsum":
         from tnreason.engine.numpy_contractor import NumpyEinsumContractor
         return NumpyEinsumContractor(coreDict=coreDict, openColors=openColors).contract()
