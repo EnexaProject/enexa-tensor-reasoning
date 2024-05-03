@@ -5,12 +5,8 @@ from tnreason.knowledge import formula_boosting as fb
 
 
 class HybridLearner:
-
     def __init__(self, startKB):
         self.hybridKB = startKB
-
-    def get_kb(self):
-        return self.hybridKB
 
     def boost_formula(self, specDict, sampleDf, stepName="_boostStep"):
         booster = fb.FormulaBooster(self.hybridKB, specDict)
@@ -34,10 +30,9 @@ class HybridLearner:
             key: self.hybridKB.weightedFormulas[key][:-1] for key in formulaKeys}
 
         empDistributionInferer = knowledge.InferenceProvider(knowledge.EmpiricalDistribution(sampleDf))
-        satDict = {empDistributionInferer.ask(tboFormulas[key]) for key in tboFormulas}
-
+        satDict = {key: empDistributionInferer.ask(tboFormulas[key]) for key in tboFormulas}
         calibrator = wees.EntropyMaximizer(expressionsDict=tboFormulas, satisfactionDict=satDict,
-                                           backCores=self.hybridKB.create_cores(hardOnly=True))
+                                           backCores=self.hybridKB.create_hard_cores())
 
         solutionDict = calibrator.alternating_optimization(sweepNum=specDict["calibrationSweeps"])
         print(solutionDict)

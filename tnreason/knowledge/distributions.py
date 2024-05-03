@@ -86,8 +86,11 @@ class HybridKnowledgeBase:
         return (engine.contract(coreDict=self.create_cores(), openColors=[]).values
                 * (2 ** unseenAtomNum))
 
+    def create_hard_cores(self):
+        return {**encoding.create_formulas_cores(self.facts),
+                **encoding.create_evidence_cores(self.evidence),
+                **encoding.create_constraints(self.categoricalConstraints)}
+
     def is_satisfiable(self):
-        return engine.contract(coreDict={**encoding.create_formulas_cores(self.facts),
-                                         **encoding.create_evidence_cores(self.evidence),
-                                         **encoding.create_constraints(self.categoricalConstraints)},
+        return engine.contract(coreDict=self.create_hard_cores(),
                                openColors=[]).values > 0

@@ -4,6 +4,9 @@ defaultCoreType="NumpyTensorCore"
 defaultContractionMethod = "PgmpyVariableEliminator"
 
 def contract(coreDict, openColors, method=defaultContractionMethod, outPut=defaultCoreType):
+    if len(coreDict)==0:
+        from tnreason.engine.numpy_contractor import EmptyCore
+        return EmptyCore()
     if method == "NumpyEinsum":
         from tnreason.engine.numpy_contractor import NumpyEinsumContractor
         return NumpyEinsumContractor(coreDict=coreDict, openColors=openColors).contract()
