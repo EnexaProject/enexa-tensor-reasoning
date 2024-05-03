@@ -5,10 +5,10 @@ with open('README.md', 'r') as f:
 
 setup(
     name="tnreason",
-    version="0.2.5",
+    version="1.0.0",
     author="Alex Goessmann",
     author_email="alex.goessmann@web.de",
-    description="A package for reasoning with tensors",
+    description="A package for reasoning based on encoding networks",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
@@ -29,5 +29,5 @@ setup(
     python_requires=">=3",
     license="AGPL-3.0",
     url="https://github.com/EnexaProject/enexa-tensor-reasoning",
-    keywords="inductive reasoning, tensor networks, alternating least squares, markov logic networks"
+    keywords="inductive reasoning, encoding networks, alternating least squares, markov logic networks"
 )

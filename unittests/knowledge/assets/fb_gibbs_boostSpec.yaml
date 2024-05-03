@@ -1,0 +1,9 @@
+annealingPattern:
+- - 10
+  - 1
+- - 10
+  - 10
+- - 10
+  - 100
+method: gibbs
+sweeps: 20
