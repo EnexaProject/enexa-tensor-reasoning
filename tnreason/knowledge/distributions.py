@@ -1,8 +1,6 @@
 from tnreason import encoding
 from tnreason import engine
 
-from tnreason.knowledge import batch_evaluation as be
-
 probFormulasKey = "weightedFormulas"
 logFormulasKey = "facts"
 categoricalsKey = "categoricalConstraints"
@@ -19,16 +17,6 @@ class EmpiricalDistribution:
 
     def create_cores(self):
         return encoding.create_data_cores(self.sampleDf, self.atoms)
-
-    def get_empirical_satisfaction(self, expression):
-        return engine.contract(method="NumpyEinsum",
-                               coreDict={**self.create_cores(), **encoding.create_raw_formula_cores(expression)},
-                               openColors=[encoding.get_formula_color(expression)]).values[1] / (
-            self.get_partition_function(
-                list(encoding.get_atoms(expression))))
-
-    def get_satisfactionDict(self, expressionsDict):
-        return {key: self.get_empirical_satisfaction(expressionsDict[key]) for key in expressionsDict}
 
     def get_partition_function(self, allAtoms=[]):
         unseenAtomNum = len([atom for atom in allAtoms if atom not in self.atoms])
@@ -103,7 +91,3 @@ class HybridKnowledgeBase:
                                          **encoding.create_evidence_cores(self.evidence),
                                          **encoding.create_constraints(self.categoricalConstraints)},
                                openColors=[]).values > 0
-
-    def evaluate_evidence(self, evidenceDict):
-        propagator = be.KnowledgePropagator(self, evidenceDict=evidenceDict)
-        return propagator.evaluate()

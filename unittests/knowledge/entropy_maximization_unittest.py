@@ -17,7 +17,8 @@ sampleDf = generatingKB.draw_samples(sampleNum)
 class EntropyMaximationTest(unittest.TestCase):
     def test_convergence(self):
         expressionsDict = {"f1": ["imp","a","b"], "f2": ["imp","a","c"], "f3": ["a"]}
-        satisfactionDict = knowledge.EmpiricalDistribution(sampleDf).get_satisfactionDict(expressionsDict)
+        inferer = knowledge.InferenceProvider(knowledge.EmpiricalDistribution(sampleDf))
+        satisfactionDict = {key: inferer.ask(expressionsDict[key]) for key in expressionsDict}
 
         entropyMaximizer = knowledge.EntropyMaximizer(expressionsDict, satisfactionDict=satisfactionDict, backCores={})
         values = entropyMaximizer.alternating_optimization(sweepNum=10)
@@ -26,7 +27,9 @@ class EntropyMaximationTest(unittest.TestCase):
 
     def test_backCores(self):
         expressionsDict = {"f1": ["imp","a","b"], "f2": ["imp","a","c"], "f3": ["a"]}
-        satisfactionDict = knowledge.EmpiricalDistribution(sampleDf).get_satisfactionDict(expressionsDict)
+        inferer = knowledge.InferenceProvider(knowledge.EmpiricalDistribution(sampleDf))
+        satisfactionDict = {key: inferer.ask(expressionsDict[key]) for key in expressionsDict}
+
         entropyMaximizer = knowledge.EntropyMaximizer(expressionsDict, satisfactionDict=satisfactionDict,
                                                       backCores=encoding.create_formulas_cores({
                                                           "fact1" : ["imp","a","b"]

@@ -50,11 +50,12 @@ class HybridKBTest(unittest.TestCase):
         self.assertEqual(1,
                          knowledge.InferenceProvider(kb).query(["a1"], evidenceDict={"a1": 1}).values[1])
         self.assertEqual(0.5,
-                         knowledge.InferenceProvider(knowledge.HybridKnowledgeBase()).query(["a1"], evidenceDict={}).values[
+                         knowledge.InferenceProvider(knowledge.HybridKnowledgeBase()).query(["a1"],
+                                                                                            evidenceDict={}).values[
                              1])
         self.assertEqual(0.125,
                          knowledge.InferenceProvider(knowledge.HybridKnowledgeBase()).query(["a1", "a3", "a2"],
-                                                                                        evidenceDict={}).values[
+                                                                                            evidenceDict={}).values[
                              1, 0, 1])
 
     ## Sampling on facts tests
@@ -168,7 +169,7 @@ class HybridKBTest(unittest.TestCase):
             weightedFormulas={"f1": ["a1", 2]},
             facts={"constraint1": ["imp", "a1", "a2"]}
         )
-        entailedDict = hybridKB.evaluate_evidence({"a1": 0, "a2": 1})
+        entailedDict = knowledge.KnowledgePropagator(hybridKB, evidenceDict={"a1": 0, "a2": 1}).evaluate()
         self.assertTrue(entailedDict["a1"] == 0)
         self.assertTrue(entailedDict["a2"] == 1)
         self.assertTrue(entailedDict["(imp_a1_a2)"] == 1)

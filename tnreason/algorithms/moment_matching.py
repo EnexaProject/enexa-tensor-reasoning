@@ -60,7 +60,7 @@ def solve_moment_equation(satVect, empVect):
 
     refPos = find_common_nonzero(satVect, empVect)
     if refPos == -1:
-        print("Warning: Moments cannot be machted!")
+        print("Warning: Moments cannot be matched!")
         return solVect
 
     for i in range(satVect.shape[0]):
