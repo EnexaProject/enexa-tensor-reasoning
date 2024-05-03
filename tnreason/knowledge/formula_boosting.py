@@ -1,6 +1,8 @@
 from tnreason import algorithms
 from tnreason import encoding
-from tnreason import engine
+
+from tnreason.knowledge import distributions
+
 parameterCoreSuffix = "_parCore"
 
 
@@ -12,11 +14,14 @@ class FormulaBooster:
     def find_candidate(self, sampleDf):
         architectureDict = self.specDict["architecture"]
 
-        networkCores = {**encoding.create_architecture(architectureDict)}
+        networkCores = encoding.create_architecture(architectureDict)
         importanceColors = encoding.find_atoms(architectureDict)
-        importanceList = [({**encoding.create_data_cores(sampleDf, importanceColors)}, 1 / sampleDf.values.shape[0]),
-                          ({**self.knowledgeBase.create_cores()}, -1 /
-                           engine.contract(coreDict=self.knowledgeBase.create_cores(), openColors=[]).values)]
+
+        empiricalDistribution = distributions.EmpiricalDistribution(sampleDf, importanceColors)
+
+        importanceList = [
+            (empiricalDistribution.create_cores(), 1 / empiricalDistribution.get_partition_function(importanceColors)),
+            (self.knowledgeBase.create_cores(), -1 / self.knowledgeBase.get_partition_function(importanceColors))]
 
         colorDims = encoding.find_selection_dimDict(architectureDict)
         updateShapes = {key + parameterCoreSuffix: colorDims[key] for key in colorDims}
@@ -47,8 +52,6 @@ class FormulaBooster:
 
         self.candidates = encoding.create_solution_expression(architectureDict, solutionDict)
 
-
     def test_candidates(self):
         if self.specDict["acceptanceCriterion"] == "always":
             return True
-

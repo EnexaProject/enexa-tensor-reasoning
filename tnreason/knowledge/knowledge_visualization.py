@@ -4,12 +4,13 @@ from matplotlib import pyplot as plt
 from tnreason import encoding
 
 
-def visualize_knowledge(expressionsDict={},
-                        factsDict={},
-                        categoricalConstraints={},
-                        evidenceDict={},
-                        title="Visualization of the Knowledge Base",
-                        savePath=None):
+def visualize(hybridKB, title="Visualization of the Knowledge Base",
+              savePath=None):
+    expressionsDict = hybridKB.weightedFormulas
+    factsDict = hybridKB.facts
+    categoricalConstraints = hybridKB.categoricalConstraints
+    evidenceDict = hybridKB.evidence
+
     graph, pos, atoms = visualize_subexpressions(expressionsDict=expressionsDict, factsDict=factsDict,
                                                  categoricalConstraints=categoricalConstraints,
                                                  evidenceDict=evidenceDict)
@@ -17,16 +18,16 @@ def visualize_knowledge(expressionsDict={},
 
 
 def visualize_with_differing_evidence(expressionsDict={},
-                        factsDict={},
-                        categoricalConstraints={},
-                        evidenceList=[],
-                        title="Visualization of the Knowledge Base",
-                        saveBasePath="../../tests/visualization"):
+                                      factsDict={},
+                                      categoricalConstraints={},
+                                      evidenceList=[],
+                                      title="Visualization of the Knowledge Base",
+                                      saveBasePath="../../tests/visualization"):
     graph, pos, atoms = visualize_subexpressions(expressionsDict=expressionsDict, factsDict=factsDict,
                                                  categoricalConstraints=categoricalConstraints,
                                                  evidenceDict={})
     for i, evidenceDict in enumerate(evidenceList):
-        draw_with_evidence(graph, pos, evidenceDict, atoms, title=title, savePath=saveBasePath+str(i)+".png")
+        draw_with_evidence(graph, pos, evidenceDict, atoms, title=title, savePath=saveBasePath + str(i) + ".png")
 
 
 def get_edges_and_positions(expression):
@@ -156,6 +157,6 @@ def get_symbol(expressionString):
 if __name__ == "__main__":
     visualize_with_differing_evidence(
         expressionsDict={"e1": ["not", ["and", "b", "c"], 2]},
-                        factsDict={"f1": ["c"]},
-                        categoricalConstraints={"c1": ["e", "c"]},
-                        evidenceList=[{"c":0},{"c":1,"e":0}])
+        factsDict={"f1": ["c"]},
+        categoricalConstraints={"c1": ["e", "c"]},
+        evidenceList=[{"c": 0}, {"c": 1, "e": 0}])

@@ -63,6 +63,10 @@ class Gibbs:
                                 method=self.contractionMethod).multiply(weight))
         flattened = updateDistribution.values.flatten()
 
+        for i in range(flattened.shape[0]):
+            if flattened[i] < 0:
+                flattened[i] = 0
+
         if np.sum(flattened) <= 0:
             localProb = np.ones(shape=flattened.shape) / flattened.shape[0]
             print("Vanishing prob for update of core {}!".format(updateKey))
