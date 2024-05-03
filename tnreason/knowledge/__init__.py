@@ -1,7 +1,7 @@
 # knowledge/__init__.py
 
 from tnreason.knowledge.inductive import HybridLearner
-from tnreason.knowledge.deductive import HybridInferer
+from tnreason.knowledge.deductive import InferenceProvider
 
 from tnreason.knowledge.weight_estimation import EntropyMaximizer
 from tnreason.knowledge.distributions import HybridKnowledgeBase, EmpiricalDistribution

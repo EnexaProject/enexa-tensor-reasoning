@@ -3,7 +3,7 @@ import unittest
 from tnreason import encoding
 from tnreason import knowledge
 
-generatingKB = knowledge.HybridInferer(knowledge.HybridKnowledgeBase(weightedFormulas=
+generatingKB = knowledge.InferenceProvider(knowledge.HybridKnowledgeBase(weightedFormulas=
 {
     "f1": ["imp","a","b", 2.567],
     "f2": ["imp","a","c", 2.222],
@@ -11,7 +11,7 @@ generatingKB = knowledge.HybridInferer(knowledge.HybridKnowledgeBase(weightedFor
 }))
 
 sampleNum = 200
-sampleDf = generatingKB.create_sampleDf(sampleNum)
+sampleDf = generatingKB.draw_samples(sampleNum)
 
 
 class EntropyMaximationTest(unittest.TestCase):

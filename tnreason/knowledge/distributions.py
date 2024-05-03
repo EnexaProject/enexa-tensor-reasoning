@@ -1,11 +1,13 @@
 from tnreason import encoding
 from tnreason import engine
 
+from tnreason.knowledge import batch_evaluation as be
 
 probFormulasKey = "weightedFormulas"
 logFormulasKey = "facts"
 categoricalsKey = "categoricalConstraints"
 evidenceKey = "evidence"
+
 
 class EmpiricalDistribution:
     def __init__(self, sampleDf, atomKeys=None):
@@ -81,18 +83,22 @@ class HybridKnowledgeBase:
                          **secondHybridKB.evidence}
         self.find_atoms()
 
-    def create_cores(self, hardOnly=False):
-        if hardOnly:
-            return {**encoding.create_formulas_cores(self.facts),
+    def create_cores(self):
+        return {**encoding.create_formulas_cores({**self.weightedFormulas, **self.facts}),
                     **encoding.create_evidence_cores(self.evidence),
                     **encoding.create_constraints(self.categoricalConstraints)}
-        else:
-            return {**encoding.create_formulas_cores({**self.weightedFormulas, **self.facts}),
-                    **encoding.create_evidence_cores(self.evidence),
-                    **encoding.create_constraints(self.categoricalConstraints)}
-
 
     def get_partition_function(self, allAtoms=[]):
         unseenAtomNum = len([atom for atom in allAtoms if atom not in self.atoms])
         return (engine.contract(coreDict=self.create_cores(), openColors=[]).values
                 * (2 ** unseenAtomNum))
+
+    def is_satisfiable(self):
+        return engine.contract(coreDict={**encoding.create_formulas_cores(self.facts),
+                                         **encoding.create_evidence_cores(self.evidence),
+                                         **encoding.create_constraints(self.categoricalConstraints)},
+                               openColors=[]).values > 0
+
+    def evaluate_evidence(self, evidenceDict):
+        propagator = be.KnowledgePropagator(self.distribution, evidenceDict=evidenceDict)
+        return propagator.evaluate()
