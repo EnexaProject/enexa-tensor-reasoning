@@ -13,9 +13,9 @@ class EmpiricalDistribution:
     def __init__(self, sampleDf, atomKeys=None):
         if atomKeys is None:
             atomKeys = list(sampleDf.columns)
+        self.atoms = atomKeys
         self.sampleDf = sampleDf
         self.dataNum = sampleDf.values.shape[0]
-        self.atoms = atomKeys
 
     def create_cores(self):
         return encoding.create_data_cores(self.sampleDf, self.atoms)
@@ -24,7 +24,8 @@ class EmpiricalDistribution:
         return engine.contract(method="NumpyEinsum",
                                coreDict={**self.create_cores(), **encoding.create_raw_formula_cores(expression)},
                                openColors=[encoding.get_formula_color(expression)]).values[1] / (
-            self.get_partition_function(encoding.get_variables(expression)))
+            self.get_partition_function(
+                list(encoding.get_atoms(expression))))
 
     def get_satisfactionDict(self, expressionsDict):
         return {key: self.get_empirical_satisfaction(expressionsDict[key]) for key in expressionsDict}
@@ -44,7 +45,9 @@ class HybridKnowledgeBase:
         self.find_atoms()
 
     def find_atoms(self):
-        self.atoms = encoding.get_all_variables({**self.weightedFormulas, **self.facts})
+        self.atoms = encoding.get_all_atoms(
+            {**{key: self.weightedFormulas[key][:-1] for key in self.weightedFormulas},
+             **self.facts})
         for constraintKey in self.categoricalConstraints:
             for atom in self.categoricalConstraints[constraintKey]:
                 if atom not in self.atoms:
@@ -52,6 +55,7 @@ class HybridKnowledgeBase:
         for eKey in self.evidence:
             if eKey not in self.atoms:
                 self.atoms.append(eKey)
+        self.atoms = list(self.atoms)
 
     def from_yaml(self, loadPath):
         modelSpec = encoding.load_from_yaml(loadPath)
@@ -63,6 +67,7 @@ class HybridKnowledgeBase:
             self.categoricalConstraints = modelSpec[categoricalsKey]
         if evidenceKey in modelSpec:
             self.evidence = modelSpec[evidenceKey]
+        self.find_atoms()
 
     def to_yaml(self, savePath):
         encoding.storage.save_as_yaml({
@@ -85,8 +90,8 @@ class HybridKnowledgeBase:
 
     def create_cores(self):
         return {**encoding.create_formulas_cores({**self.weightedFormulas, **self.facts}),
-                    **encoding.create_evidence_cores(self.evidence),
-                    **encoding.create_constraints(self.categoricalConstraints)}
+                **encoding.create_evidence_cores(self.evidence),
+                **encoding.create_constraints(self.categoricalConstraints)}
 
     def get_partition_function(self, allAtoms=[]):
         unseenAtomNum = len([atom for atom in allAtoms if atom not in self.atoms])
@@ -100,5 +105,5 @@ class HybridKnowledgeBase:
                                openColors=[]).values > 0
 
     def evaluate_evidence(self, evidenceDict):
-        propagator = be.KnowledgePropagator(self.distribution, evidenceDict=evidenceDict)
+        propagator = be.KnowledgePropagator(self, evidenceDict=evidenceDict)
         return propagator.evaluate()

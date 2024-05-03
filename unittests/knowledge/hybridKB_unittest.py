@@ -164,10 +164,10 @@ class HybridKBTest(unittest.TestCase):
         self.assertEqual(3, len(hybridKB.annealed_sample(["fun1", "fun4", "fun5"])))
 
     def test_evidence_evaluation(self):
-        hybridKB = knowledge.InferenceProvider(knowledge.HybridKnowledgeBase(
+        hybridKB = knowledge.HybridKnowledgeBase(
             weightedFormulas={"f1": ["a1", 2]},
             facts={"constraint1": ["imp", "a1", "a2"]}
-        ))
+        )
         entailedDict = hybridKB.evaluate_evidence({"a1": 0, "a2": 1})
         self.assertTrue(entailedDict["a1"] == 0)
         self.assertTrue(entailedDict["a2"] == 1)
