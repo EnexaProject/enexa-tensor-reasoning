@@ -1,15 +1,10 @@
 from tnreason import engine
 from tnreason import encoding
 
-from tnreason.encoding import formulas
-
-momentCoreSuffix = formulas.headCoreSuffix
-targetCoreSuffix = "_targetCore"
-
-defaultCoreType = "NumpyTensorCore"
-
 import numpy as np
 
+momentCoreSuffix = encoding.headCoreSuffix
+targetCoreSuffix = "_targetCore"
 
 class MomentMatcher:
     def __init__(self, networkCores, targetCores):

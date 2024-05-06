@@ -4,16 +4,22 @@ from tnreason import algorithms
 
 import pandas as pd
 
-defaultContractionMethod = "PgmpyVariableEliminator"
-
 entailedString = "entailed"
 contradictingString = "contradicting"
 contingentString = "contingent"
 
 
 class InferenceProvider:
-    def __init__(self, distribution):
+    """
+    Answering queries on a distribution by contracting its cores.
+    """
+
+    def __init__(self, distribution, contractionMethod=engine.defaultContractionMethod):
+        """
+        * distribution: Needs to support create_cores() and get_partition_function()
+        """
         self.distribution = distribution
+        self.contractionMethod = contractionMethod
 
     def ask_constraint(self, constraint):
         probability = self.ask(constraint, evidenceDict={})
@@ -24,7 +30,7 @@ class InferenceProvider:
         else:
             return contingentString
 
-    def ask(self, queryFormula, evidenceDict={}, contractionMethod=defaultContractionMethod):
+    def ask(self, queryFormula, evidenceDict={}):
 
         contracted = engine.contract(
             coreDict={
@@ -32,12 +38,12 @@ class InferenceProvider:
                 **encoding.create_evidence_cores(evidenceDict),
                 **encoding.create_raw_formula_cores(queryFormula)
             },
-            method=contractionMethod, openColors=[encoding.get_formula_color(queryFormula)]).values
+            method=self.contractionMethod, openColors=[encoding.get_formula_color(queryFormula)]).values
 
         return contracted[1] / (contracted[0] + contracted[1])
 
-    def query(self, variableList, evidenceDict={}, contractionMethod=defaultContractionMethod):
-        return engine.contract(method=contractionMethod, coreDict={
+    def query(self, variableList, evidenceDict={}):
+        return engine.contract(method=self.contractionMethod, coreDict={
             **self.distribution.create_cores(),
             **encoding.create_emptyCoresDict([variable for variable in variableList if
                                               variable not in self.distribution.atoms and variable not in evidenceDict]),

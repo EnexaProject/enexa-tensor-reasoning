@@ -1,10 +1,16 @@
 from tnreason.engine.engine_visualization import draw_contractionDiagram
 
-defaultCoreType="NumpyTensorCore"
+defaultCoreType = "NumpyTensorCore"
 defaultContractionMethod = "PgmpyVariableEliminator"
 
+
 def contract(coreDict, openColors, method=defaultContractionMethod, outPut=defaultCoreType):
-    if len(coreDict)==0:
+    """
+    Contractors are initialized with
+        * coreDict: Dictionary of colored tensor cores specifying a network
+        * openColors: List of colors to leave open in the contraction
+    """
+    if len(coreDict) == 0:
         from tnreason.engine.numpy_contractor import EmptyCore
         return EmptyCore()
     if method == "NumpyEinsum":
@@ -18,11 +24,9 @@ def contract(coreDict, openColors, method=defaultContractionMethod, outPut=defau
         from tnreason.engine.torch_contractor import TorchContractor
         if outPut == "NumpyTensorCore":
             return TorchContractor(coreDict=coreDict, openColors=openColors).einsum().to_NumpyTensorCore()
-
     elif method == "PgmpyVariableEliminator":
         from tnreason.engine.pgmpy_contractor import PgmpyVariableEliminator
         return PgmpyVariableEliminator(coreDict=coreDict, openColors=openColors).contract()
-
     else:
         raise ValueError("Contractor Type {} not supported with Output {}.".format(method, outPut))
 

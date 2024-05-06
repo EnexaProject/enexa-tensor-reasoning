@@ -5,7 +5,13 @@ import numpy as np
 
 
 class EntropyMaximizer:
-    def __init__(self, expressionsDict, satisfactionDict, backCores={}, contractionMethod="NumpyEinsum"):
+    """
+    Optimizes the weights of weighted formulas based on an entropy maximization principle.
+    Independent implementation of the special case of two-dimensional exponentiated weights of algorithms.MomentMatcher
+    """
+
+    def __init__(self, expressionsDict, satisfactionDict, backCores={},
+                 contractionMethod=engine.defaultContractionMethod):
         self.backCores = backCores
         self.expressionsDict = expressionsDict
         self.satisfactionDict = satisfactionDict
@@ -49,7 +55,8 @@ class EntropyMaximizer:
         negValue, posValue = engine.contract(method=self.contractionMethod,
                                              coreDict={**self.backCores,
                                                        **{key: self.formulaCores[key] for key in self.formulaCores if
-                                                          key != optColor + "_headCore"}}, openColors=[optColor]).values
+                                                          key != optColor + encoding.headCoreSuffix}},
+                                             openColors=[optColor]).values
         if negValue != 0 and posValue != 0:
             return np.log((negValue / posValue) * (empRate / (1 - empRate)))
         elif negValue == 0 or posValue == 0:

@@ -3,13 +3,9 @@ from tnreason import encoding
 
 import numpy as np
 
-defaultContractionMethod = "PgmpyVariableEliminator"
-defaultCoreType = "NumpyTensorCore"
-
-
 class ALS:
     def __init__(self, networkCores, importanceColors=[], importanceList=[({}, 1)],
-                 contractionMethod=defaultContractionMethod, targetCores={}):
+                 contractionMethod=engine.defaultContractionMethod, targetCores={}):
         self.networkCores = networkCores
 
         self.importanceColors = importanceColors
@@ -20,7 +16,7 @@ class ALS:
 
         self.trivialKeys = [] # Keys with single position, trivial in the sense that they will not be updated
 
-    def random_initialize(self, updateKeys, shapesDict={}, colorsDict={}, coreType=defaultCoreType):
+    def random_initialize(self, updateKeys, shapesDict={}, colorsDict={}):
         for updateKey in updateKeys:
             if updateKey in self.networkCores:
                 upShape = self.networkCores[updateKey].values.shape
@@ -30,11 +26,11 @@ class ALS:
                 upShape = shapesDict[updateKey]
                 upColors = colorsDict[updateKey]
             if np.prod(upShape) > 1:
-                self.networkCores[updateKey] = engine.get_core(coreType)(np.random.random(size=upShape), upColors,
+                self.networkCores[updateKey] = engine.get_core()(np.random.random(size=upShape), upColors,
                                                                          updateKey)
             else:
                 self.trivialKeys.append(updateKey)
-                self.networkCores[updateKey] = engine.get_core(coreType)(np.ones(shape=upShape), upColors,
+                self.networkCores[updateKey] = engine.get_core()(np.ones(shape=upShape), upColors,
                                                                          updateKey)
 
     def alternating_optimization(self, updateKeys, sweepNum=10, computeResiduum=False):
@@ -55,13 +51,12 @@ class ALS:
                 updateKeys}
 
     def compute_conOperator(self, updateColors, updateShape, importanceCores={}, weight=1):
-        trivialCores = encoding.create_emptyCoresDict(
-            updateColors + [updateColor + "_out" for updateColor in updateColors],
-            varDimDict={**{color: updateShape[i] for i, color in enumerate(updateColors)},
-                        **{color + "_out": updateShape[i] for i, color in enumerate(updateColors)}
-                        },
-            coreType=defaultCoreType
-        )
+        # trivialCores = encoding.create_emptyCoresDict(
+        #     updateColors + [updateColor + "_out" for updateColor in updateColors],
+        #     varDimDict={**{color: updateShape[i] for i, color in enumerate(updateColors)},
+        #                 **{color + "_out": updateShape[i] for i, color in enumerate(updateColors)}
+        #                 },
+        # )
 
         return engine.contract(method=self.contractionMethod,
                                coreDict={
@@ -83,7 +78,7 @@ class ALS:
                                                                                 enumerate(updateColors)})
                                }, openColors=updateColors).multiply(weight)
 
-    def optimize_core(self, updateKey, coreType=defaultCoreType):
+    def optimize_core(self, updateKey):
         tbUpdated = self.networkCores.pop(updateKey)
         updateColors = tbUpdated.colors
         updateShape = tbUpdated.values.shape
@@ -105,7 +100,7 @@ class ALS:
 
         solution, res, rank, s = np.linalg.lstsq(flattenedOperator, flattenedTarget, rcond=None)
 
-        self.networkCores[updateKey] = engine.get_core(coreType)(solution.reshape(updateShape), updateColors, updateKey)
+        self.networkCores[updateKey] = engine.get_core()(solution.reshape(updateShape), updateColors, updateKey)
     def compute_residuum(self):
         prediction = engine.contract(method=self.contractionMethod, coreDict=
         self.networkCores, openColors=self.importanceColors

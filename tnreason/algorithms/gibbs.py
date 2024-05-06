@@ -2,13 +2,10 @@ from tnreason import engine
 
 import numpy as np
 
-defaultContractionMethod = "PgmpyVariableEliminator"
-defaultCoreType = "NumpyTensorCore"
-
 
 class Gibbs:
     def __init__(self, networkCores, importanceColors=[], importanceList=[({}, 1)],
-                 contractionMethod=defaultContractionMethod):
+                 contractionMethod=engine.defaultContractionMethod):
         self.networkCores = networkCores
 
         self.importanceColors = importanceColors
@@ -23,8 +20,8 @@ class Gibbs:
                 print("Warning: Key {} has been reinitialized in Gibbs!".format(updateKey))
             upShape = shapesDict[updateKey]
             upColors = colorsDict[updateKey]
-            self.networkCores[updateKey] = engine.get_core(defaultCoreType)(np.random.random(size=upShape), upColors,
-                                                                            updateKey)
+            self.networkCores[updateKey] = engine.get_core()(np.random.random(size=upShape), upColors,
+                                                             updateKey)
 
     def alternating_sampling(self, updateKeys, sweepNum=10, temperature=1):
         positions = np.empty(shape=(sweepNum, len(updateKeys)))
@@ -48,17 +45,17 @@ class Gibbs:
         updateShape = tbUpdated.values.shape
 
         updateDistribution = engine.contract({**self.networkCores, **self.importanceList[0][0],
-                                              "trivCore": engine.get_core(defaultCoreType)(np.ones(shape=updateShape),
-                                                                                           updateColors,
-                                                                                           name="trivCore")},
+                                              "trivCore": engine.get_core()(np.ones(shape=updateShape),
+                                                                            updateColors,
+                                                                            name="trivCore")},
                                              openColors=updateColors,
                                              method=self.contractionMethod).multiply(self.importanceList[0][1])
         updateDistribution.reorder_colors(updateColors)
         for importanceCores, weight in self.importanceList[1:]:
             updateDistribution = updateDistribution.sum_with(
                 engine.contract({**self.networkCores, **importanceCores,
-                                 "trivCore": engine.get_core(defaultCoreType)(np.ones(shape=updateShape),
-                                                                              updateColors, name="trivCore")},
+                                 "trivCore": engine.get_core()(np.ones(shape=updateShape),
+                                                               updateColors, name="trivCore")},
                                 updateColors,
                                 method=self.contractionMethod).multiply(weight))
         flattened = updateDistribution.values.flatten()
@@ -79,5 +76,5 @@ class Gibbs:
         newCore = np.zeros(shape=(np.prod(updateShape)))
         pos = np.where(np.random.multinomial(1, localProb) == 1)[0][0]
         newCore[pos] = 1
-        self.networkCores[updateKey] = engine.get_core(defaultCoreType)(newCore, updateColors)
+        self.networkCores[updateKey] = engine.get_core()(newCore, updateColors)
         return pos

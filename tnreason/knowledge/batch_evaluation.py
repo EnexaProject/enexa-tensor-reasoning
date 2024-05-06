@@ -1,10 +1,11 @@
 from tnreason import encoding
-from tnreason.encoding.formulas import headCoreSuffix
-
 from tnreason import algorithms
 
 
 class KnowledgePropagator:
+    """
+    Evaluates formulas by constraint propagation.
+    """
     def __init__(self, knowledgeBase, evidenceDict={}):
         self.atoms = knowledgeBase.atoms
         self.knowledgeCores = {
@@ -14,7 +15,7 @@ class KnowledgePropagator:
         self.propagator = algorithms.ConstraintPropagator(binaryCoresDict=self.knowledgeCores)
 
         self.knownHeads = get_evidence_headKeys(evidenceDict) + [
-            encoding.get_formula_color(knowledgeBase.facts[key]) + headCoreSuffix for key in
+            encoding.get_formula_color(knowledgeBase.facts[key]) + encoding.headCoreSuffix for key in
             knowledgeBase.facts]
 
     def evaluate(self, variables=None):
@@ -34,8 +35,8 @@ class KnowledgePropagator:
 
 
 def get_evidence_headKeys(evidenceDict):
-    return [encoding.get_formula_color(key) + headCoreSuffix for key in evidenceDict if
+    return [encoding.get_formula_color(key) + encoding.headCoreSuffix for key in evidenceDict if
             evidenceDict[key]] + [
-        encoding.get_formula_color(["not", key]) + headCoreSuffix for key in evidenceDict if
+        encoding.get_formula_color(["not", key]) + encoding.headCoreSuffix for key in evidenceDict if
         not evidenceDict[key]
     ]
