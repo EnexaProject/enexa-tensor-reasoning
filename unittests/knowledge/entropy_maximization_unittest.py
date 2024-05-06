@@ -21,9 +21,9 @@ class EntropyMaximationTest(unittest.TestCase):
         satisfactionDict = {key: inferer.ask(expressionsDict[key]) for key in expressionsDict}
 
         entropyMaximizer = knowledge.EntropyMaximizer(expressionsDict, satisfactionDict=satisfactionDict, backCores={})
-        values = entropyMaximizer.alternating_optimization(sweepNum=10)
-        for key in values:
-            self.assertGreaterEqual(0.1, abs(values[key][-1] - values[key][-2]))
+        weights, facts = entropyMaximizer.alternating_optimization(sweepNum=10)
+        for key in weights:
+            self.assertGreaterEqual(0.1, abs(weights[key][-1] - weights[key][-2]))
 
     def test_backCores(self):
         expressionsDict = {"f1": ["imp","a","b"], "f2": ["imp","a","c"], "f3": ["a"]}
@@ -34,7 +34,7 @@ class EntropyMaximationTest(unittest.TestCase):
                                                       backCores=encoding.create_formulas_cores({
                                                           "fact1" : ["imp","a","b"]
                                                       }))
-        values = entropyMaximizer.alternating_optimization(sweepNum=2)
+        weights, facts = entropyMaximizer.alternating_optimization(sweepNum=2)
 
-        self.assertEqual(0, values["f1"][0])
-        self.assertEqual(0, values["f1"][1])
+        self.assertEqual(0, weights["f1"][0])
+        self.assertEqual(0, weights["f1"][1])

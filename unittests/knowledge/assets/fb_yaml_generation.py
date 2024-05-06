@@ -24,8 +24,8 @@ encoding.save_as_yaml(modelSpec={
 
 architecture = {
     "neur1": [["imp", "eq"],
-              ["a1", "a2"],
-              ["a1", "a2"]
+              ["a1","a2"],
+              ["a3", "a2"]
               ],
     "neur2": [["not", "id"],
               ["neur1", "a2"],

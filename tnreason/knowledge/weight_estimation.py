@@ -19,6 +19,7 @@ class EntropyMaximizer:
         self.contractionMethod = contractionMethod
 
     def alternating_optimization(self, sweepNum=10, updateKeys=None):
+        factsDict = {}
         if updateKeys is None:
             updateKeys = list(self.satisfactionDict.keys())
         for optKey in updateKeys:
@@ -27,20 +28,21 @@ class EntropyMaximizer:
                 self.formulaCores.update(
                     encoding.create_headCore(self.expressionsDict[optKey], headType="falseEvaluation"))
                 print("Formula {} is never satisfied.".format(self.expressionsDict[optKey]))
+                factsDict[optKey] = 0
             elif self.satisfactionDict[optKey] == 1:
                 updateKeys.remove(optKey)
                 self.formulaCores.update(
                     encoding.create_headCore(self.expressionsDict[optKey], headType="truthEvaluation"))
                 print("Formula {} is always satisfied.".format(self.expressionsDict[optKey]))
-
-        solutionDict = {key: [] for key in updateKeys}
+                factsDict[optKey] = 1
+        weightDict = {key: [] for key in updateKeys}
         for sweep in range(sweepNum):
             for optKey in updateKeys:
                 local_weight = self.local_condition_satisfier(optKey, self.satisfactionDict[optKey])
-                solutionDict[optKey].append(local_weight)
+                weightDict[optKey].append(local_weight)
                 self.formulaCores.update(encoding.create_headCore(self.expressionsDict[optKey], headType="expFactor",
                                                                   weight=local_weight))
-        return solutionDict
+        return weightDict, factsDict
 
     def local_condition_satisfier(self, optKey, empRate):
         optColor = encoding.get_formula_color(self.expressionsDict[optKey])

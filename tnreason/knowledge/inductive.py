@@ -8,6 +8,9 @@ class HybridLearner:
     def __init__(self, startKB):
         self.hybridKB = startKB
 
+    def get_knowledge_base(self):
+        return self.hybridKB
+
     def boost_formula(self, specDict, sampleDf, stepName="_boostStep"):
         booster = fb.FormulaBooster(self.hybridKB, specDict)
         booster.find_candidate(sampleDf)
@@ -34,5 +37,10 @@ class HybridLearner:
         calibrator = wees.EntropyMaximizer(expressionsDict=tboFormulas, satisfactionDict=satDict,
                                            backCores=self.hybridKB.create_hard_cores())
 
-        solutionDict = calibrator.alternating_optimization(sweepNum=specDict["calibrationSweeps"])
-        print(solutionDict)
+        weightDict, factsDict = calibrator.alternating_optimization(sweepNum=specDict["calibrationSweeps"])
+        for key in weightDict:
+            self.hybridKB.weightedFormulas[key][-1] = weightDict[key][-1]
+        for key in factsDict:
+            formula = self.hybridKB.weightedFormulas.pop(key)
+            self.hybridKB.facts[key] = formula[:-1]
+
