@@ -8,23 +8,22 @@ genKB.include(
     knowledge.HybridKnowledgeBase(
         weightedFormulas = {
             "wf1" : ["imp", "a1", "a2", 1.1424],
-            "wf1.5": ["a2", 10],
-            "wf2" : ["not","a3", 10.2]
+            "wf1.5": ["a2", 0.2],
+            "wf2" : ["not","a3", 5.2]
         }
     )
 )
 sampleDf = knowledge.InferenceProvider(genKB).draw_samples(100)
 
 
-print(sampleDf)
-
 learner = knowledge.HybridLearner(knowledge.HybridKnowledgeBase())
 
 boostSpecDict = {
     "method" : "als",
     "sweeps" : 10,
+    "headNeurons" : ["neur1"],
     "architecture":
-        {"neur1" : [["eq","imp"],
+        {"neur1" : [["imp"],
                     ["a1"],
                     ["a3","a2"]]
          },

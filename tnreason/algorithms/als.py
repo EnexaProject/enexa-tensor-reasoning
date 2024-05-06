@@ -18,6 +18,8 @@ class ALS:
 
         self.targetCores = targetCores
 
+        self.trivialKeys = [] # Keys with single position, trivial in the sense that they will not be updated
+
     def random_initialize(self, updateKeys, shapesDict={}, colorsDict={}, coreType=defaultCoreType):
         for updateKey in updateKeys:
             if updateKey in self.networkCores:
@@ -27,10 +29,16 @@ class ALS:
             else:
                 upShape = shapesDict[updateKey]
                 upColors = colorsDict[updateKey]
-            self.networkCores[updateKey] = engine.get_core(coreType)(np.random.random(size=upShape), upColors,
-                                                                     updateKey)
+            if np.prod(upShape) > 1:
+                self.networkCores[updateKey] = engine.get_core(coreType)(np.random.random(size=upShape), upColors,
+                                                                         updateKey)
+            else:
+                self.trivialKeys.append(updateKey)
+                self.networkCores[updateKey] = engine.get_core(coreType)(np.ones(shape=upShape), upColors,
+                                                                         updateKey)
 
     def alternating_optimization(self, updateKeys, sweepNum=10, computeResiduum=False):
+        updateKeys = [key for key in updateKeys if key not in self.trivialKeys]
         if computeResiduum:
             residua = np.empty((sweepNum, len(updateKeys)))
         for sweep in range(sweepNum):
@@ -60,7 +68,7 @@ class ALS:
                                    **importanceCores,
                                    **self.networkCores,
                                    **copy_cores(self.networkCores, "_out", self.importanceColors),
-                                   **trivialCores
+                                  # **trivialCores
                                }, openColors=updateColors + [updateColor + "_out" for updateColor in
                                                              updateColors]).multiply(weight)
 
@@ -98,7 +106,6 @@ class ALS:
         solution, res, rank, s = np.linalg.lstsq(flattenedOperator, flattenedTarget, rcond=None)
 
         self.networkCores[updateKey] = engine.get_core(coreType)(solution.reshape(updateShape), updateColors, updateKey)
-
     def compute_residuum(self):
         prediction = engine.contract(method=self.contractionMethod, coreDict=
         self.networkCores, openColors=self.importanceColors
@@ -120,17 +127,4 @@ def copy_cores(coreDict, suffix, exceptionColors):
                 newColors[i] = color + suffix
         core.colors = newColors
         returnDict[key + suffix] = core
-    return returnDict
-
-
-def change_color_in_coredict(coreDict, colorReplaceDict, replaceSuffix="_out"):
-    returnDict = {}
-    for key in coreDict.copy():
-        core = coreDict[key].clone()
-        newColors = core.colors
-        for i, color in enumerate(newColors):
-            if color in colorReplaceDict:
-                newColors[i] = colorReplaceDict[color]
-        core.colors = newColors
-        returnDict[key + replaceSuffix] = core
     return returnDict

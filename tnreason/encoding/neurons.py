@@ -1,5 +1,6 @@
 from tnreason import engine
 from tnreason.encoding import connectives
+from tnreason.encoding import formulas as enform
 
 import numpy as np
 
@@ -12,7 +13,7 @@ candidatesCoreSuffix = "_selCore"
 posPrefix = "p"
 
 
-def create_architecture(specDict):
+def create_architecture(specDict, headNeurons=[]):
     architectureCores = {}
     for neuronName in specDict.keys():
         architectureCores = {**architectureCores,
@@ -20,6 +21,8 @@ def create_architecture(specDict):
                                  posPrefix + str(i): posCandidates for i, posCandidates in
                                  enumerate(specDict[neuronName][1:])
                              })}
+    for headNeuron in headNeurons:
+        architectureCores = {**architectureCores, **enform.create_headCore(headNeuron, headType="truthEvaluation")}
     return architectureCores
 
 
