@@ -19,15 +19,17 @@ setup(
         "Topic :: Scientific/Engineering :: Artificial Intelligence"
     ],
     install_requires=[
-        "numpy>=1.17", # was 1.23.4",
+        "numpy>=1.17",  # was 1.23.4",
         "pandas>=1.0.0",
         "networkx",
         "pyyaml",
         "rdflib",
-        "matplotlib"
+        "matplotlib",
+        "pgmpy",
+        "importlib-resources"
     ],
     python_requires=">=3",
     license="AGPL-3.0",
     url="https://github.com/EnexaProject/enexa-tensor-reasoning",
-    keywords="inductive reasoning, encoding networks, alternating least squares, markov logic networks"
+    keywords="markov logic networks, tensor networks, alternating least squares, gibbs sampling, inductive logic programming"
 )
