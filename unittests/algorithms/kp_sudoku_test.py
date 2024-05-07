@@ -93,7 +93,7 @@ def evidence_to_array(evidenceDict, num, verbose=False):
 class SudokuTest(unittest.TestCase):
     def test_num2(self):
         num = 2
-        structureCores = encoding.create_constraints(get_sudoku_constraints(num=num))
+        structureCores = encoding.create_categorical_cores(get_sudoku_constraints(num=num))
         preEvidence = {
             "a_0_1_0_0_1": 1,
             "a_0_0_0_1_0": 1,
@@ -114,7 +114,7 @@ class SudokuTest(unittest.TestCase):
 
     def test_num3(self):
         num = 3
-        structureCores = encoding.create_constraints(get_sudoku_constraints(num=num))
+        structureCores = encoding.create_categorical_cores(get_sudoku_constraints(num=num))
         preEvidence = {
             "a_0_1_0_0_1": 1,
             "a_0_0_0_1_0": 1,

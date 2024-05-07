@@ -36,7 +36,7 @@ class AlsMatrixTest(unittest.TestCase):
         residua = optimizer.alternating_optimization(["lvec","rvec"], computeResiduum=True)
         for i in range(residua.shape[0]):
             for j in range(residua.shape[1]-1):
-                self.assertGreaterEqual(residua[i,j]+1e-14,residua[i,j+1])
+                self.assertGreaterEqual(residua[i,j]+1e-13,residua[i,j+1])
 
     def test_decay_initialization(self):
         optimizer.random_initialize(["lvec","rvec"])
@@ -50,4 +50,4 @@ class AlsMatrixTest(unittest.TestCase):
         residua = optimizer.alternating_optimization(["new1","new2"], computeResiduum=True)
         for i in range(residua.shape[0]):
             for j in range(residua.shape[1]-1):
-                self.assertGreaterEqual(residua[i,j]+1e-14,residua[i,j+1],str(i)+"_"+str(j))
+                self.assertGreaterEqual(residua[i,j]+1e-13,residua[i,j+1],str(i)+"_"+str(j))

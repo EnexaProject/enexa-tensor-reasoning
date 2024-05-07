@@ -8,5 +8,3 @@ def load_from_yaml(loadPath):
     with open(loadPath) as file:
         data = yaml.safe_load(file)
     return data
-
-

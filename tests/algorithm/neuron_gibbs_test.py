@@ -9,7 +9,7 @@ neuronCores = encoding.create_neuron(
                     "pos2": ["a2", "a3"]},
     name="cracyNeuron"
 )
-headCore = encoding.create_headCore("cracyNeuron", "truthEvaluation")
+headCore = encoding.create_head_core("cracyNeuron", "truthEvaluation")
 
 dataNum = 4
 data = np.zeros(shape=(2, 2, 2, dataNum))

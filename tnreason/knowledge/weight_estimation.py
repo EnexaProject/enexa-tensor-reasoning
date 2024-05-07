@@ -32,13 +32,13 @@ class EntropyMaximizer:
             if self.satisfactionDict[optKey] == 0:
                 updateKeys.remove(optKey)
                 self.formulaCores.update(
-                    encoding.create_headCore(self.expressionsDict[optKey], headType="falseEvaluation"))
+                    encoding.create_head_core(self.expressionsDict[optKey], headType="falseEvaluation"))
                 print("Formula {} is never satisfied.".format(self.expressionsDict[optKey]))
                 factsDict[optKey] = 0
             elif self.satisfactionDict[optKey] == 1:
                 updateKeys.remove(optKey)
                 self.formulaCores.update(
-                    encoding.create_headCore(self.expressionsDict[optKey], headType="truthEvaluation"))
+                    encoding.create_head_core(self.expressionsDict[optKey], headType="truthEvaluation"))
                 print("Formula {} is always satisfied.".format(self.expressionsDict[optKey]))
                 factsDict[optKey] = 1
         weightDict = {key: [] for key in updateKeys}
@@ -46,8 +46,8 @@ class EntropyMaximizer:
             for optKey in updateKeys:
                 local_weight = self.local_condition_satisfier(optKey, self.satisfactionDict[optKey])
                 weightDict[optKey].append(local_weight)
-                self.formulaCores.update(encoding.create_headCore(self.expressionsDict[optKey], headType="expFactor",
-                                                                  weight=local_weight))
+                self.formulaCores.update(encoding.create_head_core(self.expressionsDict[optKey], headType="expFactor",
+                                                                   weight=local_weight))
         return weightDict, factsDict
 
     def local_condition_satisfier(self, optKey, empRate):

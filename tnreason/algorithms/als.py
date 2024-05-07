@@ -73,9 +73,9 @@ class ALS:
                                    **importanceCores,
                                    **self.networkCores,
                                    **self.targetCores,
-                                   **encoding.create_emptyCoresDict(updateColors,
-                                                                    varDimDict={color: updateShape[i] for i, color in
-                                                                                enumerate(updateColors)})
+                                   **encoding.create_trivial_cores(updateColors,
+                                                                   shapeDict={color: updateShape[i] for i, color in
+                                                                              enumerate(updateColors)})
                                }, openColors=updateColors).multiply(weight)
 
     def optimize_core(self, updateKey):

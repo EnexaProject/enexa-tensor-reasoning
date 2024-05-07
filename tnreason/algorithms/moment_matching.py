@@ -20,8 +20,8 @@ class MomentMatcher:
         varDimDict: Dictionary with keys the colors of the moments and the shape the dimension of the axis
         """
         self.networkCores.update(
-            encoding.create_emptyCoresDict(list(self.updateDimDict.keys()), varDimDict=self.updateDimDict,
-                                           suffix=momentCoreSuffix)
+            encoding.create_trivial_cores(list(self.updateDimDict.keys()), shapeDict=self.updateDimDict,
+                                          suffix=momentCoreSuffix)
         )
 
     def matching_step(self, updateColor):

@@ -115,7 +115,7 @@ class HybridKnowledgeBase:
     def create_cores(self):
         return {**encoding.create_formulas_cores({**self.weightedFormulas, **self.facts}),
                 **encoding.create_evidence_cores(self.evidence),
-                **encoding.create_constraints(self.categoricalConstraints)}
+                **encoding.create_categorical_cores(self.categoricalConstraints)}
 
     def get_partition_function(self, allAtoms=[]):
         unseenAtomNum = len([atom for atom in allAtoms if atom not in self.atoms])
@@ -128,7 +128,7 @@ class HybridKnowledgeBase:
         """
         return {**encoding.create_formulas_cores(self.facts),
                 **encoding.create_evidence_cores(self.evidence),
-                **encoding.create_constraints(self.categoricalConstraints)}
+                **encoding.create_categorical_cores(self.categoricalConstraints)}
 
     def is_satisfiable(self):
         """
