@@ -1,6 +1,6 @@
 from tentris import tentris, Hypertrie
 
-from tnreason.engine import numpy_contractor as cor
+from tnreason.engine import workload_to_numpy as cor
 
 from tnreason.engine import subscript_creation as subc
 
@@ -50,7 +50,7 @@ class TentrisCore:
 
 
 class TentrisContractor:
-    def __init__(self, coreDict={}, openColors=[]):
+    def __init__(self, coreDict, openColors):
         self.tentrisCores = {
             key: TentrisCore(values=coreDict[key].values, colors=coreDict[key].colors, name=coreDict[key].name, inType="Hypertrie") for
             key in coreDict
@@ -58,7 +58,7 @@ class TentrisContractor:
         self.openColors = openColors
 
     def einsum(self):
-        substring, coreOrder, colorDict, colorOrder = subc.get_substring(self.tentrisCores, self.openColors)
+        substring, coreOrder, colorDict, colorOrder = subc.get_einsum_substring(self.tentrisCores, self.openColors)
         with tentris.einsumsum(subscript=substring, operands=[self.tentrisCores[key].values for key in coreOrder]) as e:
             resultValues = Hypertrie(dtype=e.result_dtype, depth=e.result_depth)
             e.try_extend_hypertrie(resultValues)
