@@ -13,5 +13,8 @@ def create_trivial_cores(rawKeys, shapeDict=None, suffix=trivialCoreSuffix):
     """
     if shapeDict is None:
         shapeDict = {key: 2 for key in rawKeys}
-    return {key + suffix: engine.get_core()(np.ones(shapeDict[key]), [key], key + suffix)
-            for key in rawKeys}
+    return {key + suffix: create_trivial_core()(key + suffix, shapeDict[key], [key]) for key in rawKeys}
+
+
+def create_trivial_core(name, shape, colors):
+    return engine.get_core()(np.ones(shape), colors, name)

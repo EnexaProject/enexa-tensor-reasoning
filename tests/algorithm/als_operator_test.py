@@ -10,7 +10,7 @@ architectureDict =  {"neur1": [["imp"],
 archCores = encoding.create_architecture(architectureDict)
 
 
-from tnreason.algorithms import als
+from tnreason.algorithms import alternating_least_squares
 copied = als.copy_cores(archCores, "_out", ["a1","a2","a3"])
 
 print(engine.contract({**archCores}, openColors=["neur1"]).values)

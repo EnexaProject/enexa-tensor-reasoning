@@ -5,7 +5,7 @@ from tnreason import engine
 
 import numpy as np
 
-from tnreason.algorithms import als
+from tnreason.algorithms import alternating_least_squares as als
 
 networkCores = {
     #**encoding.create_formulas_cores({"f1": ["imp", "a1", "a2"]})
@@ -26,7 +26,7 @@ optimizer = als.ALS(
 
 class AlsKnowledgeTest(unittest.TestCase):
     def test_operator_check(self):
-        conOperator = optimizer.compute_conOperator(updateColors=["(imp_a1_a2)"], updateShape=[2])
+        conOperator = optimizer.compute_conOperator(updateColors=["(imp_a1_a2)"])
         self.assertEqual(conOperator.values[1, 1], 3)
         self.assertEqual(conOperator.values[1, 0], 0)
         self.assertEqual(conOperator.values[0, 1], 0)
