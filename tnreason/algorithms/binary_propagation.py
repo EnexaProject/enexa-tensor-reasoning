@@ -8,9 +8,10 @@ answerCoreSuffix = "_answerCore"
 
 class BinaryContractionPropagator:
     """
-    Generalizing the Constraint Propagation
+    Generalizing the Constraint Propagation towards propagated generic tensor cores (whereas ConstraintPropagator propagates vector cores)
         Avoid multiple elements in queue -> Usage of sets
     """
+
     def __init__(self, subNetworks, queryVariables, affectionDict=None):
         self.subNetworks = subNetworks
 
@@ -37,7 +38,7 @@ class BinaryContractionPropagator:
                 self.networkQueue.add(netKey)
 
     def propagate(self):
-        while not len(self.networkQueue)==0:
+        while not len(self.networkQueue) == 0:
             networkKey = self.networkQueue.pop()
             for queryKey in [key for key in self.queryVariables if networkKey in self.affectionDict[key]]:
                 changed = self.update_answerCore(queryKey, networkKey)
@@ -91,8 +92,8 @@ if __name__ == "__main__":
                                                            "f3": ["imp", "a", "c"]})}
 
     lCon = BinaryContractionPropagator(subNetworks, queryVariables={"q1": ["a"],
-                                                        "q3": ["c"],
-                                                        "q2": ["b", "c"]})
+                                                                    "q3": ["c"],
+                                                                    "q2": ["b", "c"]})
 
     lCon.initialize_queue()
 

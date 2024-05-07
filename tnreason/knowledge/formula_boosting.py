@@ -60,7 +60,8 @@ class FormulaBooster:
         ## When annealed Gibbs sampling used for structure learning
         elif self.specDict[methodSelectionString] == gibbsOptionString:
             sampler = algorithms.Gibbs(networkCores=networkCores, importanceColors=importanceColors,
-                                       importanceList=importanceList)
+                                       importanceList=importanceList,
+                                       exponentiated=True)
             sampler.ones_initialization(updateKeys=updateCoreKeys, shapesDict=updateShapes, colorsDict=updateColors)
             if annealPatternOptionString in self.specDict:
                 sampleDict = sampler.annealed_sample(updateKeys=updateCoreKeys,

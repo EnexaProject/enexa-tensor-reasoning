@@ -8,6 +8,9 @@ domainCoreSuffix = "_domainCore"
 
 
 class ConstraintPropagator:
+    """
+    Updates binary domain cores based on local contractions.
+    """
     def __init__(self, binaryCoresDict, domainCoresDict=None, verbose=False):
         self.verbose = verbose
         self.binaryCoresDict = binaryCoresDict

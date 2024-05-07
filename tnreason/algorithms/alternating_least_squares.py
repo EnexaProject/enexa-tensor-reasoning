@@ -38,12 +38,11 @@ class ALS:
                 upShape = shapesDict[updateKey]
                 upColors = colorsDict[updateKey]
             if np.prod(upShape) > 1:
-                self.networkCores[updateKey] = engine.get_core()(np.random.random(size=upShape), upColors,
-                                                                 updateKey)
+                self.networkCores[updateKey] = encoding.create_random_core(updateKey, upShape, upColors,
+                                                                           randomEngine="NumpyUniform")
             else:
                 self.trivialKeys.append(updateKey)
-                self.networkCores[updateKey] = engine.get_core()(np.ones(shape=upShape), upColors,
-                                                                 updateKey)
+                self.networkCores[updateKey] = encoding.create_trivial_core(updateKey, upShape, upColors)
 
     def alternating_optimization(self, updateKeys, sweepNum=10, computeResiduum=False):
         updateKeys = [key for key in updateKeys if key not in self.trivialKeys]
@@ -61,8 +60,6 @@ class ALS:
         # ! Only working for vectors #
         return {self.networkCores[key].colors[0]: np.argmax(np.abs(self.networkCores[key].values)) for key in
                 updateKeys}
-
-
 
     def optimize_core(self, updateKey):
         ## Trivialize the core to be updated (serving as a placeholder)
