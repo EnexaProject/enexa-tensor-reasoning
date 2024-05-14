@@ -1,17 +1,21 @@
 from tnreason import engine
 from tnreason import encoding
 
-from tnreason.encoding import formulas
-
-momentCoreSuffix = formulas.headCoreSuffix
-targetCoreSuffix = "_targetCore"
-
-defaultCoreType = "NumpyTensorCore"
-
 import numpy as np
+
+momentCoreSuffix = encoding.headCoreSuffix
+targetCoreSuffix = "_targetCore"
 
 
 class MomentMatcher:
+    """
+    Fits alternatingly local cores to reproduce local expected Statistics.
+    Equals to coordinate descent with optimal steplength of the likelihood.
+        * targetCores: Vector Cores storing the local expected statistics to be matched
+        * networkCores: Static Cores shaping the basis
+    Generalizes the weight estimation (which is the special case of leg dimension 2 and fitting of exponentiated first coordinate.
+    """
+
     def __init__(self, networkCores, targetCores):
         self.networkCores = networkCores
 
@@ -25,8 +29,8 @@ class MomentMatcher:
         varDimDict: Dictionary with keys the colors of the moments and the shape the dimension of the axis
         """
         self.networkCores.update(
-            encoding.create_emptyCoresDict(list(self.updateDimDict.keys()), varDimDict=self.updateDimDict,
-                                           suffix=momentCoreSuffix)
+            encoding.create_trivial_cores(list(self.updateDimDict.keys()), shapeDict=self.updateDimDict,
+                                          suffix=momentCoreSuffix)
         )
 
     def matching_step(self, updateColor):
@@ -40,14 +44,18 @@ class MomentMatcher:
 
         print(self.networkCores[updateColor + momentCoreSuffix].values)
 
-    def alternating_matching(self, sweepNum = 10, updateColors=None):
+    def alternating_matching(self, sweepNum=10, updateColors=None):
         if updateColors is None:
             updateColors = list(self.updateDimDict.keys())
         for sweep in range(sweepNum):
             for updateColor in updateColors:
                 self.matching_step(updateColor)
 
+
 def find_common_nonzero(vect1, vec2):
+    """
+    Searching for a reference position for quotients in moment match.
+    """
     for i in range(vect1.shape[0]):
         if vect1[i] > 0 and vec2[i] > 0:
             return i
@@ -56,6 +64,11 @@ def find_common_nonzero(vect1, vec2):
 
 
 def solve_moment_equation(satVect, empVect):
+    """
+    Solves the local expected statistics matching of
+        * satVect: Marginal probability of color wrt alien cores
+        * empVect: Desired marginal probability (expected statistics)
+    """
     solVect = np.ones(shape=satVect.shape)
 
     refPos = find_common_nonzero(satVect, empVect)

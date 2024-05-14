@@ -11,7 +11,7 @@ kb = knowledge.HybridKnowledgeBase(
     **format
 )
 
-from tnreason.encoding import auxiliary
+from tnreason.encoding import auxiliary_cores
 #print(auxiliary.get_all_atoms({key: format["weightedFormulas"][key][:-1]
 #                             for key in format["weightedFormulas"]}))
 

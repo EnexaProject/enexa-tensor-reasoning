@@ -5,7 +5,13 @@ import numpy as np
 
 
 class EntropyMaximizer:
-    def __init__(self, expressionsDict, satisfactionDict, backCores={}, contractionMethod="NumpyEinsum"):
+    """
+    Optimizes the weights of weighted formulas based on an entropy maximization principle.
+    Independent implementation of the special case of two-dimensional exponentiated weights of algorithms.MomentMatcher
+    """
+
+    def __init__(self, expressionsDict, satisfactionDict, backCores={},
+                 contractionMethod=engine.defaultContractionMethod):
         self.backCores = backCores
         self.expressionsDict = expressionsDict
         self.satisfactionDict = satisfactionDict
@@ -19,35 +25,38 @@ class EntropyMaximizer:
         self.contractionMethod = contractionMethod
 
     def alternating_optimization(self, sweepNum=10, updateKeys=None):
+        factsDict = {}
         if updateKeys is None:
             updateKeys = list(self.satisfactionDict.keys())
         for optKey in updateKeys:
             if self.satisfactionDict[optKey] == 0:
                 updateKeys.remove(optKey)
                 self.formulaCores.update(
-                    encoding.create_headCore(self.expressionsDict[optKey], headType="falseEvaluation"))
+                    encoding.create_head_core(self.expressionsDict[optKey], headType="falseEvaluation"))
                 print("Formula {} is never satisfied.".format(self.expressionsDict[optKey]))
+                factsDict[optKey] = 0
             elif self.satisfactionDict[optKey] == 1:
                 updateKeys.remove(optKey)
                 self.formulaCores.update(
-                    encoding.create_headCore(self.expressionsDict[optKey], headType="truthEvaluation"))
+                    encoding.create_head_core(self.expressionsDict[optKey], headType="truthEvaluation"))
                 print("Formula {} is always satisfied.".format(self.expressionsDict[optKey]))
-
-        solutionDict = {key: [] for key in updateKeys}
+                factsDict[optKey] = 1
+        weightDict = {key: [] for key in updateKeys}
         for sweep in range(sweepNum):
             for optKey in updateKeys:
                 local_weight = self.local_condition_satisfier(optKey, self.satisfactionDict[optKey])
-                solutionDict[optKey].append(local_weight)
-                self.formulaCores.update(encoding.create_headCore(self.expressionsDict[optKey], headType="expFactor",
-                                                                  weight=local_weight))
-        return solutionDict
+                weightDict[optKey].append(local_weight)
+                self.formulaCores.update(encoding.create_head_core(self.expressionsDict[optKey], headType="expFactor",
+                                                                   weight=local_weight))
+        return weightDict, factsDict
 
     def local_condition_satisfier(self, optKey, empRate):
         optColor = encoding.get_formula_color(self.expressionsDict[optKey])
         negValue, posValue = engine.contract(method=self.contractionMethod,
                                              coreDict={**self.backCores,
                                                        **{key: self.formulaCores[key] for key in self.formulaCores if
-                                                          key != optColor + "_headCore"}}, openColors=[optColor]).values
+                                                          key != optColor + encoding.headCoreSuffix}},
+                                             openColors=[optColor]).values
         if negValue != 0 and posValue != 0:
             return np.log((negValue / posValue) * (empRate / (1 - empRate)))
         elif negValue == 0 or posValue == 0:

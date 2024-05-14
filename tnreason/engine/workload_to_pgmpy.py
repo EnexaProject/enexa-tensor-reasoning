@@ -2,15 +2,14 @@ from pgmpy.models import MarkovNetwork
 from pgmpy.factors.discrete import DiscreteFactor
 from pgmpy.inference import VariableElimination
 
-from tnreason.engine import numpy_contractor as cor
-from tnreason.engine import engine_visualization as cv
-
+from tnreason.engine import workload_to_numpy as cor
 
 class PgmpyVariableEliminator:
-    def __init__(self, coreDict={}, openColors=[], visualize=False):
-        if visualize:
-            self.visualize(coreDict)
-
+    """
+    Executed Contractions using the Variable Elimination Algorithm in Pgmpy.
+    Outputs by default a Numpy Core
+    """
+    def __init__(self, coreDict={}, openColors=[]):
         self.model = MarkovNetwork()
         self.add_factors_from_coresDict(coreDict)
 
@@ -30,6 +29,3 @@ class PgmpyVariableEliminator:
     def contract(self):
         result = VariableElimination(self.model).query(evidence={}, variables=self.openColors)
         return cor.NumpyCore(result.values, result.variables)
-
-    def visualize(self, coreDict):
-        cv.draw_contractionDiagram(coreDict)

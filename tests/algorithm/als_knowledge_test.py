@@ -3,7 +3,7 @@ from tnreason import engine
 
 import numpy as np
 
-from tnreason.algorithms import als
+from tnreason.algorithms import alternating_least_squares
 
 networkCores = {
     **encoding.get_formulas_cores({"f1":["a1", "imp", "a2"]})

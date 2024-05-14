@@ -23,7 +23,7 @@ targetVector = engine.get_core()(
     colors = ["t"]
 )
 
-from tnreason.algorithms import als
+from tnreason.algorithms import alternating_least_squares
 
 
 optimizer = als.ALS(networkCores={"mat":matrix, "lvec":leftVector, "rvec":rightVector},

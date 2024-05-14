@@ -6,14 +6,30 @@ logFormulasKey = "facts"
 categoricalsKey = "categoricalConstraints"
 evidenceKey = "evidence"
 
+"""
+Distributions are Markov Networks with two methods:
+    * create_cores(): returning the factor cores
+    * get_partition_function(allAtoms): returning the partition function given the atomic variables of interest
+"""
 
 class EmpiricalDistribution:
+    """
+    Inferable (by HybridInferer) empirical distributions
+    """
+
     def __init__(self, sampleDf, atomKeys=None):
+        """
+        * sampleDf: pd.DataFrame containing the samples defining the empirical distributions
+        * atomKeys: List of columns of sampleDf to be recognized as atoms
+        """
         if atomKeys is None:
             atomKeys = list(sampleDf.columns)
         self.atoms = atomKeys
         self.sampleDf = sampleDf
         self.dataNum = sampleDf.values.shape[0]
+
+    def __str__(self):
+        return "Empirical Distribution with {} samples of atoms {}.".format(self.dataNum, self.atoms)
 
     def create_cores(self):
         return encoding.create_data_cores(self.sampleDf, self.atoms)
@@ -24,6 +40,10 @@ class EmpiricalDistribution:
 
 
 class HybridKnowledgeBase:
+    """
+    Inferable (by HybridInferer) Knowledge Base. Generalizes Markov Logic Network by further dedicated cores
+    """
+
     def __init__(self, weightedFormulas={}, facts={}, categoricalConstraints={}, evidence={}):
         self.weightedFormulas = weightedFormulas
         self.facts = facts
@@ -32,7 +52,23 @@ class HybridKnowledgeBase:
 
         self.find_atoms()
 
+    def __str__(self):
+        return "\n".join([
+            "Hybrid Knowledge Base consistent of",
+            "######## probabilistic formulas:",
+            *[encoding.get_formula_color(expression[:-1]) + " with weight " + str(expression[-1]) for expression in
+              self.weightedFormulas.values()],
+            "######## logical formulas:",
+            *[encoding.get_formula_color(expression) for expression in self.facts.values()],
+            "######## categorical variables:",
+            *[key + " selecting one of " + " ".join(self.categoricalConstraints[key]) for key in
+              self.categoricalConstraints]
+        ])
+
     def find_atoms(self):
+        """
+        Identifies the atoms of the Knowledge Base
+        """
         self.atoms = encoding.get_all_atoms(
             {**{key: self.weightedFormulas[key][:-1] for key in self.weightedFormulas},
              **self.facts})
@@ -79,15 +115,24 @@ class HybridKnowledgeBase:
     def create_cores(self):
         return {**encoding.create_formulas_cores({**self.weightedFormulas, **self.facts}),
                 **encoding.create_evidence_cores(self.evidence),
-                **encoding.create_constraints(self.categoricalConstraints)}
+                **encoding.create_categorical_cores(self.categoricalConstraints)}
 
     def get_partition_function(self, allAtoms=[]):
         unseenAtomNum = len([atom for atom in allAtoms if atom not in self.atoms])
         return (engine.contract(coreDict=self.create_cores(), openColors=[]).values
                 * (2 ** unseenAtomNum))
 
+    def create_hard_cores(self):
+        """
+        Returns the cores posing hard logical constraints on the worlds to be models
+        """
+        return {**encoding.create_formulas_cores(self.facts),
+                **encoding.create_evidence_cores(self.evidence),
+                **encoding.create_categorical_cores(self.categoricalConstraints)}
+
     def is_satisfiable(self):
-        return engine.contract(coreDict={**encoding.create_formulas_cores(self.facts),
-                                         **encoding.create_evidence_cores(self.evidence),
-                                         **encoding.create_constraints(self.categoricalConstraints)},
+        """
+        Decides whether the Knowledge Base is satisfiable, i.e. whether a model exists
+        """
+        return engine.contract(coreDict=self.create_hard_cores(),
                                openColors=[]).values > 0

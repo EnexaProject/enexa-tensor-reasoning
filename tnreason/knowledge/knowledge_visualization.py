@@ -38,7 +38,7 @@ def get_edges_and_positions(expression):
     else:
         edges, positions, subExpressions = [], {}, [expressionString]
         for subExpression in expression:
-            if encoding.is_subexpression(subExpression):
+            if is_subexpression(subExpression):
                 subEdges, subPositions, subSubExpressions = get_edges_and_positions(subExpression)
                 edges = edges + subEdges
                 positions = {**positions, **subPositions}
@@ -48,7 +48,7 @@ def get_edges_and_positions(expression):
 
         positions[encoding.get_formula_color(expression)] = 1 + max(
             [positions[encoding.get_formula_color(subExpression)] for subExpression in expression if
-             encoding.is_subexpression(subExpression)])
+             is_subexpression(subExpression)])
 
         return edges, positions, subExpressions
 
@@ -138,6 +138,14 @@ def draw_with_evidence(graph, pos, evidenceDict, atoms, title, savePath=None):
     if savePath is not None:
         plt.savefig(savePath)
     plt.show()
+
+def is_subexpression(expression):
+    if type(expression) == list:
+        return True
+    elif type(expression) == str:
+        return not expression in ["id", "not", "and", "or", "xor", "imp", "eq"]
+    else:
+        return False
 
 
 def get_symbol(expressionString):

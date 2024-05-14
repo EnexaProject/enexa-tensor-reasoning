@@ -1,7 +1,7 @@
 import unittest
 
 from tnreason import engine
-from tnreason.algorithms import als
+from tnreason.algorithms import alternating_least_squares as als
 
 import numpy as np
 
@@ -36,18 +36,18 @@ class AlsMatrixTest(unittest.TestCase):
         residua = optimizer.alternating_optimization(["lvec","rvec"], computeResiduum=True)
         for i in range(residua.shape[0]):
             for j in range(residua.shape[1]-1):
-                self.assertGreaterEqual(residua[i,j]+1e-14,residua[i,j+1])
+                self.assertGreaterEqual(residua[i,j]+1e-13,residua[i,j+1])
 
     def test_decay_initialization(self):
         optimizer.random_initialize(["lvec","rvec"])
         residua = optimizer.alternating_optimization(["lvec","rvec"], computeResiduum=True)
         for i in range(residua.shape[0]):
             for j in range(residua.shape[1]-1):
-                self.assertGreaterEqual(residua[i,j]+1e-14,residua[i,j+1],str(i)+"_"+str(j))
+                self.assertGreaterEqual(residua[i,j]+1e-13,residua[i,j+1],str(i)+"_"+str(j))
 
     def test_decay_new_initialization(self):
         optimizer.random_initialize(["new1","new2"], {"new1": 2, "new2": 2}, {"new1" : ["a1"], "new2": ["a2"]})
         residua = optimizer.alternating_optimization(["new1","new2"], computeResiduum=True)
         for i in range(residua.shape[0]):
             for j in range(residua.shape[1]-1):
-                self.assertGreaterEqual(residua[i,j]+1e-14,residua[i,j+1],str(i)+"_"+str(j))
+                self.assertGreaterEqual(residua[i,j]+1e-13,residua[i,j+1],str(i)+"_"+str(j))

@@ -9,7 +9,7 @@ neuronCores = encoding.create_neuron(
                     "pos2": ["a2", "a3"]},
     name="cracyNeuron"
 )
-headCore = encoding.create_headCore("cracyNeuron", "truthEvaluation")
+headCore = encoding.create_head_core("cracyNeuron", "truthEvaluation")
 
 dataNum = 4
 data = np.zeros(shape=(2, 2, 2, dataNum))
@@ -19,7 +19,7 @@ data[1, 1, 1, 2] = 1
 data[1, 1, 0, 3] = 1
 pos_phase = ({"dataTensor": engine.get_core()(values=data, colors=["a1", "a2", "a3", "dat"])}, 1)
 
-from tnreason.algorithms import gibbs
+from tnreason.algorithms import gibbs_sampling
 
 sampler = gibbs.Gibbs(networkCores={**neuronCores,
                                     **headCore

@@ -4,13 +4,13 @@ import numpy as np
 
 from queue import Queue
 
-defaultContractionMethod = "PgmpyVariableEliminator"
-defaultCoreType = "NumpyTensorCore"
-
 domainCoreSuffix = "_domainCore"
 
 
 class ConstraintPropagator:
+    """
+    Updates binary domain cores based on local contractions.
+    """
     def __init__(self, binaryCoresDict, domainCoresDict=None, verbose=False):
         self.verbose = verbose
         self.binaryCoresDict = binaryCoresDict
@@ -29,7 +29,7 @@ class ConstraintPropagator:
         for coreKey in self.binaryCoresDict:
             for i, color in enumerate(self.binaryCoresDict[coreKey].colors):
                 if color + domainCoreSuffix not in self.domainCoresDict:
-                    self.domainCoresDict[color + domainCoreSuffix] = engine.get_core(coreType=defaultCoreType)(
+                    self.domainCoresDict[color + domainCoreSuffix] = engine.get_core()(
                         np.ones(self.binaryCoresDict[coreKey].values.shape[i]),
                         [color],
                         color + domainCoreSuffix)
@@ -56,10 +56,11 @@ class ConstraintPropagator:
             print("Propagating core {}.".format(coreKey))
         changedColors = []
         for color in self.binaryCoresDict[coreKey].colors:
-            contracted = engine.contract(method=defaultContractionMethod, coreDict=
-            {coreKey: self.binaryCoresDict[coreKey],
-             **{otherColor + domainCoreSuffix: self.domainCoresDict[otherColor + domainCoreSuffix] for otherColor in
-                self.binaryCoresDict[coreKey].colors if otherColor != color}},
+            contracted = engine.contract(coreDict=
+                                         {coreKey: self.binaryCoresDict[coreKey],
+                                          **{otherColor + domainCoreSuffix: self.domainCoresDict[
+                                              otherColor + domainCoreSuffix] for otherColor in
+                                             self.binaryCoresDict[coreKey].colors if otherColor != color}},
                                          openColors=[color]
                                          ).values
             for i in range(len(contracted)):
@@ -92,7 +93,7 @@ class ConstraintPropagator:
                            variableShapes={}):  ## Add variables to domainCoreDict when they are not there!
         for variable in variables:
             if variable + domainCoreSuffix not in self.domainCoresDict:
-                self.domainCoresDict[variable + domainCoreSuffix] = engine.get_core(coreType=defaultCoreType)(
+                self.domainCoresDict[variable + domainCoreSuffix] = engine.get_core()(
                     np.ones(variableShapes[variable]), [variable], variable + domainCoreSuffix)
         variablesQueue = Queue()
         for variable in variables:
