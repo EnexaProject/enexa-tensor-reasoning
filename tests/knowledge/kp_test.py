@@ -1,7 +1,11 @@
 from tnreason import knowledge
 
 testKB = knowledge.load_kb_from_yaml("./test_kb.yaml")
-testKB.visualize(evidenceDict={"(not_a1)":1})
+testKB.backCores = {"a" : 1}
+print(testKB)
+#testKB.visualize(evidenceDict={"(not_a1)":1})
+
+
 
 exit()
 
