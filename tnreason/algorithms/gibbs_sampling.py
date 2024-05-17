@@ -57,7 +57,10 @@ class Gibbs:
         """
         Update a color core based on tempered marginal probability
         """
+        ## Trivialize the core to be updated (serving as a placeholder)
         tbUpdated = self.networkCores.pop(updateKey)
+        self.networkCores[updateKey] = encoding.create_trivial_core(updateKey, tbUpdated.values.shape, tbUpdated.colors)
+
         updateColors = tbUpdated.colors
         updateShape = tbUpdated.values.shape
 
