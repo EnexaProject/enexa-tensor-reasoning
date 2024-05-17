@@ -66,4 +66,7 @@ class HybridLearner:
             self.hybridKB.weightedFormulas[key][-1] = weightDict[key][-1]
         for key in factsDict:
             formula = self.hybridKB.weightedFormulas.pop(key)
-            self.hybridKB.facts[key] = formula[:-1]
+            if factsDict[key]:
+                self.hybridKB.facts[key] = formula[:-1]
+            else:
+                self.hybridKB.facts[key] = ["not",formula[:-1]]
