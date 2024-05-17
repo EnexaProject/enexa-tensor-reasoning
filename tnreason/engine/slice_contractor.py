@@ -16,10 +16,13 @@ class SliceCore:
         self.colors = colors
         if isinstance(values, np.ndarray):
             self.ell_zero_initialize_from_numpy(values)
-        else: ## Should then be directly in tuple format
+        else:  ## Should then be directly in tuple format
             self.values = values
 
         self.name = name
+
+    def __str__(self):
+        return "## Sliced Core " + str(self.name) + " ##\nValues: " + str(self.values) + "\nColors: " + str(self.colors)
 
     def ell_zero_initialize_from_numpy(self, arr):
         self.values = []
@@ -27,13 +30,33 @@ class SliceCore:
             if arr[idx] != 0:
                 self.values.append((arr[idx], set([self.colors[i] for i, x in enumerate(idx) if x == 0]),
                                     set([self.colors[i] for i, x in enumerate(idx) if x != 0])))
-    def __str__(self):
-        return "## Sliced Core " + str(self.name) + " ##\nValues: " + str(self.values) + "\nColors: " + str(self.colors)
+
+    def add_identical_slices(self):
+        """
+        Finds identical slices and sums up the values
+        """
+        newValues = []
+
+        alreadyFound = []
+        while len(self.values) != 0:
+            val, neg, pos = self.values.pop()
+            if (neg, pos) not in alreadyFound:
+                for (val2, neg2, pos2) in self.values:
+                    if neg == neg2 and pos == pos2:
+                        val += val2
+                alreadyFound.append((neg, pos))
+                if val != 0:
+                    newValues.append((val, neg, pos))
+
+        self.values = newValues
+
+    def normalize(self):
+        return self
 
 
 class SliceContractor:
     def __init__(self, coreDict={}, openColors=[]):
-        self.coreDict = {key : SliceCore(coreDict[key].values, coreDict[key].colors, key) for key in coreDict}
+        self.coreDict = {key: SliceCore(coreDict[key].values, coreDict[key].colors, key) for key in coreDict}
         self.openColors = openColors
 
     def contract(self):
@@ -45,7 +68,12 @@ class SliceContractor:
         for key in self.coreDict:
             values = slice_contraction(values, self.coreDict[key].values)
         values = reduce_colors(values, allColors - set(self.openColors))
-        return SliceCore(values, self.openColors)
+        result = SliceCore(values, self.openColors)
+
+        if len(self.openColors) == 0:
+            result.add_identical_slices()
+
+        return result
 
 
 def reduce_colors(values, reduceColors):

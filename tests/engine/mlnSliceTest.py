@@ -10,3 +10,11 @@ print(sc.SliceContractor(
     coreDict=hybridKB.create_cores(),
     openColors=["a","b"]
 ).contract())
+
+core = sc.SliceContractor(
+    coreDict=hybridKB.create_cores(),
+    openColors=[]
+).contract()
+
+core.add_identical_slices()
+print(core)
