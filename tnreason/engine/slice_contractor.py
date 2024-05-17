@@ -1,16 +1,39 @@
+import numpy as np
+
+
 class SliceCore:
+    """
+    Core for representing Tensors with leg dimensions 2
+    Tailored to slice sparsity (a generalization to l_0 sparsity allowing also trivial vectors instead of basis vectors as factors in the tensor products to be summed)
+    Differs from NumpyCore by
+        * self.values: A list of generalized basis tensors, each specified by a tuple of
+            - value: weight of slice (nonzero) in float or int
+            - set of colors, which are false
+            - set of colors, which are true
+    """
+
     def __init__(self, values, colors, name=None):
-        self.values = values
         self.colors = colors
+        if isinstance(values, np.ndarray):
+            self.ell_zero_initialize_from_numpy(values)
+        else: ## Should then be directly in tuple format
+            self.values = values
+
         self.name = name
 
+    def ell_zero_initialize_from_numpy(self, arr):
+        self.values = []
+        for idx in np.ndindex(arr.shape):
+            if arr[idx] != 0:
+                self.values.append((arr[idx], set([self.colors[i] for i, x in enumerate(idx) if x == 0]),
+                                    set([self.colors[i] for i, x in enumerate(idx) if x != 0])))
     def __str__(self):
         return "## Sliced Core " + str(self.name) + " ##\nValues: " + str(self.values) + "\nColors: " + str(self.colors)
 
 
 class SliceContractor:
     def __init__(self, coreDict={}, openColors=[]):
-        self.coreDict = coreDict
+        self.coreDict = {key : SliceCore(coreDict[key].values, coreDict[key].colors, key) for key in coreDict}
         self.openColors = openColors
 
     def contract(self):
@@ -27,7 +50,7 @@ class SliceContractor:
 
 def reduce_colors(values, reduceColors):
     reducedValues = []
-    for val, pos, neg in values:
+    for val, neg, pos in values:
         for reduceColor in reduceColors:
             if reduceColor not in pos and reduceColor not in neg:
                 val = 2 * val  # Color dimension always 2
@@ -52,15 +75,15 @@ def slice_contraction(values1, values2):
 
 
 def combine_slices(slice1, slice2):
-    val1, pos1, neg1 = slice1
-    val2, pos2, neg2 = slice2
+    val1, neg1, pos1 = slice1
+    val2, neg2, pos2 = slice2
 
-    pos = pos1 | pos2
     neg = neg1 | neg2
+    pos = pos1 | pos2
     if len(pos & neg) > 0:  ## Check whether the slice zero
         return (0, [], [])
     else:
-        return (val1 * val2, pos, neg)
+        return (val1 * val2, neg, pos)
 
 
 if __name__ == "__main__":
