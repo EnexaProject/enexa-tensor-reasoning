@@ -32,9 +32,14 @@ def contract(coreDict, openColors, method=defaultContractionMethod):
         return PgmpyVariableEliminator(coreDict=coreDict, openColors=openColors).contract()
 
     ## Experimental Slice Contraction
-    elif method == "SliceContractor":
-        from tnreason.engine.slice_contractor import SliceContractor
-        return SliceContractor(coreDict=coreDict, openColors=openColors).contract()
+    elif method == "BinarySliceContractor":
+        from tnreason.engine.binary_slice_contractor import BinarySliceContractor
+        return BinarySliceContractor(coreDict=coreDict, openColors=openColors).contract()
+    elif method == "GenericSliceContractor":
+        from tnreason.engine.generic_slice_contractor import GenericSliceContractor
+        return GenericSliceContractor(coreDict=coreDict, openColors=openColors).contract()
+
+
     else:
         raise ValueError("Contractor Type {} not known.".format(method))
 

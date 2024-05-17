@@ -1,10 +1,20 @@
 from pyqubo import Binary
 
 
-def core_to_hamiltonian(sliceCore):
-    binariesColorDict = {color: Binary(color) for color in sliceCore.colors}
+def genericSliceCore_to_hamiltonian(genericSliceCore):
+    binariesColorDict = {color: Binary(color) for color in genericSliceCore.colors}
     hamiltonian = 0
-    for val, neg, pos in sliceCore.values:
+    for val, positions in genericSliceCore.values.slices:
+        hamiltonian = hamiltonian + create_potential(
+            val, {key for key in positions if not positions[key]}, {key for key in positions if positions[key]},
+            binariesColorDict
+        )
+    return hamiltonian
+
+def binarySliceCore_to_hamiltonian(binarySliceCore):
+    binariesColorDict = {color: Binary(color) for color in binarySliceCore.colors}
+    hamiltonian = 0
+    for val, neg, pos in binarySliceCore.values:
         hamiltonian = hamiltonian + create_potential(val, neg, pos, binariesColorDict)
     return hamiltonian
 
@@ -25,11 +35,11 @@ if __name__ == "__main__":
         "f1": ["imp", "a", "b"]
     })
 
-    provider = knowledge.InferenceProvider(hybridKB, contractionMethod="SliceContractor")
+    provider = knowledge.InferenceProvider(hybridKB, contractionMethod="GenericSliceContractor")
     result = provider.query(["a", "b"])
     result.add_identical_slices()
 
-    hamiltonian = core_to_hamiltonian(result)
+    hamiltonian = genericSliceCore_to_hamiltonian(result)
     model = hamiltonian.compile()
 
     qubo, offset = model.to_qubo()

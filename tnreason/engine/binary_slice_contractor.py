@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class SliceCore:
+class BinarySliceCore:
     """
     Core for representing Tensors with leg dimensions 2
     Tailored to slice sparsity (a generalization to l_0 sparsity allowing also trivial vectors instead of basis vectors as factors in the tensor products to be summed)
@@ -50,13 +50,22 @@ class SliceCore:
 
         self.values = newValues
 
+    def multiply(self, weight):
+        return BinarySliceCore(values = [(weight * val, neg, pos) for (val, neg, pos) in self.values],
+                               colors = self.colors,
+                               name = self.name)
+
+    def sum_with(self, sumCore):
+        return BinarySliceCore(values =self.values + sumCore.values,
+                               colors= list(set(self.colors) | set(sumCore.colors)))
+
     def normalize(self):
         return self
 
 
-class SliceContractor:
+class BinarySliceContractor:
     def __init__(self, coreDict={}, openColors=[]):
-        self.coreDict = {key: SliceCore(coreDict[key].values, coreDict[key].colors, key) for key in coreDict}
+        self.coreDict = {key: BinarySliceCore(coreDict[key].values, coreDict[key].colors, key) for key in coreDict}
         self.openColors = openColors
 
     def contract(self):
@@ -68,7 +77,7 @@ class SliceContractor:
         for key in self.coreDict:
             values = slice_contraction(values, self.coreDict[key].values)
         values = reduce_colors(values, allColors - set(self.openColors))
-        result = SliceCore(values, self.openColors)
+        result = BinarySliceCore(values, self.openColors)
 
         if len(self.openColors) == 0:
             result.add_identical_slices()
@@ -102,7 +111,7 @@ def slice_contraction(values1, values2):
     return slices
 
 
-def combine_slices(slice1, slice2):
+def combine_slices(slice1, slice2): # Multiplication
     val1, neg1, pos1 = slice1
     val2, neg2, pos2 = slice2
 
@@ -114,24 +123,4 @@ def combine_slices(slice1, slice2):
         return (val1 * val2, neg, pos)
 
 
-if __name__ == "__main__":
-    values1 = [
-        (1.1, {"a", "b"}, {"c"}),
-        (0.9, set(), {"d"})
-    ]
-    core1 = SliceCore(values1, ["a", "b", "c"])
 
-    values2 = [
-        (1.1, {"b"}, {"a", "c"}),
-        (2, {"a"}, set())
-    ]
-    core2 = SliceCore(values2, ["a", "b", "c"])
-
-    contracted = SliceContractor(coreDict={
-        "c1": core1,
-        "c2": core2
-    }, openColors=["a", "b"]).contract()
-
-    print(contracted)
-
-    # print([e for e in slice_contraction(values1, values2)])
