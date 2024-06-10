@@ -46,7 +46,8 @@ class HybridKnowledgeBase:
     """
 
     def __init__(self, weightedFormulas={}, facts={}, categoricalConstraints={}, evidence={}, backCores={}):
-        self.weightedFormulas = weightedFormulas
+        self.weightedFormulas = {key: weightedFormulas[key][:-1] + [float(weightedFormulas[key][-1])] for key in
+                                 weightedFormulas}
         self.facts = facts
         self.categoricalConstraints = categoricalConstraints
         self.evidence = evidence

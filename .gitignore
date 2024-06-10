@@ -1,6 +1,7 @@
 *.pyc
 *.DS_Store
 
+tests/*
 dist/*
 build/*
 tnreason/tensorreasoning.egg-info/*

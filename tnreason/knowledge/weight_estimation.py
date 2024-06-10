@@ -1,6 +1,8 @@
 from tnreason import engine
 from tnreason import encoding
 
+from tnreason.knowledge import distributions as dist
+
 import numpy as np
 
 
@@ -66,3 +68,11 @@ class EntropyMaximizer:
             return np.log((negValue / posValue) * (empRate / (1 - empRate)))
         elif negValue == 0 or posValue == 0:
             return 0  ## In this case the formula is redundant
+
+    def get_optimized_knowledge_base(self, sweepNum=10, updateKeys=None):
+        weightDict, factsDict = self.alternating_optimization(sweepNum=sweepNum, updateKeys=updateKeys)
+        return dist.HybridKnowledgeBase(
+            weightedFormulas={key: self.expressionsDict[key] + [weightDict[key][-1]] for key in weightDict},
+            facts = {key : self.expressionsDict[key] for key in factsDict},
+            backCores = self.backCores
+        )
