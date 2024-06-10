@@ -1,6 +1,8 @@
 from tnreason import engine
 from tnreason import encoding
 
+from tnreason.knowledge import distributions as dist
+
 import numpy as np
 
 
@@ -52,12 +54,25 @@ class EntropyMaximizer:
 
     def local_condition_satisfier(self, optKey, empRate):
         optColor = encoding.get_formula_color(self.expressionsDict[optKey])
+        tboCoreKey = optColor + encoding.headCoreSuffix
         negValue, posValue = engine.contract(method=self.contractionMethod,
                                              coreDict={**self.backCores,
                                                        **{key: self.formulaCores[key] for key in self.formulaCores if
-                                                          key != optColor + encoding.headCoreSuffix}},
+                                                          key != tboCoreKey},
+                                                       tboCoreKey: encoding.create_trivial_core(tboCoreKey,
+                                                                        self.formulaCores[tboCoreKey].values.shape,
+                                                                        self.formulaCores[tboCoreKey].colors)
+                                                       },
                                              openColors=[optColor]).values
         if negValue != 0 and posValue != 0:
             return np.log((negValue / posValue) * (empRate / (1 - empRate)))
         elif negValue == 0 or posValue == 0:
             return 0  ## In this case the formula is redundant
+
+    def get_optimized_knowledge_base(self, sweepNum=10, updateKeys=None):
+        weightDict, factsDict = self.alternating_optimization(sweepNum=sweepNum, updateKeys=updateKeys)
+        return dist.HybridKnowledgeBase(
+            weightedFormulas={key: self.expressionsDict[key] + [weightDict[key][-1]] for key in weightDict},
+            facts = {key : self.expressionsDict[key] for key in factsDict},
+            backCores = self.backCores
+        )

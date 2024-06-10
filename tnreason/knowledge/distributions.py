@@ -12,6 +12,7 @@ Distributions are Markov Networks with two methods:
     * get_partition_function(allAtoms): returning the partition function given the atomic variables of interest
 """
 
+
 class EmpiricalDistribution:
     """
     Inferable (by HybridInferer) empirical distributions
@@ -44,26 +45,35 @@ class HybridKnowledgeBase:
     Inferable (by HybridInferer) Knowledge Base. Generalizes Markov Logic Network by further dedicated cores
     """
 
-    def __init__(self, weightedFormulas={}, facts={}, categoricalConstraints={}, evidence={}):
-        self.weightedFormulas = weightedFormulas
+    def __init__(self, weightedFormulas={}, facts={}, categoricalConstraints={}, evidence={}, backCores={}):
+        self.weightedFormulas = {key: weightedFormulas[key][:-1] + [float(weightedFormulas[key][-1])] for key in
+                                 weightedFormulas}
         self.facts = facts
         self.categoricalConstraints = categoricalConstraints
         self.evidence = evidence
 
+        ## Option to add arbitrary factor cores -> Not supported in yaml save/load and atom search, only influenceing create_cores!
+        self.backCores = backCores
+
         self.find_atoms()
 
     def __str__(self):
-        return "\n".join([
-            "Hybrid Knowledge Base consistent of",
-            "######## probabilistic formulas:",
-            *[encoding.get_formula_color(expression[:-1]) + " with weight " + str(expression[-1]) for expression in
-              self.weightedFormulas.values()],
-            "######## logical formulas:",
-            *[encoding.get_formula_color(expression) for expression in self.facts.values()],
-            "######## categorical variables:",
-            *[key + " selecting one of " + " ".join(self.categoricalConstraints[key]) for key in
-              self.categoricalConstraints]
-        ])
+        outString = "Hybrid Knowledge Base consistent of"
+        if self.weightedFormulas:
+            outString = outString + "\n######## probabilistic formulas:\n" + "\n".join(
+                [encoding.get_formula_color(expression[:-1]) + " with weight " + str(expression[-1]) for expression in
+                 self.weightedFormulas.values()])
+        if self.facts:
+            outString = outString + "\n######## logical formulas:\n" + "\n".join(
+                [encoding.get_formula_color(expression) for expression in self.facts.values()])
+        if self.categoricalConstraints:
+            outString = outString + "\n######## categorical variables:\n" + "\n".join(
+                [key + " selecting one of " + " ".join(self.categoricalConstraints[key]) for key in
+                 self.categoricalConstraints]
+            )
+        if self.backCores:
+            outString = outString + "\n######## further cores:\n" + "\n".join(list(self.backCores.keys()))
+        return outString
 
     def find_atoms(self):
         """
@@ -115,7 +125,8 @@ class HybridKnowledgeBase:
     def create_cores(self):
         return {**encoding.create_formulas_cores({**self.weightedFormulas, **self.facts}),
                 **encoding.create_evidence_cores(self.evidence),
-                **encoding.create_categorical_cores(self.categoricalConstraints)}
+                **encoding.create_categorical_cores(self.categoricalConstraints),
+                **self.backCores}
 
     def get_partition_function(self, allAtoms=[]):
         unseenAtomNum = len([atom for atom in allAtoms if atom not in self.atoms])
@@ -128,7 +139,8 @@ class HybridKnowledgeBase:
         """
         return {**encoding.create_formulas_cores(self.facts),
                 **encoding.create_evidence_cores(self.evidence),
-                **encoding.create_categorical_cores(self.categoricalConstraints)}
+                **encoding.create_categorical_cores(self.categoricalConstraints),
+                **self.backCores}
 
     def is_satisfiable(self):
         """
