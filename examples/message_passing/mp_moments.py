@@ -4,7 +4,7 @@ from tnreason import engine
 import numpy as np
 
 messageCoreSuffix = "_messageCore"
-headCoreSuffix = "_headCore" ## Should be same as in encoding
+headCoreSuffix = "_headCore"  ## Should be same as in encoding
 
 
 class MPMomentMatcher:
@@ -28,7 +28,13 @@ class MPMomentMatcher:
         # To controll convergence
         self.weightsDict = {key: [] for key in expressionsDict}
 
-    def atoms_to_heads(self):
+    def message_passing(self, circulationNumber=10):
+        for circPos in range(circulationNumber):
+            self.upward_messages()
+            self.adjust_headCores()
+            self.downward_messages()
+
+    def upward_messages(self):
         readyColors = self.atoms.copy()
         weightingCores = set(self.directedCores.keys()).copy()
         readyCores = find_ready_cores_in_direction(weightingCores, self.directedCores, readyColors)
@@ -55,38 +61,6 @@ class MPMomentMatcher:
             if len(readyCores) == 0:
                 readyCores = find_ready_cores_in_direction(weightingCores, self.directedCores, readyColors)
 
-    def heads_to_atoms(self):
-        readyColors = [self.headCores[key].colors[0] for key in self.headCores]
-        weightingCores = set(self.directedCores.keys()).copy()
-        readyCores = find_ready_cores_against_direction(weightingCores, self.directedCores, readyColors)
-
-        while len(readyCores) != 0:
-            updateCoreKey = readyCores.pop()
-            weightingCores.remove(updateCoreKey)
-
-            if len(self.directedCores[updateCoreKey].colors) == 3:
-                inColors = self.directedCores[updateCoreKey].colors[:1]
-                outColor = self.directedCores[updateCoreKey].colors[2]
-
-
-            elif len(self.directedCores[updateCoreKey].colors) == 2:
-                inColors = [self.directedCores[updateCoreKey].colors[0]]
-                outColor = self.directedCores[updateCoreKey].colors[1]
-
-            for inColor in inColors:
-                self.messageCores[inColor + messageCoreSuffix] = engine.contract(
-                    {**{otherInColor + messageCoreSuffix: self.messageCores[inColor + messageCoreSuffix] for
-                        otherInColor in
-                        inColors if otherInColor != inColor},
-                     outColor + messageCoreSuffix: self.messageCores[outColor + messageCoreSuffix],
-                     updateCoreKey: self.directedCores[updateCoreKey]
-                     }, openColors=[inColor]).normalize()
-
-                readyColors.append(inColor)
-
-            if len(readyCores) == 0:
-                readyCores = find_ready_cores_against_direction(weightingCores, self.directedCores, readyColors)
-
     def adjust_headCores(self, maxWeight=100):
         for key in self.expressionsDict:
             headColor = encoding.get_formula_color(expressionsDict[key])
@@ -102,6 +76,60 @@ class MPMomentMatcher:
             self.weightsDict[key].append(weight)
             self.headCores.update(encoding.create_head_core(expressionsDict[key], "expFactor", weight))
 
+    def downward_messages(self):
+        sentMessages = [self.headCores[key].colors[0] for key in self.headCores]
+        weightingMessages = set([self.messageCores[key].colors[0] for key in self.messageCores if
+                                 self.messageCores[key].colors[0] not in sentMessages])
+        readyMessages = find_ready_messages(weightingMessages, sentMessages, self.directedCores)
+
+        while len(readyMessages) != 0:
+            messageKey = readyMessages.pop()
+            weightingMessages.remove(messageKey)
+
+            self.messageCores[messageKey + messageCoreSuffix] = engine.contract(
+                {**find_parent_cores(messageKey, self.directedCores),
+                 **{key+messageCoreSuffix: self.messageCores[key+messageCoreSuffix] for key in find_parent_messages(messageKey, self.directedCores) +
+                    find_sibling_messages(messageKey, self.directedCores)}},
+                openColors=[messageKey]
+            )
+
+            sentMessages.append(messageKey)
+            if len(readyMessages) != 0:
+                readyMessages = find_ready_messages(weightingMessages, sentMessages, self.directedCores)
+
+
+def find_parent_cores(message, coresDict):
+    return {key: coresDict[key] for key in coresDict if message in coresDict[key].colors[:-1]}
+
+
+def find_parent_messages(message, coresDict):
+    return [coresDict[key].colors[-1] for key in coresDict if message in coresDict[key].colors[:-1]]
+
+
+def find_sibling_messages(message, coresDict):
+    siblings = []
+    for key in coresDict:
+        if message in coresDict[key].colors[:-1]:
+            siblings = siblings + [color for color in coresDict[key].colors[:-1] if color != message]
+    return siblings
+
+
+def find_ready_messages(weightingMessages, sentMessages, coresDict):
+    readyMessages = []
+    for message in weightingMessages:
+        if all([parMes in sentMessages for parMes in find_parent_messages(message, coresDict)]):
+            readyMessages.append(message)
+    return readyMessages
+
+
+def find_ready_colors(weightingColors, directedCoresDict, readyCores):
+    readyColors = []
+    for color in weightingColors:
+        if not any(
+                [color in directedCoresDict[key].colors[:-1] and key not in readyCores for key in directedCoresDict]):
+            readyColors.append(color)
+    return readyColors
+
 
 def find_ready_cores_in_direction(weightingCores, directedCoresDict, readyColors):
     readyCores = []
@@ -116,18 +144,6 @@ def find_ready_cores_in_direction(weightingCores, directedCoresDict, readyColors
     return readyCores
 
 
-def find_ready_cores_against_direction(weightingCores, directedCoresDict, readyColors):
-    readyCores = []
-    for coreKey in weightingCores:
-        if len(directedCoresDict[coreKey].colors) == 3:
-            if directedCoresDict[coreKey].colors[2] in readyColors:
-                readyCores.append(coreKey)
-        elif len(directedCoresDict[coreKey].colors) == 2:
-            if directedCoresDict[coreKey].colors[1] in readyColors:
-                readyCores.append(coreKey)
-    return readyCores
-
-
 if __name__ == "__main__":
     expressionsDict = {
         "e1": ["imp", "p", "q"],
@@ -138,17 +154,13 @@ if __name__ == "__main__":
     empiricalMeanDict = {
         "e1": 0.8,
         "e2": 0.6,
-        "e3": 0.1
+        "e3": 0.1,
     }
 
     matcher = MPMomentMatcher(expressionsDict, empiricalMeanDict)
-    for i in range(10):
-        matcher.atoms_to_heads()
-        matcher.adjust_headCores()
-        matcher.heads_to_atoms()
+    matcher.message_passing(circulationNumber=10)
 
     from matplotlib import pyplot as plt
-
     for key in matcher.weightsDict:
         plt.scatter(range(len(matcher.weightsDict[key])), matcher.weightsDict[key], label=key, marker="+")
     plt.title("Weight Development during optimization")
