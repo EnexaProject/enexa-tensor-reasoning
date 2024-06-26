@@ -4,7 +4,7 @@ hybridKB = knowledge.HybridKnowledgeBase(facts={
     "f1" : ["imp","a","b"]
 })
 
-from tnreason.engine import binary_slice_contractor as sc
+from stubs import binary_slice_contractor as sc
 
 print(sc.BinarySliceContractor(
     coreDict=hybridKB.create_cores(),

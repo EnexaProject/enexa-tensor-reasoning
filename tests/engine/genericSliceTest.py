@@ -1,9 +1,9 @@
-from tnreason.engine import generic_slice_contractor as gsc
+from tnreason.engine import polynomial_contractor as gsc
 
 import numpy as np
 
-core1 = gsc.GenericSliceCore(np.array([[1, 2, 3], [0, 1, 0]]), ["a", "b"])
-core2 = gsc.GenericSliceCore(np.array([[1, 2, 3], [0, 1, 0]]), ["b", "c"])
+core1 = gsc.PolynomialCore(np.array([[1, 2, 3], [0, 1, 0]]), ["a", "b"])
+core2 = gsc.PolynomialCore(np.array([[1, 2, 3], [0, 1, 0]]), ["b", "c"])
 
 print(core1.values.slices)
 

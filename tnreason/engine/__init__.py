@@ -31,12 +31,9 @@ def contract(coreDict, openColors, method=defaultContractionMethod):
         from tnreason.engine.workload_to_pgmpy import PgmpyVariableEliminator
         return PgmpyVariableEliminator(coreDict=coreDict, openColors=openColors).contract()
 
-    ## Experimental Slice Contraction
-    elif method == "BinarySliceContractor":
-        from tnreason.engine.binary_slice_contractor import BinarySliceContractor
-        return BinarySliceContractor(coreDict=coreDict, openColors=openColors).contract()
-    elif method == "GenericSliceContractor":
-        from tnreason.engine.generic_slice_contractor import GenericSliceContractor
+    ## Experimental Polynomial Contraction
+    elif method == "PolynomialContractor":
+        from tnreason.engine.polynomial_contractor import GenericSliceContractor
         return GenericSliceContractor(coreDict=coreDict, openColors=openColors).contract()
 
 
@@ -48,6 +45,9 @@ def get_core(coreType="NumpyTensorCore"):
     if coreType == "NumpyTensorCore":
         from tnreason.engine.workload_to_numpy import NumpyCore
         return NumpyCore
+    elif coreType == "PolynomialCore":
+        from tnreason.engine.polynomial_contractor import PolynomialCore
+        return PolynomialCore
     else:
         raise ValueError("Core Type {} not supported.".format(coreType))
 

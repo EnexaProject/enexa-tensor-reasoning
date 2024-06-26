@@ -1,5 +1,4 @@
-from tnreason.engine import binary_slice_contractor as sc
-
+from stubs import binary_slice_contractor as sc
 
 import numpy as np
 

@@ -2,12 +2,20 @@ import numpy as np
 
 
 class SliceValues:
-    def __init__(self, slices=[1, dict()], shape=[]):
+    """
+    Storing the polynomial by a list of tuples, each representing a weighted monomial by
+        - value: Weight of the monomial
+        - positionDict: Dictionary of variables in the polynomial,
+            - each key is the name of a categorical variable X
+            - its value k specifies the variable to X==k
+    Each monomial seen as a tensor is specified by a weighted trivial slice.
+    """
+    def __init__(self, slices=[(1, dict())], shape=[]):
         self.slices = slices  # List of tuples (value, positionDict)
         self.shape = shape
 
 
-class GenericSliceCore:
+class PolynomialCore:
     def __init__(self, values, colors, name=None):
         self.colors = colors
         self.name = name
@@ -22,6 +30,9 @@ class GenericSliceCore:
             self.colors)
 
     def ell_zero_initialize_from_numpy(self, arr):
+        """
+        Initialization of the slices by all nonzero coordinates of the array, resulting in ell_zero(arr) many monomials
+        """
         slices = []
         for idx in np.ndindex(arr.shape):
             if arr[idx] != 0:
@@ -38,7 +49,7 @@ class GenericSliceCore:
         for i, color in enumerate(core2.colors):
             newShapes[newColors.index(color)] = core2.values.shape[i]
 
-        return GenericSliceCore(
+        return PolynomialCore(
             values=SliceValues(slice_contraction(self.values.slices, core2.values.slices),
                                newShapes),
             colors=newColors,
@@ -71,13 +82,13 @@ class GenericSliceCore:
         self.values.slices = newSlices
 
     def multiply(self, weight):
-        return GenericSliceCore(values=SliceValues(
+        return PolynomialCore(values=SliceValues(
             slices=[(weight * val, pos) for (val, pos) in self.values.slices],
             shape=self.values.shape
         ), colors=self.colors, name=self.name)
 
     def sum_with(self, sumCore):
-        return GenericSliceCore(values=SliceValues(
+        return PolynomialCore(values=SliceValues(
             slices=self.values.slices + sumCore.values.slices,
             shape=self.values.shape
         ), colors=self.colors, name=self.name)
@@ -88,13 +99,13 @@ class GenericSliceCore:
 
 class GenericSliceContractor:
     def __init__(self, coreDict={}, openColors=[]):
-        self.coreDict = {key: GenericSliceCore(coreDict[key].values, coreDict[key].colors, name=key) for key in
+        self.coreDict = {key: PolynomialCore(coreDict[key].values, coreDict[key].colors, name=key) for key in
                          coreDict}
         self.openColors = openColors
 
     def contract(self):
         ## Without optimization -> Can apply optimization from version0
-        resultCore = GenericSliceCore(SliceValues(slices=[(1, dict())], shape=[]), [], name="Contraction")
+        resultCore = PolynomialCore(SliceValues(slices=[(1, dict())], shape=[]), [], name="Contraction")
         for key in self.coreDict:
             resultCore = resultCore.contract_with(self.coreDict[key])
         for color in list(resultCore.colors):

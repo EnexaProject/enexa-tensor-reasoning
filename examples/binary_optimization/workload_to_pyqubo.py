@@ -35,7 +35,7 @@ if __name__ == "__main__":
         "f1": ["imp", "a", "b"]
     })
 
-    provider = knowledge.InferenceProvider(hybridKB, contractionMethod="GenericSliceContractor")
+    provider = knowledge.InferenceProvider(hybridKB, contractionMethod="PolynomialContractor")
     result = provider.query(["a", "b"])
     result.add_identical_slices()
 
