@@ -4,13 +4,12 @@ from tnreason import engine
 import numpy as np
 
 messageCoreSuffix = "_messageCore"
-headCoreSuffix = "_headCore"  ## Should be same as in encoding
-
+headCoreSuffix = "_headCore"
 
 class MPMomentMatcher:
-    def __init__(self, expressionsDict, empircalMeanDict):
+    def __init__(self, expressionsDict, empiricalMeanDict):
         self.expressionsDict = expressionsDict
-        self.empiricalMeanDict = empircalMeanDict
+        self.empiricalMeanDict = empiricalMeanDict
 
         self.atoms = encoding.get_all_atoms(expressionsDict)
         self.messageCores = {
@@ -61,20 +60,24 @@ class MPMomentMatcher:
             if len(readyCores) == 0:
                 readyCores = find_ready_cores_in_direction(weightingCores, self.directedCores, readyColors)
 
-    def adjust_headCores(self, maxWeight=100):
+    def adjust_headCores(self):
         for key in self.expressionsDict:
-            headColor = encoding.get_formula_color(expressionsDict[key])
+            headColor = encoding.get_formula_color(self.expressionsDict[key])
             negValue, posValue = self.messageCores[headColor + messageCoreSuffix].values
             if negValue == 0 or self.empiricalMeanDict[key] == 0:
-                weight = -maxWeight
+                self.weightsDict[key].append(float("-inf"))
+                self.headCores.update(encoding.create_head_core(self.expressionsDict[key], "falseEvaluation"))
             elif posValue == 0 or self.empiricalMeanDict[key] == 1:
-                weight = maxWeight
+                self.weightsDict[key].append(float("inf"))
+                self.headCores.update(encoding.create_head_core(self.expressionsDict[key], "truthEvaluation"))
             else:
                 ## Need Cases: negValue / posValue 0 / 1
                 weight = np.log(
                     (negValue / posValue) * (self.empiricalMeanDict[key] / (1 - self.empiricalMeanDict[key])))
-            self.weightsDict[key].append(weight)
-            self.headCores.update(encoding.create_head_core(expressionsDict[key], "expFactor", weight))
+                self.weightsDict[key].append(weight)
+                self.headCores.update(encoding.create_head_core(self.expressionsDict[key], "expFactor", weight))
+
+            self.messageCores[headColor+messageCoreSuffix] = self.headCores[headColor+headCoreSuffix]
 
     def downward_messages(self):
         sentMessages = [self.headCores[key].colors[0] for key in self.headCores]
@@ -91,7 +94,7 @@ class MPMomentMatcher:
                  **{key+messageCoreSuffix: self.messageCores[key+messageCoreSuffix] for key in find_parent_messages(messageKey, self.directedCores) +
                     find_sibling_messages(messageKey, self.directedCores)}},
                 openColors=[messageKey]
-            )
+            ).normalize()
 
             sentMessages.append(messageKey)
             if len(readyMessages) != 0:
