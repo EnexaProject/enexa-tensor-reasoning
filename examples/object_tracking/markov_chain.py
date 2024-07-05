@@ -13,7 +13,7 @@ def create_transition_matrix(position, length, tendency_x=0.5):
                                       "y" + str(position + 1)])
 
 
-def create_markov_cain(positionNumber, tendency_x=0.5):
+def create_markov_chain(positionNumber, tendency_x=0.5):
     return {"core" + str(position): create_transition_matrix(position+1, position+1, tendency_x=tendency_x) for position in
             range(positionNumber)}
 
@@ -25,7 +25,7 @@ def create_evidence(variable, dimension, index):
 
 
 if __name__ == "__main__":
-    mc = create_markov_cain(3)
+    mc = create_markov_chain(3)
     res = engine.contract(method="PgmpyVariableEliminator", coreDict={**mc, "evidence": create_evidence("x3", 3, 1)}, openColors=["y3"])
 
     print("y2", res.values / res.values.sum())

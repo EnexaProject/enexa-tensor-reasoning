@@ -22,6 +22,10 @@ def to_random_basis(binaryCore):
 
 
 def get_random_assignment(n=3):
+    """
+    Simple form of backtracking algorithm:
+    Choose iteratively a queen position by random and propagate the constraints.
+    """
     propagator = get_queens_propagator(n=n)
     times = []
     currentTime = time.time()
