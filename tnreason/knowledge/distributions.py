@@ -15,13 +15,16 @@ Distributions are Markov Networks with two methods:
 
 class EmpiricalDistribution:
     """
-    Inferable (by HybridInferer) empirical distributions
+    Inferable (by InferenceProvider) empirical distributions
     """
 
-    def __init__(self, sampleDf, atomKeys=None):
+    def __init__(self, sampleDf, atomKeys=None, interpretation="atomic", dimensionsDict={}):
         """
         * sampleDf: pd.DataFrame containing the samples defining the empirical distributions
         * atomKeys: List of columns of sampleDf to be recognized as atoms
+        * interpretation: Specifies the interpretation of the entries of sampleDf
+            - "atomic": Variables have dimension 2 and entries in [0,1] are the probability of the atom holding.
+            - "categorical": Variables have dimension m specified in dimensionsDict and entries are the certain value of the variable in [m]
         """
         if atomKeys is None:
             atomKeys = list(sampleDf.columns)
@@ -29,11 +32,15 @@ class EmpiricalDistribution:
         self.sampleDf = sampleDf
         self.dataNum = sampleDf.values.shape[0]
 
+        self.interpretation = interpretation
+        self.dimensionsDict = dimensionsDict
+
     def __str__(self):
         return "Empirical Distribution with {} samples of atoms {}.".format(self.dataNum, self.atoms)
 
     def create_cores(self):
-        return encoding.create_data_cores(self.sampleDf, self.atoms)
+        return encoding.create_data_cores(self.sampleDf, atomKeys=self.atoms, interpretation=self.interpretation,
+                                          dimensionsDict=self.dimensionsDict)
 
     def get_partition_function(self, allAtoms=[]):
         unseenAtomNum = len([atom for atom in allAtoms if atom not in self.atoms])
