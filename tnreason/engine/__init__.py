@@ -1,4 +1,5 @@
 from tnreason.engine.engine_visualization import draw_contractionDiagram
+from tnreason.engine.polynomial_contractor import SliceValues
 
 defaultCoreType = "NumpyTensorCore"
 defaultContractionMethod = "PgmpyVariableEliminator"
