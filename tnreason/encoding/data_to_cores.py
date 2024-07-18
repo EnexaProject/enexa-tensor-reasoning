@@ -43,10 +43,6 @@ def atomValues_from_sampleDf(sampleDf, atomKey, dataColor):
     for i in range(dataNum):
         values[i, 1] = dfEntries[i]
         values[i, 0] = 1 - dfEntries[i]
-    #    elif coreType == "PolynomialCore":
-    #        values = engine.SliceValues(
-    #            slices = [(1,{})]
-    #        )
     return engine.get_core()(values, [dataColor, atomKey], name=atomKey + dataCoreSuffix)
 
 

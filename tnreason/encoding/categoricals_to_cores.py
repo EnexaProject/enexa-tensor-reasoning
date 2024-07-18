@@ -3,6 +3,7 @@ import numpy as np
 
 categoricalCoreSuffix = "_catCore"
 
+
 def create_categorical_cores(categoricalsDict):
     """
     Creates a tensor network representing the constraints of
@@ -15,12 +16,21 @@ def create_categorical_cores(categoricalsDict):
 
 
 def create_constraintCoresDict(atoms, catName):
-    constraintCoresDict = {}
-    for i, atomKey in enumerate(atoms):
-        coreValues = np.zeros(shape=(len(atoms), 2))
-        coreValues[:, 0] = np.ones(shape=(len(atoms)))
-        coreValues[i, 0] = 0
-        coreValues[i, 1] = 1
-        constraintCoresDict[catName + "_" + atomKey + categoricalCoreSuffix] = engine.get_core()(
-            coreValues, [catName, atomKey], name=catName + "_" + atomKey + categoricalCoreSuffix)
-    return constraintCoresDict
+    return {catName + "_" + atomName + categoricalCoreSuffix: create_atomization_core(catName, len(atoms), i, atomName)[
+        catName + "_" + atomName + categoricalCoreSuffix] for i, atomName in enumerate(atoms)}
+
+
+def create_atomization_core(catName, catDim, position, atomName=None):
+    """
+    Creates the relation encoding of the categorical X with its atomization to the position (int).
+    If the resulting atom is not named otherwise, we call it X=position.
+    """
+    if atomName is None:
+        atomName = catName + "=" + str(position)
+    values = np.zeros(shape=(catDim, 2))
+    values[:, 0] = np.ones(shape=(catDim))
+    values[position, 0] = 0
+    values[position, 1] = 1
+    return {catName + "_" + atomName + categoricalCoreSuffix: engine.get_core()(
+        values, [catName, atomName], name=catName + "_" + atomName + categoricalCoreSuffix
+    )}
