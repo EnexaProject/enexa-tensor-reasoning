@@ -125,9 +125,20 @@ def fix_neurons(neuronDict, selectionDict):
     rawFormulas = {}
     for neuronName in neuronDict:
         rawFormulas[neuronName] = [neuronDict[neuronName][0][selectionDict[neuronName + connectiveSelColorSuffix]]] + [
-            neuronDict[neuronName][i][selectionDict[neuronName + "_" + posPrefix + str(i - 1) + candidatesColorSuffix]]
+            fix_selection(neuronDict[neuronName][i],
+                          selectionDict[neuronName + "_" + posPrefix + str(i - 1) + candidatesColorSuffix])
             for i in range(1, len(neuronDict[neuronName]))]
     return rawFormulas
+
+
+def fix_selection(choices, position):
+    """
+    Materializes a choice, either from a categorical variable (when choices is str) or from a list of possibilities (when choices is a list of str)
+    """
+    if isinstance(choices, str):  # The case of a categorical variable
+        return choices + "=" + str(position)
+    else:  # The case of a list of possibilities
+        return choices[position]
 
 
 def get_headKeys(fixedNeurons):

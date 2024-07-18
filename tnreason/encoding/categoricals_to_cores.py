@@ -16,11 +16,11 @@ def create_categorical_cores(categoricalsDict):
 
 
 def create_constraintCoresDict(atoms, catName):
-    return {catName + "_" + atomName + categoricalCoreSuffix: create_atomization_core(catName, len(atoms), i, atomName)[
+    return {catName + "_" + atomName + categoricalCoreSuffix: create_single_atomization(catName, len(atoms), i, atomName)[
         catName + "_" + atomName + categoricalCoreSuffix] for i, atomName in enumerate(atoms)}
 
 
-def create_atomization_core(catName, catDim, position, atomName=None):
+def create_single_atomization(catName, catDim, position, atomName=None):
     """
     Creates the relation encoding of the categorical X with its atomization to the position (int).
     If the resulting atom is not named otherwise, we call it X=position.
@@ -34,3 +34,11 @@ def create_atomization_core(catName, catDim, position, atomName=None):
     return {catName + "_" + atomName + categoricalCoreSuffix: engine.get_core()(
         values, [catName, atomName], name=catName + "_" + atomName + categoricalCoreSuffix
     )}
+
+
+def create_atomization_cores(atomizationSpecs, catDimDict):
+    atomizationCores = {}
+    for atomizationSpec in atomizationSpecs:
+        catName, position = atomizationSpec.split("=")
+        atomizationCores.update(create_single_atomization(catName, catDimDict[catName], int(position)))
+    return atomizationCores

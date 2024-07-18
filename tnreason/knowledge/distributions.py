@@ -50,9 +50,11 @@ class EmpiricalDistribution:
 class HybridKnowledgeBase:
     """
     Inferable (by HybridInferer) Knowledge Base. Generalizes Markov Logic Network by further dedicated cores
+    * dimensionDict: Dictionary of dimensions for in the formulas appearing categorical variables
     """
 
-    def __init__(self, weightedFormulas={}, facts={}, categoricalConstraints={}, evidence={}, backCores={}):
+    def __init__(self, weightedFormulas={}, facts={}, categoricalConstraints={}, evidence={}, backCores={},
+                 dimensionDict={}):
         self.weightedFormulas = {key: weightedFormulas[key][:-1] + [float(weightedFormulas[key][-1])] for key in
                                  weightedFormulas}
         self.facts = facts
@@ -63,6 +65,7 @@ class HybridKnowledgeBase:
         self.backCores = backCores
 
         self.find_atoms()
+        self.dimensionDict=dimensionDict
 
     def __str__(self):
         outString = "Hybrid Knowledge Base consistent of"
@@ -133,6 +136,7 @@ class HybridKnowledgeBase:
         return {**encoding.create_formulas_cores({**self.weightedFormulas, **self.facts}),
                 **encoding.create_evidence_cores(self.evidence),
                 **encoding.create_categorical_cores(self.categoricalConstraints),
+                **encoding.create_atomization_cores([atom for atom in self.atoms if "=" in atom], self.dimensionDict),
                 **self.backCores}
 
     def get_partition_function(self, allAtoms=[]):
