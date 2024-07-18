@@ -1,7 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-def draw_factor_graph(coreDict, fontsize=10, title="Factor Graph", pos=None):
+def draw_factor_graph(coreDict, fontsize=10, title="Factor Graph", pos=None, bipartite=False):
     coreNodes = list(coreDict.keys())
 
     colorNodes = []
@@ -19,6 +19,8 @@ def draw_factor_graph(coreDict, fontsize=10, title="Factor Graph", pos=None):
 
     if pos is None:
         pos = nx.spring_layout(graph)
+    if bipartite:
+        pos = nx.bipartite_layout(graph, coreNodes)
 
     nx.draw_networkx_labels(graph, pos, {atom:atom for atom in coreNodes}, font_size=fontsize,
                             bbox=dict(facecolor='blue', alpha=0.2, edgecolor='black', boxstyle='round,pad=0'))

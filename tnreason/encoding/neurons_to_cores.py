@@ -63,7 +63,7 @@ def create_variable_selectors(neuronName, candidateKey, variables):
         values[:, :, 1] = np.eye(dim)
         return {candidateKey + "_" + variables + candidatesCoreSuffix:
                     engine.get_core()(values,
-                                      [neuronName + "_" + candidateKey + candidatesColorSuffix, catName, candidateKey],
+                                      [candidateKey + candidatesColorSuffix, catName, candidateKey],
                                       candidateKey + "_" + variables + candidatesCoreSuffix)
                 }
 
@@ -76,7 +76,7 @@ def create_variable_selectors(neuronName, candidateKey, variables):
 
         cSelectorDict[candidateKey + "_" + variableKey + candidatesCoreSuffix] = engine.get_core()(
             values,
-            [neuronName + "_" + candidateKey + candidatesColorSuffix,
+            [candidateKey + candidatesColorSuffix,
              variableKey,
              candidateKey],
             candidateKey + "_" + variableKey + candidatesCoreSuffix
