@@ -32,17 +32,16 @@ class EntropyMaximizer:
             updateKeys = list(self.satisfactionDict.keys())
         for optKey in updateKeys:
             if self.satisfactionDict[optKey] == 0:
-                updateKeys.remove(optKey)
                 self.formulaCores.update(
                     encoding.create_head_core(self.expressionsDict[optKey], headType="falseEvaluation"))
                 print("Formula {} is never satisfied.".format(self.expressionsDict[optKey]))
                 factsDict[optKey] = 0
             elif self.satisfactionDict[optKey] == 1:
-                updateKeys.remove(optKey)
                 self.formulaCores.update(
                     encoding.create_head_core(self.expressionsDict[optKey], headType="truthEvaluation"))
                 print("Formula {} is always satisfied.".format(self.expressionsDict[optKey]))
                 factsDict[optKey] = 1
+        updateKeys = {key for key in updateKeys if self.satisfactionDict[key] not in [0,1]}
         weightDict = {key: [] for key in updateKeys}
         for sweep in range(sweepNum):
             for optKey in updateKeys:
