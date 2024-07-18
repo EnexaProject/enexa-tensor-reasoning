@@ -23,8 +23,7 @@ def create_architecture(neuronDict, headNeurons=[]):
     for neuronName in neuronDict.keys():
         architectureCores = {**architectureCores,
                              **create_neuron(neuronName, neuronDict[neuronName][0], {
-                                 # neuronName + "_" +
-                                 posPrefix + str(i): posCandidates for i, posCandidates in
+                                 neuronName + "_" + posPrefix + str(i): posCandidates for i, posCandidates in
                                  enumerate(neuronDict[neuronName][1:])
                              })}
     for headNeuron in headNeurons:
