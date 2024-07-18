@@ -53,6 +53,7 @@ def create_variable_selectors(neuronName, candidateKey, variables):
     There are two possibilities to specify variables
         * list of variables string: Representing a selection of atomic variables represented in the string and a CP decomposition is created.
         * single string: Representing a categorical variable in the format X=[m] and a single selection core is created.
+    Resulting colors in each core: [selection variable, candidate variable, neuron argument variable]
     """
     if isinstance(variables, str):
         catName, dimBracket = variables.split("=")

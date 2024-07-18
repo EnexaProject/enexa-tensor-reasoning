@@ -1,4 +1,4 @@
-from tnreason.engine.engine_visualization import draw_contractionDiagram
+from tnreason.engine.engine_visualization import draw_factor_graph
 from tnreason.engine.polynomial_contractor import SliceValues
 
 defaultCoreType = "NumpyTensorCore"
