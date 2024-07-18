@@ -23,6 +23,7 @@ def create_architecture(neuronDict, headNeurons=[]):
     for neuronName in neuronDict.keys():
         architectureCores = {**architectureCores,
                              **create_neuron(neuronName, neuronDict[neuronName][0], {
+                                 # neuronName + "_" +
                                  posPrefix + str(i): posCandidates for i, posCandidates in
                                  enumerate(neuronDict[neuronName][1:])
                              })}
@@ -39,7 +40,8 @@ def create_neuron(neuronName, connectiveList, candidatesDict={}):
         * candidatesDict: Dictionary of lists of candidates to each argument of the neuron
     """
     neuronCores = {
-        neuronName + connectiveSelCoreSuffix: create_connective_selectors(neuronName, candidatesDict.keys(), connectiveList)}
+        neuronName + connectiveSelCoreSuffix: create_connective_selectors(neuronName, candidatesDict.keys(),
+                                                                          connectiveList)}
     for candidateKey in candidatesDict:
         neuronCores = {**neuronCores, **create_variable_selectors(
             neuronName, candidateKey, candidatesDict[candidateKey])}
@@ -48,8 +50,23 @@ def create_neuron(neuronName, connectiveList, candidatesDict={}):
 
 def create_variable_selectors(neuronName, candidateKey, variables):
     """
-    Creates the selection cores to one argument at a neuron
+    Creates the selection cores to one argument at a neuron.
+    There are two possibilities to specify variables
+        * list of variables string: Representing a selection of atomic variables represented in the string and a CP decomposition is created.
+        * single string: Representing a categorical variable in the format X=[m] and a single selection core is created.
     """
+    if isinstance(variables, str):
+        catName, dimBracket = variables.split("=")
+        dim = int(dimBracket.split("[")[1][:-1])
+        values = np.zeros(shape=(dim, dim, 2))
+        values[:, :, 0] = np.ones(shape=(dim, dim)) - np.eye(dim)
+        values[:, :, 1] = np.eye(dim)
+        return {neuronName + "_" + candidateKey + "_" + variables + candidatesCoreSuffix:
+                    engine.get_core()(values,
+                                      [neuronName + "_" + candidateKey + candidatesColorSuffix, catName, candidateKey],
+                                      neuronName + "_" + candidateKey + "_" + variables + candidatesCoreSuffix)
+                }
+
     cSelectorDict = {}
     for i, variableKey in enumerate(variables):
         values = np.ones(
