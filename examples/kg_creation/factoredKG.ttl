@@ -1,0 +1,142 @@
+@prefix ex: <http://fun.org> .
+
+ex:v1_0 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample0 ;
+    ex:v1v2Relation ex:v2_0 .
+
+ex:v1_1 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample1 ;
+    ex:v1v2Relation ex:v2_1 .
+
+ex:v1_2 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample2 ;
+    ex:v1v2Relation ex:v2_2 .
+
+ex:v1_3 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample3 ;
+    ex:v1v2Relation ex:v2_3 .
+
+ex:v1_4 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample4 ;
+    ex:v1v2Relation ex:v2_4 .
+
+ex:v1_5 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample5 ;
+    ex:v1v2Relation ex:v2_5 .
+
+ex:v1_6 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample6 ;
+    ex:v1v2Relation ex:v2_6 .
+
+ex:v1_7 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample7 ;
+    ex:v1v2Relation ex:v2_7 .
+
+ex:v1_8 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample8 ;
+    ex:v1v2Relation ex:v2_8 .
+
+ex:v1_9 a ex:v1,
+        ex:v1Property ;
+    ex:toSample ex:sample9 ;
+    ex:v1v2Relation ex:v2_9 .
+
+ex:v3_0 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample0 .
+
+ex:v3_1 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample1 .
+
+ex:v3_2 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample2 .
+
+ex:v3_3 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample3 .
+
+ex:v3_4 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample4 .
+
+ex:v3_5 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample5 .
+
+ex:v3_6 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample6 .
+
+ex:v3_7 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample7 .
+
+ex:v3_8 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample8 .
+
+ex:v3_9 a ex:v3,
+        ex:v3Property ;
+    ex:toSample ex:sample9 .
+
+ex:v2_0 a ex:v2 ;
+    ex:toSample ex:sample0 .
+
+ex:v2_1 a ex:v2 ;
+    ex:toSample ex:sample1 .
+
+ex:v2_2 a ex:v2 ;
+    ex:toSample ex:sample2 .
+
+ex:v2_3 a ex:v2 ;
+    ex:toSample ex:sample3 .
+
+ex:v2_4 a ex:v2 ;
+    ex:toSample ex:sample4 .
+
+ex:v2_5 a ex:v2 ;
+    ex:toSample ex:sample5 .
+
+ex:v2_6 a ex:v2 ;
+    ex:toSample ex:sample6 .
+
+ex:v2_7 a ex:v2 ;
+    ex:toSample ex:sample7 .
+
+ex:v2_8 a ex:v2 ;
+    ex:toSample ex:sample8 .
+
+ex:v2_9 a ex:v2 ;
+    ex:toSample ex:sample9 .
+
+ex:sample0 a ex:Sample .
+
+ex:sample1 a ex:Sample .
+
+ex:sample2 a ex:Sample .
+
+ex:sample3 a ex:Sample .
+
+ex:sample4 a ex:Sample .
+
+ex:sample5 a ex:Sample .
+
+ex:sample6 a ex:Sample .
+
+ex:sample7 a ex:Sample .
+
+ex:sample8 a ex:Sample .
+
+ex:sample9 a ex:Sample .
+

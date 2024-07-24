@@ -1,0 +1,37 @@
+@prefix ex: <http://fun.org> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+ex:sample0 a ex:alpha,
+        ex:beta .
+
+ex:sample1 a ex:alpha,
+        ex:gamma .
+
+ex:sample2 a ex:alpha,
+        ex:beta,
+        ex:gamma .
+
+ex:sample3 a ex:beta .
+
+ex:sample4 a ex:alpha .
+
+ex:sample5 a ex:alpha,
+        ex:beta .
+
+ex:sample6 a ex:alpha .
+
+ex:sample7 a ex:beta .
+
+ex:sample8 a ex:alpha,
+        ex:beta,
+        ex:gamma .
+
+ex:sample9 a ex:alpha,
+        ex:beta .
+
+ex:gamma a owl:Class .
+
+ex:beta a owl:Class .
+
+ex:alpha a owl:Class .
+
