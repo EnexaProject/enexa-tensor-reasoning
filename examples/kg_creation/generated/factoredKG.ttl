@@ -1,0 +1,49 @@
+@prefix ex: <http://fun.org> .
+
+ex:v1_0 a ex:v1Property ;
+    ex:extractionRelation ex:v2_0 ;
+    ex:secExtractionRelation ex:v3_0 .
+
+ex:v1_1 ex:extractionRelation ex:v2_1 ;
+    ex:secExtractionRelation ex:v3_1 .
+
+ex:v1_2 ex:extractionRelation ex:v2_2 ;
+    ex:secExtractionRelation ex:v3_2 .
+
+ex:v1_3 a ex:v1Property ;
+    ex:extractionRelation ex:v2_3 ;
+    ex:secExtractionRelation ex:v3_3 ;
+    ex:v1v2Relation ex:v2_3 .
+
+ex:v1_4 ex:extractionRelation ex:v2_4 ;
+    ex:secExtractionRelation ex:v3_4 ;
+    ex:v1v2Relation ex:v2_4 .
+
+ex:v1_5 ex:extractionRelation ex:v2_5 ;
+    ex:secExtractionRelation ex:v3_5 .
+
+ex:v1_6 ex:extractionRelation ex:v2_6 ;
+    ex:secExtractionRelation ex:v3_6 ;
+    ex:v1v2Relation ex:v2_6 .
+
+ex:v1_7 ex:extractionRelation ex:v2_7 ;
+    ex:secExtractionRelation ex:v3_7 ;
+    ex:v1v2Relation ex:v2_7 .
+
+ex:v1_8 ex:extractionRelation ex:v2_8 ;
+    ex:secExtractionRelation ex:v3_8 ;
+    ex:v1v2Relation ex:v2_8 .
+
+ex:v1_9 a ex:v1Property ;
+    ex:extractionRelation ex:v2_9 ;
+    ex:secExtractionRelation ex:v3_9 ;
+    ex:v1v2Relation ex:v2_9 .
+
+ex:v3_2 a ex:v3Property .
+
+ex:v3_5 a ex:v3Property .
+
+ex:v3_6 a ex:v3Property .
+
+ex:v3_7 a ex:v3Property .
+

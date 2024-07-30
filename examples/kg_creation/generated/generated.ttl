@@ -1,0 +1,5 @@
+
+<http://example.com/alpha_0> a <http://example.com/example> .
+
+<http://example.com/alpha_1> a <http://example.com/example> .
+

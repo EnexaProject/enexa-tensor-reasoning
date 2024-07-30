@@ -1,0 +1,13 @@
+prefixes:
+    ex: "http://example.com/"
+mappings:
+    al:
+        sources:
+            - ["/Users/alexgoessmann/Documents/ENEXA/tnreason/version1/examples/kg_creation/example.csv~csv"]
+
+    v1:
+        sources:
+            - ["/Users/alexgoessmann/Documents/ENEXA/tnreason/version1/examples/kg_creation/example.csv~csv"]
+        s: ex:alpha_$(sample_index)
+        po:
+            - [a, ex:v1]
