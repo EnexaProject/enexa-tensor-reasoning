@@ -17,14 +17,18 @@ class ALS:
     """
 
     def __init__(self, networkCores, importanceColors=[], importanceList=[({}, 1)],
-                 contractionMethod=engine.defaultContractionMethod, targetCores={}):
+                 contractionMethod=engine.defaultContractionMethod, targetCores=None, targetList=[({}, 1)]):
         self.networkCores = networkCores
 
         self.importanceColors = importanceColors
         self.importanceList = importanceList
         self.contractionMethod = contractionMethod
 
-        self.targetCores = targetCores
+        # To ease case, where only one element in targetList
+        if targetCores is not None:
+            self.targetList = [(targetCores, 1)]
+        else:
+            self.targetList = targetList
 
         self.trivialKeys = []  # Keys with single position, trivial in the sense that they will not be updated
 
@@ -97,20 +101,32 @@ class ALS:
                                                              updateColors]).multiply(weight)
 
     def compute_conTarget(self, updateColors, importanceCores={}, weight=1):
-        return engine.contract(method=self.contractionMethod,
-                               coreDict={
-                                   **importanceCores,
-                                   **self.networkCores,
-                                   **self.targetCores,
-                               }, openColors=updateColors).multiply(weight)
+        conTarget = engine.contract(method=self.contractionMethod,
+                                    coreDict={
+                                        **importanceCores,
+                                        **self.networkCores,
+                                        **self.targetList[0][0],
+                                    }, openColors=updateColors).multiply(weight * self.targetList[0][1])
+        for targetCores, targetWeight in self.targetList[1:]:
+            conTarget = conTarget.sum_with(engine.contract(method=self.contractionMethod,
+                                                           coreDict={
+                                                               **importanceCores,
+                                                               **self.networkCores,
+                                                               **targetCores,
+                                                           }, openColors=updateColors).multiply(weight * targetWeight))
+        return conTarget
 
     def compute_residuum(self):
         prediction = engine.contract(method=self.contractionMethod,
                                      coreDict=self.networkCores,
                                      openColors=self.importanceColors)
         target = engine.contract(method=self.contractionMethod,
-                                 coreDict=self.targetCores,
-                                 openColors=self.importanceColors)
+                                 coreDict=self.targetList[0][0],
+                                 openColors=self.importanceColors).multiply(self.targetList[0][1])
+        for targetCores, targetWeight in self.targetList[1:]:
+            target = target.sum_with(engine.contract(method=self.contractionMethod,
+                                                     coreDict=targetCores,
+                                                     openColors=self.importanceColors).multiply(targetWeight))
         prediction.reorder_colors(target.colors)
         ## Not using the weightings by the importanceList!
         return np.linalg.norm(prediction.values - target.values)
