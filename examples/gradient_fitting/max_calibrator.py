@@ -1,5 +1,5 @@
-from tnreason import engine
-
+from tnreason import engine, encoding
+import numpy as np
 
 class MaxCalibrator:
     def __init__(self, clusters):

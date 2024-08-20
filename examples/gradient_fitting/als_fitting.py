@@ -4,6 +4,9 @@ import numpy as np
 from tnreason import engine
 from tnreason.algorithms import alternating_least_squares as als
 
+
+#### ! MISSING PARTITION FUNCTIONS ! ####
+
 architecture = {
     "n1" : [["imp","or"],
             ["a","b"],
