@@ -181,3 +181,13 @@ def find_selection_dimDict(specDict):
                         **{neuronName + "_" + posPrefix + str(i) + candidatesColorSuffix: len(candidates)
                            for i, candidates in enumerate(specDict[neuronName][1:])}})
     return dimDict
+
+def find_selection_colors(specDict):
+    """
+    Extracts the default selection colors from a architecture dict
+    """
+    colors = []
+    for neuronName in specDict:
+        colors.append(neuronName + connectiveSelColorSuffix)
+        colors = colors + [neuronName + "_" + posPrefix + str(i) + candidatesColorSuffix for i in range(len(specDict[neuronName][1:]))]
+    return colors
