@@ -2,6 +2,7 @@ from tnreason import encoding, engine
 
 import numpy as np
 
+## To energy_mean_field in examples/energy_contraction
 
 class MeanField:
     def __init__(self, networkCores, importanceList, partitionColorDict, partitionShapeDict):

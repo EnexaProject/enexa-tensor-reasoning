@@ -45,7 +45,7 @@ class NumpyCore:
 
     def draw_sample(self, asEnergy=False, temperature=1):
         if asEnergy:
-            distribution = np.exp(self.values * temperature).flatten()
+            distribution = np.exp(self.values * 1/temperature).flatten()
         else:
             distribution = self.values.flatten()
         sample = np.unravel_index(
