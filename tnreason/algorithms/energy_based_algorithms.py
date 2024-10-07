@@ -1,4 +1,4 @@
-from tnreason import engine, encoding
+from tnreason import engine
 
 import numpy as np
 
@@ -19,9 +19,9 @@ class EnergyMeanField:
 
         # Only distinction to Gibbs: MeanCores instead of samples turned into cores
         self.partitionColorDict = partitionColorDict
-        self.meanCores = {parKey: encoding.create_trivial_core(parKey, [self.dimDict[color] for color in
-                                                                        self.partitionColorDict[parKey]],
-                                                               partitionColorDict[parKey]).multiply(
+        self.meanCores = {parKey: engine.create_trivial_core(parKey, [self.dimDict[color] for color in
+                                                                      self.partitionColorDict[parKey]],
+                                                             partitionColorDict[parKey]).multiply(
             1 / np.prod([self.dimDict[color] for color in self.partitionColorDict[parKey]])) for parKey
             in partitionColorDict}
 
@@ -45,8 +45,8 @@ class EnergyMeanField:
             )
 
         contracted = contracted.multiply(1 / temperature)
-        self.meanCores[upKey] = engine.get_core("NumpyTensorCore")(values=np.exp(contracted.values),
-                                                                   colors=contracted.colors).normalize()
+        self.meanCores[upKey] = engine.get_core("NumpyTensorCore")(values=contracted.values,
+                                                                   colors=contracted.colors).exponentiate().normalize()
 
         angle = engine.contract({"old": oldMean, "new": self.meanCores[upKey]}, openColors=[])
         return angle.values
@@ -67,6 +67,7 @@ class EnergyMeanField:
             sample.update(self.meanCores[coreKey].draw_sample(temperature=1))
         return sample
 
+
 class EnergyGibbs:
     def __init__(self, energyDict, colors=[], dimDict={}):
         self.energyDict = energyDict
@@ -80,13 +81,13 @@ class EnergyGibbs:
     def initialize_sample_uniform(self):
         for color in self.colors:
             self.sample.update(
-                encoding.create_trivial_core(color + "_probCore", self.dimDict[color], [color]).draw_sample())
+                engine.create_trivial_core(color + "_probCore", self.dimDict[color], [color]).draw_sample())
 
     def calculate_energy(self, upColors):
         affectedEnergyKeys = list(set().union(*[self.affectionDict[color] for color in upColors]))
         sampleCores = {
-            color + "_sampleCore": encoding.create_basis_core(color + "_sampleCore", [self.dimDict[color]], [color],
-                                                              (self.sample[color])) for
+            color + "_sampleCore": engine.create_basis_core(color + "_sampleCore", [self.dimDict[color]], [color],
+                                                            (self.sample[color])) for
             color in self.sample if color not in upColors}
         contractedEnergy = engine.contract(coreDict={**self.energyDict[affectedEnergyKeys[0]][0], **sampleCores},
                                            openColors=upColors, dimDict=self.dimDict).multiply(

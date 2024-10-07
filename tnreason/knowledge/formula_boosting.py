@@ -4,8 +4,6 @@ from tnreason import engine
 
 from tnreason.knowledge import distributions
 
-import numpy as np
-
 parameterCoreSuffix = "_parCore"
 
 methodSelectionString = "method"
@@ -67,8 +65,7 @@ class FormulaBooster:
                                            self.specDict[architectureString])).multiply(importanceList[1][1])
             gradient = posPhase.sum_with(negPhase)
 
-            maxAssignment = gradient.get_maximal_index()
-            solutionDict = {color: maxAssignment[i] for i, color in enumerate(gradient.colors)}
+            solutionDict = gradient.get_argmax()
 
         elif self.specDict[methodSelectionString] == klOptionString:
             posPhase = engine.contract({**importanceList[0][0], **networkCores},
@@ -77,12 +74,10 @@ class FormulaBooster:
             negPhase = engine.contract({**importanceList[1][0], **networkCores},
                                        openColors=encoding.find_selection_colors(
                                            self.specDict[architectureString])).multiply(-importanceList[1][1])
-            klDivergences = np.empty(posPhase.values.shape)
-            for x in np.ndindex(posPhase.values.shape):
-                klDivergences[x] = bernoulli_kl_divergence(posPhase.values[x], negPhase.values[x])
+            klDivergences = posPhase.calculate_coordinatewise_kl_to(negPhase)
 
-            maxAssignment = np.unravel_index(np.argmax(klDivergences.flatten()), klDivergences.shape)
-            solutionDict = {color: maxAssignment[i] for i, color in enumerate(posPhase.colors)}
+            solutionDict = klDivergences.get_argmax()
+
 
         ## When alternating least squares used for structure learning
         elif self.specDict[methodSelectionString] == alsOptionString:
@@ -120,14 +115,3 @@ class FormulaBooster:
             return True
         else:
             raise ValueError("Acceptance Criterion {} not understood.".format(self.specDict[acceptanceCriterionString]))
-
-
-def bernoulli_kl_divergence(p1, p2):
-    """
-    Calculates the Kullback Leibler Divergence between two Bernoulli distributions with parameters p1, p2
-    """
-    if p1 == 0:
-        return np.log(1 / (1 - p2))
-    elif p1 == 1:
-        return np.log(1 / p2)
-    return p1 * np.log(p1 / p2) + (1 - p1) * np.log((1 - p1) / (1 - p2))

@@ -60,7 +60,7 @@ class ALS:
             return residua
 
     def get_color_argmax(self, updateKeys):
-        # ! Only working for vectors #
+        # ! Only working for vectors -> Can be replaced by .get_maximal_index of NumpyCore
         return {self.networkCores[key].colors[0]: np.argmax(np.abs(self.networkCores[key].values)) for key in
                 updateKeys}
 

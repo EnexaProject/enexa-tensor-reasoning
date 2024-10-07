@@ -1,4 +1,4 @@
-from examples.energy_contraction import energy_based_algorithms as eba
+from tnreason.algorithms import energy_based_algorithms as eba
 
 from tnreason import knowledge, encoding
 

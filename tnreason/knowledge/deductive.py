@@ -52,8 +52,7 @@ class InferenceProvider:
 
     def exact_map_query(self, variableList, evidenceDict={}):
         distributionCore = self.query(variableList, evidenceDict)
-        maxIndex = distributionCore.get_maximal_index()
-        return {variable: maxIndex[i] for i, variable in enumerate(distributionCore.colors)}
+        return distributionCore.get_argmax()
 
     def annealed_sample(self, variableList, annealingPattern=[(10, 1)]):
         sampler = algorithms.Gibbs(self.distribution.create_cores())
