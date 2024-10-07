@@ -1,7 +1,8 @@
 from tnreason.engine.engine_visualization import draw_factor_graph
 from tnreason.engine.polynomial_contractor import SliceValues
 
-from tnreason.engine.auxiliary_cores import create_trivial_cores, create_trivial_core, create_random_core, create_basis_core
+from tnreason.engine.auxiliary_cores import create_trivial_cores, create_trivial_core, create_random_core, \
+    create_basis_core
 
 defaultCoreType = "NumpyTensorCore"
 defaultContractionMethod = "PgmpyVariableEliminator"
@@ -75,8 +76,8 @@ class EmptyCore:
         self.name = "EmptyCore"
 
 
-class TrivialColorCore:
-    def __init__(self, color, dim):
-        self.values = [1 for i in range(dim)]
-        self.colors = [color]
-        self.name = color + "_trivialCore"
+def get_dimDict(coreDict):
+    dimDict = {}
+    for coreKey in coreDict:
+        dimDict.update({color: coreDict[coreKey].values.shape[i] for i, color in enumerate(coreDict[coreKey].colors)})
+    return dimDict

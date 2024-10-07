@@ -18,12 +18,15 @@ class EnergyMeanField:
         self.dimDict = dimDict
 
         # Only distinction to Gibbs: MeanCores instead of samples turned into cores
-        self.partitionColorDict = partitionColorDict
+        if partitionColorDict is None:
+            self.partitionColorDict = {color: [color] for color in colors}
+        else:
+            self.partitionColorDict = partitionColorDict
         self.meanCores = {parKey: engine.create_trivial_core(parKey, [self.dimDict[color] for color in
                                                                       self.partitionColorDict[parKey]],
-                                                             partitionColorDict[parKey]).multiply(
+                                                             self.partitionColorDict[parKey]).multiply(
             1 / np.prod([self.dimDict[color] for color in self.partitionColorDict[parKey]])) for parKey
-            in partitionColorDict}
+            in self.partitionColorDict}
 
     def update_meanCore(self, upKey, temperature=1):
 

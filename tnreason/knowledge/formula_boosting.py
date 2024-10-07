@@ -8,10 +8,18 @@ parameterCoreSuffix = "_parCore"
 
 methodSelectionString = "method"
 alsOptionString = "als"
+
+## Energy-based
 gibbsOptionString = "gibbs"
-annealPatternOptionString = "annealingPattern"
-maxOptionString = "exactSubMax"
-klOptionString = "exactKLMax"
+gibbsAnnealingArgument = "annealingPattern"
+
+gibbsMethodString = "gibbsSample"
+energyMaximumMethodString = "exactEnergyMax"
+
+meanFieldMethodString = "meanFieldSample"
+
+## Exact
+klMaximumMethodString = "exactKLMax"
 
 headNeuronString = "headNeurons"
 architectureString = "architecture"
@@ -38,6 +46,57 @@ class FormulaBooster:
         self.knowledgeBase = knowledgeBase
         self.specDict = specDict
 
+    def energy_based_search(self, sampleDf):
+        atomColors = encoding.find_atoms(self.specDict[architectureString])
+        selectionColors = encoding.find_selection_colors(self.specDict[architectureString])
+
+        empiricalDistribution = distributions.EmpiricalDistribution(sampleDf, atomColors)
+        statisticCores = encoding.create_architecture(self.specDict[architectureString],
+                                                      self.specDict[headNeuronString])
+
+        energyDict = {"pos": ({**statisticCores, **empiricalDistribution.create_cores()},
+                              1 / empiricalDistribution.get_partition_function(atomColors)),
+                      "neg": ({**statisticCores, **self.knowledgeBase.create_cores()},
+                              -1 / self.knowledgeBase.get_partition_function(atomColors))}
+        dimDict = engine.get_dimDict(statisticCores)
+
+        if self.specDict[methodSelectionString] == energyMaximumMethodString:
+            solutionDict = engine.contract(energyDict["pos"][0], openColors=selectionColors).multiply(
+                energyDict["pos"][1]).sum_with(
+                engine.contract(energyDict["neg"][0], openColors=selectionColors).multiply(
+                    energyDict["neg"][1])).get_argmax()
+        elif self.specDict[methodSelectionString] == gibbsMethodString:
+            sampler = algorithms.EnergyGibbs(energyDict=energyDict, colors=selectionColors, dimDict=dimDict)
+            if gibbsAnnealingArgument in self.specDict:
+                temperatureList = self.specDict[gibbsAnnealingArgument]
+            else:
+                temperatureList = [1 for i in range(10)]
+            sampler.annealed_sample(temperatureList=temperatureList)
+            solutionDict = sampler.sample
+        elif self.specDict[methodSelectionString] == meanFieldMethodString:
+            approximator = algorithms.EnergyMeanField(energyDict=energyDict, colors=selectionColors, dimDict=dimDict)
+            if gibbsAnnealingArgument in self.specDict:
+                temperatureList = self.specDict[gibbsAnnealingArgument]
+            else:
+                temperatureList = [1 for i in range(10)]
+            approximator.anneal(temperatureList=temperatureList)
+            solutionDict = approximator.draw_sample()
+        elif self.specDict[methodSelectionString] == klMaximumMethodString:
+            posPhase = engine.contract(energyDict["pos"][0],
+                                       openColors=encoding.find_selection_colors(
+                                           self.specDict[architectureString])).multiply(energyDict["pos"][1])
+            negPhase = engine.contract(energyDict["neg"][0],
+                                       openColors=encoding.find_selection_colors(
+                                           self.specDict[architectureString])).multiply(-energyDict["neg"][1])
+            klDivergences = posPhase.calculate_coordinatewise_kl_to(negPhase)
+
+            solutionDict = klDivergences.get_argmax()
+        else:
+            raise ValueError("Sampling Method {} not known!".format(self.specDict[methodSelectionString]))
+
+        self.candidates = encoding.create_solution_expression(self.specDict[architectureString], solutionDict)
+
+
     def find_candidate(self, sampleDf):
         """
         Searches for a candidate assignment to the architecture with maximal alignment to the likelihood gradient.
@@ -56,7 +115,7 @@ class FormulaBooster:
         updateColors = {key + parameterCoreSuffix: [key] for key in colorDims}
         updateCoreKeys = list(updateShapes.keys())
 
-        if self.specDict[methodSelectionString] == maxOptionString:
+        if self.specDict[methodSelectionString] == energyMaximumMethodString:
             posPhase = engine.contract({**importanceList[0][0], **networkCores},
                                        openColors=encoding.find_selection_colors(
                                            self.specDict[architectureString])).multiply(importanceList[0][1])
@@ -67,7 +126,7 @@ class FormulaBooster:
 
             solutionDict = gradient.get_argmax()
 
-        elif self.specDict[methodSelectionString] == klOptionString:
+        elif self.specDict[methodSelectionString] == klMaximumMethodString:
             posPhase = engine.contract({**importanceList[0][0], **networkCores},
                                        openColors=encoding.find_selection_colors(
                                            self.specDict[architectureString])).multiply(importanceList[0][1])
@@ -92,9 +151,9 @@ class FormulaBooster:
                                        importanceList=importanceList,
                                        exponentiated=True)
             sampler.ones_initialization(updateKeys=updateCoreKeys, shapesDict=updateShapes, colorsDict=updateColors)
-            if annealPatternOptionString in self.specDict:
+            if gibbsAnnealingArgument in self.specDict:
                 sampleDict = sampler.annealed_sample(updateKeys=updateCoreKeys,
-                                                     annealingPattern=self.specDict[annealPatternOptionString])
+                                                     annealingPattern=self.specDict[gibbsAnnealingArgument])
             elif structureSweepsString in self.specDict:
                 sampleDict = sampler.gibbs_sample(updateKeys=updateCoreKeys,
                                                   sweepNum=self.specDict[structureSweepsString])
