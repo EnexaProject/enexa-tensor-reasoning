@@ -2,16 +2,17 @@ import numpy as np
 
 from tnreason.engine import subscript_creation as subc
 
+
 class NumpyCore:
     def __init__(self, values, colors, name=None):
-        if len(colors) != len(values.shape):
-            raise ValueError("Number of Colors does not match the Value Shape in Core {}!".format(name))
-        if len(colors) != len(set(colors)):
-            raise ValueError("There are duplicate colors in the colors {} of Core {}!".format(colors, name))
-
-        self.values = values
+        self.values = np.array(values)
         self.colors = colors
         self.name = name
+
+        if len(self.colors) != len(self.values.shape):
+            raise ValueError("Number of Colors does not match the Value Shape in Core {}!".format(name))
+        if len(self.colors) != len(set(self.colors)):
+            raise ValueError("There are duplicate colors in the colors {} of Core {}!".format(colors, name))
 
     def get_values_as_array(self):
         return self.values
@@ -41,6 +42,16 @@ class NumpyCore:
 
     def get_maximal_index(self):
         return np.unravel_index(np.argmax(self.values.flatten()), self.values.shape)
+
+    def draw_sample(self, asEnergy=False, temperature=1):
+        if asEnergy:
+            distribution = np.exp(self.values * temperature).flatten()
+        else:
+            distribution = self.values.flatten()
+        sample = np.unravel_index(
+            np.random.choice(np.arange(np.prod(distribution.shape)), p=distribution / np.sum(distribution)),
+            self.values.shape)
+        return {color: sample[i] for i, color in enumerate(self.colors)}
 
 
 class NumpyEinsumContractor:

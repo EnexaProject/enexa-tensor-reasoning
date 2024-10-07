@@ -4,6 +4,7 @@ from tnreason.engine.polynomial_contractor import SliceValues
 defaultCoreType = "NumpyTensorCore"
 defaultContractionMethod = "PgmpyVariableEliminator"
 
+
 def contract(coreDict, openColors, dimDict={}, method=defaultContractionMethod):
     """
     Contractors are initialized with
@@ -14,10 +15,12 @@ def contract(coreDict, openColors, dimDict={}, method=defaultContractionMethod):
     if len(coreDict) == 0:
         return EmptyCore()
 
+    from tnreason.engine.workload_to_numpy import NumpyCore
     appearingColors = list(set().union(*[coreDict[coreKey].colors for coreKey in coreDict]))
     for color in openColors:
         if color not in appearingColors:
-            coreDict[color+"_trivialCore"] = TrivialColorCore(color, dimDict[color])
+            coreDict[color + "_trivialCore"] = NumpyCore(values=[1 for i in range(dimDict[color])], colors=[color],
+                                                         name=color + "_trivialCore")
 
     ## Einstein Summation Contractors
     if method == "NumpyEinsum":
@@ -58,17 +61,20 @@ def get_core(coreType="NumpyTensorCore"):
     else:
         raise ValueError("Core Type {} not supported.".format(coreType))
 
+
 class EmptyCore:
     """
     Output of an empty contraction
     """
+
     def __init__(self):
         self.values = 1
         self.colors = []
         self.name = "EmptyCore"
 
+
 class TrivialColorCore:
     def __init__(self, color, dim):
         self.values = [1 for i in range(dim)]
         self.colors = [color]
-        self.name = color+"_trivialCore"
+        self.name = color + "_trivialCore"
