@@ -11,6 +11,7 @@ class MeanField:
         self.partitionColorDict = partitionColorDict
         self.partitionShapeDict = partitionShapeDict
 
+        ## Initialize MeanCores from uniform distribution
         self.meanCores = {parKey: encoding.create_trivial_core(parKey, partitionShapeDict[parKey],
                                                                partitionColorDict[parKey]).multiply(
             1 / np.prod(self.partitionShapeDict[parKey])) for parKey
