@@ -4,14 +4,20 @@ from tnreason.engine.polynomial_contractor import SliceValues
 defaultCoreType = "NumpyTensorCore"
 defaultContractionMethod = "PgmpyVariableEliminator"
 
-def contract(coreDict, openColors, method=defaultContractionMethod):
+def contract(coreDict, openColors, dimDict={}, method=defaultContractionMethod):
     """
     Contractors are initialized with
         * coreDict: Dictionary of colored tensor cores specifying a network
         * openColors: List of colors to leave open in the contraction
+        * dimDict: Dictionary of dimension to each color, required only when colors do not appear in the cores
     """
     if len(coreDict) == 0:
         return EmptyCore()
+
+    appearingColors = list(set().union(*[coreDict[coreKey].colors for coreKey in coreDict]))
+    for color in openColors:
+        if color not in appearingColors:
+            coreDict[color+"_trivialCore"] = TrivialColorCore(color, dimDict[color])
 
     ## Einstein Summation Contractors
     if method == "NumpyEinsum":
@@ -60,3 +66,9 @@ class EmptyCore:
         self.values = 1
         self.colors = []
         self.name = "EmptyCore"
+
+class TrivialColorCore:
+    def __init__(self, color, dim):
+        self.values = [1 for i in range(dim)]
+        self.colors = [color]
+        self.name = color+"_trivialCore"
