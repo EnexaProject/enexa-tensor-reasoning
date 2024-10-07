@@ -5,9 +5,6 @@ from tnreason.encoding.neurons_to_cores import create_neuron, create_architectur
     create_solution_expression, find_selection_colors
 from tnreason.encoding.data_to_cores import create_data_cores
 
-from tnreason.encoding.auxiliary_cores import create_trivial_cores, create_trivial_core, create_basis_core, \
-    create_random_core
-
 ## Core Suffix Nomenclature used in other subpackages
 from tnreason.encoding.formulas_to_cores import headCoreSuffix
 

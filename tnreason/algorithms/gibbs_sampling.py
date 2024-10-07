@@ -1,5 +1,4 @@
 from tnreason import engine
-from tnreason import encoding
 
 import numpy as np
 
@@ -31,7 +30,7 @@ class Gibbs:
         for updateKey in updateKeys:
             if updateKey in self.networkCores.keys():
                 print("Warning: Existing core {} has been reinitialized in Gibbs!".format(updateKey))
-            self.networkCores[updateKey] = encoding.create_trivial_core(updateKey, shapesDict[updateKey],
+            self.networkCores[updateKey] = engine.create_trivial_core(updateKey, shapesDict[updateKey],
                                                                         colorsDict[updateKey])
 
     def annealed_sample(self, updateKeys, annealingPattern=[(10, 1)]):
@@ -59,13 +58,13 @@ class Gibbs:
         """
         ## Trivialize the core to be updated (serving as a placeholder)
         tbUpdated = self.networkCores.pop(updateKey)
-        self.networkCores[updateKey] = encoding.create_trivial_core(updateKey, tbUpdated.values.shape, tbUpdated.colors)
+        self.networkCores[updateKey] = engine.create_trivial_core(updateKey, tbUpdated.values.shape, tbUpdated.colors)
 
         updateColors = tbUpdated.colors
         updateShape = tbUpdated.values.shape
 
         updateDistribution = engine.contract({**self.networkCores, **self.importanceList[0][0],
-                                              "trivialCore": encoding.create_trivial_core("trivialCore", updateShape,
+                                              "trivialCore": engine.create_trivial_core("trivialCore", updateShape,
                                                                                           updateColors)},
                                              openColors=updateColors,
                                              method=self.contractionMethod).multiply(self.importanceList[0][1])
@@ -73,7 +72,7 @@ class Gibbs:
         for importanceCores, weight in self.importanceList[1:]:
             updateDistribution = updateDistribution.sum_with(
                 engine.contract({**self.networkCores, **importanceCores,
-                                 "trivialCore": encoding.create_trivial_core("trivialCore", updateShape,
+                                 "trivialCore": engine.create_trivial_core("trivialCore", updateShape,
                                                                              updateColors)},
                                 openColors=updateColors,
                                 method=self.contractionMethod).multiply(weight))
@@ -93,5 +92,5 @@ class Gibbs:
 
         # Draw a basis vector from the distribution
         pos = np.where(np.random.multinomial(1, localProb) == 1)[0][0]
-        self.networkCores[updateKey] = encoding.create_basis_core(updateKey, updateShape, updateColors, pos)
+        self.networkCores[updateKey] = engine.create_basis_core(updateKey, updateShape, updateColors, pos)
         return pos

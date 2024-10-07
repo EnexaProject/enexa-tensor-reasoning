@@ -58,7 +58,7 @@ class EntropyMaximizer:
                                              coreDict={**self.backCores,
                                                        **{key: self.formulaCores[key] for key in self.formulaCores if
                                                           key != tboCoreKey},
-                                                       tboCoreKey: encoding.create_trivial_core(tboCoreKey,
+                                                       tboCoreKey: engine.create_trivial_core(tboCoreKey,
                                                                         self.formulaCores[tboCoreKey].values.shape,
                                                                         self.formulaCores[tboCoreKey].colors)
                                                        },

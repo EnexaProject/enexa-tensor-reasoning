@@ -11,7 +11,6 @@ kb = knowledge.HybridKnowledgeBase(
     **format
 )
 
-from tnreason.encoding import auxiliary_cores
 #print(auxiliary.get_all_atoms({key: format["weightedFormulas"][key][:-1]
 #                             for key in format["weightedFormulas"]}))
 
@@ -25,9 +24,6 @@ kb.create_cores()
 infprovider = knowledge.InferenceProvider(kb)
 print(infprovider.distribution.atoms)
 print(infprovider.draw_samples(10))
-
-
-from tnreason import encoding
 
 #encoding.get_variables({
 #["a",2]

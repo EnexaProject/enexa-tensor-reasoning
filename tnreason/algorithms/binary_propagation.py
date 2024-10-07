@@ -1,5 +1,4 @@
 from tnreason import engine
-from tnreason import encoding
 
 import numpy as np
 
@@ -87,6 +86,8 @@ def find_all_color_shapes(subNetworks):
 
 
 if __name__ == "__main__":
+    from tnreason import encoding
+
     subNetworks = {"net1": encoding.create_formulas_cores({"f1": ["imp", "a", "b"]}),
                    "net2": encoding.create_formulas_cores({"f2": ["a"],
                                                            "f3": ["imp", "a", "c"]})}

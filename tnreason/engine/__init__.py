@@ -1,6 +1,8 @@
 from tnreason.engine.engine_visualization import draw_factor_graph
 from tnreason.engine.polynomial_contractor import SliceValues
 
+from tnreason.engine.auxiliary_cores import create_trivial_cores, create_trivial_core, create_random_core, create_basis_core
+
 defaultCoreType = "NumpyTensorCore"
 defaultContractionMethod = "PgmpyVariableEliminator"
 
