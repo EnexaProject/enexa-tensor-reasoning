@@ -1,7 +1,6 @@
 from tnreason.tensor import formula_tensors as ft
 from tnreason.tensor import superposed_formula_tensors as sft
 
-from tnreason.algorithms import alternating_least_squares
 import pandas as pd
 
 from tnreason.tensor import tensor_model as tm

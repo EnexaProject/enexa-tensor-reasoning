@@ -3,7 +3,7 @@ from tnreason import engine
 
 import numpy as np
 
-from tnreason.algorithms import gibbs_sampling
+from tnreason.algorithms import forward_sampling
 
 networkCores = {
     **encoding.get_formula_cores(["a1", "imp", "a2"])

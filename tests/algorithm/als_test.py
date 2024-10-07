@@ -20,8 +20,6 @@ hybridKB = knowledge.HybridInferer(
 print(hybridKB.facts.get_cores().keys())
 print(hybridKB.formulaTensors.get_cores().keys())
 
-from tnreason.algorithms import alternating_least_squares
-
 optimizer = als.ALS(
     {**hybridKB.facts.get_cores(),
      **hybridKB.formulaTensors.get_cores()},

@@ -46,7 +46,7 @@ class InferenceProvider:
         return engine.contract(method=self.contractionMethod, coreDict={
             **self.distribution.create_cores(),
             **engine.create_trivial_cores([variable for variable in variableList if
-                                             variable not in self.distribution.atoms and variable not in evidenceDict]),
+                                           variable not in self.distribution.atoms and variable not in evidenceDict]),
             **encoding.create_evidence_cores(evidenceDict),
         }, openColors=variableList).normalize()
 
@@ -54,21 +54,17 @@ class InferenceProvider:
         distributionCore = self.query(variableList, evidenceDict)
         return distributionCore.get_argmax()
 
-    def annealed_sample(self, variableList, annealingPattern=[(10, 1)]):
-        sampler = algorithms.Gibbs(self.distribution.create_cores())
+    def forward_sample(self, variableList, dimDict={}):
+        return algorithms.ForwardSampler(self.distribution.create_cores(), dimDict=dimDict).draw_forward_sample(
+            variableList)
 
-        sampler.ones_initialization(updateKeys=variableList, shapesDict={variable: 2 for variable in variableList},
-                                    colorsDict={variable: [variable] for variable in variableList})
-
-        return sampler.annealed_sample(updateKeys=variableList, annealingPattern=annealingPattern)
-
-    def draw_samples(self, sampleNum, variableList=None, annealingPattern=[(10, 1)], outType="int64"):
+    def draw_samples(self, sampleNum, variableList=None, outType="int64"):
         if variableList is None:
             variableList = self.distribution.atoms
         sampleDf = pd.DataFrame(columns=variableList)
         for samplePos in range(sampleNum):
             sampleDf = pd.concat(
                 [sampleDf,
-                 pd.DataFrame(self.annealed_sample(variableList=variableList, annealingPattern=annealingPattern),
+                 pd.DataFrame(self.forward_sample(variableList=variableList),
                               index=[samplePos])])
         return sampleDf.astype(outType)

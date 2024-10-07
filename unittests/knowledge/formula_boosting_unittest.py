@@ -32,10 +32,10 @@ class FormulaBoostingTest(unittest.TestCase):
                                                      "headNeurons": ["neur1"], "architecture": architecture})
         booster.find_candidate(sampleDf=pd.read_csv("assets/fb_sampleDf.csv"))
 
-    def test_als_implication_finding(self):
+    def test_exact_implication_finding(self):
         booster = knowledge.FormulaBooster(knowledgeBase=knowledge.HybridKnowledgeBase(),
                                            specDict= {
-            "method": "als",
+            "method": "exactEnergyMax",
             "sweeps": 10,
             "headNeurons": ["neur1"],
             "architecture":
@@ -52,7 +52,7 @@ class FormulaBoostingTest(unittest.TestCase):
     def test_gibbs_implication_finding(self):
         booster = knowledge.FormulaBooster(knowledgeBase=knowledge.HybridKnowledgeBase(),
                                                specDict={
-                                                   "method": "gibbs",
+                                                   "method": "gibbsSample",
                                                    "sweeps": 10,
                                                    "headNeurons": ["neur1"],
                                                    "architecture":

@@ -1,7 +1,6 @@
 ## Moment Matching and Binary Propagation not used in knowledge so far!
 
-from tnreason.algorithms.alternating_least_squares import ALS
-from tnreason.algorithms.gibbs_sampling import Gibbs
+from tnreason.algorithms.forward_sampling import ForwardSampler
 from tnreason.algorithms.constraint_propagation import ConstraintPropagator
 
 from tnreason.algorithms.energy_based_algorithms import EnergyGibbs, EnergyMeanField

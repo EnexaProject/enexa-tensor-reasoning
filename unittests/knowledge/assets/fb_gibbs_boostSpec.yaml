@@ -5,5 +5,5 @@ annealingPattern:
   - 10
 - - 10
   - 100
-method: gibbs
+method: gibbsSample
 sweeps: 20

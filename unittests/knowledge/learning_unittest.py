@@ -20,7 +20,7 @@ class HybridLearnerTest(unittest.TestCase):
                               "w2": ["a2", -1]}
         ))
         learner.boost_formula({
-            "method": "als",
+            "method": "exactEnergyMax",
             "sweeps": 10,
             "headNeurons": ["neur1"],
             "architecture":

@@ -1,2 +1,2 @@
-method: als
+method: exactEnergyMax
 sweeps: 5

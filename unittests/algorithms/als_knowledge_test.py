@@ -5,7 +5,7 @@ from tnreason import engine
 
 import numpy as np
 
-from tnreason.algorithms import alternating_least_squares as als
+from examples.als_gradient_fitting import alternating_least_squares as als
 
 networkCores = {
     #**encoding.create_formulas_cores({"f1": ["imp", "a1", "a2"]})

@@ -4,6 +4,7 @@
 tests/*
 dist/*
 build/*
+stubs/*
 tnreason/tensorreasoning.egg-info/*
 
 .idea/
