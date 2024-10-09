@@ -1,5 +1,6 @@
 defaultContractionMethod = "PgmpyVariableEliminator"
 
+
 def contract(coreDict, openColors, dimDict={}, method=defaultContractionMethod):
     """
     Contractors are initialized with
@@ -8,14 +9,17 @@ def contract(coreDict, openColors, dimDict={}, method=defaultContractionMethod):
         * dimDict: Dictionary of dimension to each color, required only when colors do not appear in the cores
     """
 
-    from tnreason.engine.workload_to_numpy import NumpyCore
+    ## Handling trivial colors (not appearing in coreDict)
+    from tnreason.engine.auxiliary_cores import create_trivial_core
+    dimDict.update({color : 2 for color in openColors if color not in dimDict})
+    if len(coreDict) == 0:
+        return create_trivial_core(name="Contracted", shape=[dimDict[color] for color in openColors], colors=openColors)
     appearingColors = list(set().union(*[coreDict[coreKey].colors for coreKey in coreDict]))
     for color in openColors:
         if color not in appearingColors:
-            if color not in dimDict:
-                dimDict[color] = 2 # Default variable size used, when not specified otherwise
-            coreDict[color + "_trivialCore"] = NumpyCore(values=[1 for i in range(dimDict[color])], colors=[color],
-                                                         name=color + "_trivialCore")
+            coreDict[color + "_trivialCore"] = create_trivial_core(color + "_trivialCore", shape=[dimDict[color]],
+                                                                   colors=[color])
+
     ## Einstein Summation Contractors
     if method == "NumpyEinsum":
         from tnreason.engine.workload_to_numpy import NumpyEinsumContractor
