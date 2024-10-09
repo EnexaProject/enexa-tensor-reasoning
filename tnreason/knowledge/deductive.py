@@ -45,8 +45,6 @@ class InferenceProvider:
     def query(self, variableList, evidenceDict={}):
         return engine.contract(method=self.contractionMethod, coreDict={
             **self.distribution.create_cores(),
-            **engine.create_trivial_cores([variable for variable in variableList if
-                                           variable not in self.distribution.atoms and variable not in evidenceDict]),
             **encoding.create_evidence_cores(evidenceDict),
         }, openColors=variableList).normalize()
 

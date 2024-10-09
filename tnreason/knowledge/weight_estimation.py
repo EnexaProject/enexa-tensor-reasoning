@@ -41,7 +41,7 @@ class EntropyMaximizer:
                     encoding.create_head_core(self.expressionsDict[optKey], headType="truthEvaluation"))
                 print("Formula {} is always satisfied.".format(self.expressionsDict[optKey]))
                 factsDict[optKey] = 1
-        updateKeys = {key for key in updateKeys if self.satisfactionDict[key] not in [0,1]}
+        updateKeys = {key for key in updateKeys if self.satisfactionDict[key] not in [0, 1]}
         weightDict = {key: [] for key in updateKeys}
         for sweep in range(sweepNum):
             for optKey in updateKeys:
@@ -57,11 +57,7 @@ class EntropyMaximizer:
         negValue, posValue = engine.contract(method=self.contractionMethod,
                                              coreDict={**self.backCores,
                                                        **{key: self.formulaCores[key] for key in self.formulaCores if
-                                                          key != tboCoreKey},
-                                                       tboCoreKey: engine.create_trivial_core(tboCoreKey,
-                                                                        self.formulaCores[tboCoreKey].values.shape,
-                                                                        self.formulaCores[tboCoreKey].colors)
-                                                       },
+                                                          key != tboCoreKey}},
                                              openColors=[optColor]).values
         if negValue != 0 and posValue != 0:
             return np.log((negValue / posValue) * (empRate / (1 - empRate)))
@@ -72,6 +68,6 @@ class EntropyMaximizer:
         weightDict, factsDict = self.alternating_optimization(sweepNum=sweepNum, updateKeys=updateKeys)
         return dist.HybridKnowledgeBase(
             weightedFormulas={key: self.expressionsDict[key] + [weightDict[key][-1]] for key in weightDict},
-            facts = {key : self.expressionsDict[key] for key in factsDict},
-            backCores = self.backCores
+            facts={key: self.expressionsDict[key] for key in factsDict},
+            backCores=self.backCores
         )
