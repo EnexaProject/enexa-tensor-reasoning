@@ -6,19 +6,14 @@ from tnreason.knowledge import distributions
 
 parameterCoreSuffix = "_parCore"
 
-methodSelectionString = "method"
-
-## Energy-based
-gibbsMethodString = "gibbsSample"
-meanFieldMethodString = "meanFieldSample"
-gibbsAnnealingArgument = "annealingPattern"  # used in meanField and gibbs
-energyMaximumMethodString = "exactEnergyMax"
-## KLDivergence-based
-klMaximumMethodString = "exactKLMax"
-
 headNeuronString = "headNeurons"
 architectureString = "architecture"
 acceptanceCriterionString = "acceptanceCriterion"
+methodSelectionString = "method"  # Entry in specDict, either one of algorithms.energyOptimizationMethods or klMaximumMethodString
+annealingArgumentString = "annealingPattern"  # used in meanField and gibbs
+
+## KLDivergence-based
+klMaximumMethodString = "exactKLMax"
 
 
 def check_boosting_dict(specDict):
@@ -30,9 +25,11 @@ def check_boosting_dict(specDict):
         raise ValueError("Architecture is not specified for Boosting a formula!")
 
 
-class FormulaBooster:
+class Grafter:
     """
-    Dedicates structure learning to the algorithm subpackage.
+    Searches for best formula by the grafting heuristic: Formulation by an energy optimization problem
+    Exceptional handling of KL Divergence: Distinguish between positive and negative phase
+    when calculating coordinatewise KL divergence
     """
 
     def __init__(self, knowledgeBase, specDict):
@@ -56,29 +53,17 @@ class FormulaBooster:
                               -1 / self.knowledgeBase.get_partition_function(atomColors))}
         dimDict = engine.get_dimDict(statisticCores)
 
-        ## Energy optimization methods
-        if self.specDict[methodSelectionString] == energyMaximumMethodString:
-            solutionDict = engine.contract(energyDict["pos"][0], openColors=selectionColors).multiply(
-                energyDict["pos"][1]).sum_with(
-                engine.contract(energyDict["neg"][0], openColors=selectionColors).multiply(
-                    energyDict["neg"][1])).get_argmax()
-        elif self.specDict[methodSelectionString] == gibbsMethodString:
-            sampler = algorithms.EnergyGibbs(energyDict=energyDict, colors=selectionColors, dimDict=dimDict)
-            if gibbsAnnealingArgument in self.specDict:
-                temperatureList = self.specDict[gibbsAnnealingArgument]
+        ## Energy optimization methods: Ignores constrastive structure of energyDict
+        if self.specDict[methodSelectionString] in algorithms.energyOptimizationMethods:
+            if annealingArgumentString in self.specDict:
+                temperatureList = self.specDict[annealingArgumentString]
             else:
                 temperatureList = [1 for i in range(10)]
-            sampler.annealed_sample(temperatureList=temperatureList)
-            solutionDict = sampler.sample
-        elif self.specDict[methodSelectionString] == meanFieldMethodString:
-            approximator = algorithms.EnergyMeanField(energyDict=energyDict, colors=selectionColors, dimDict=dimDict)
-            if gibbsAnnealingArgument in self.specDict:
-                temperatureList = self.specDict[gibbsAnnealingArgument]
-            else:
-                temperatureList = [1 for i in range(10)]
-            approximator.anneal(temperatureList=temperatureList)
-            solutionDict = approximator.draw_sample()
-        ## Brute force KL Divergence method
+            solutionDict = algorithms.optimize_energy(energyDict=energyDict, colors=selectionColors, dimDict=dimDict,
+                                                      method=self.specDict[methodSelectionString],
+                                                      temperatureList=temperatureList)
+
+        ## Brute force KL Divergence method: Makes usage of the contrastive structure
         elif self.specDict[methodSelectionString] == klMaximumMethodString:
             posPhase = engine.contract(energyDict["pos"][0],
                                        openColors=encoding.find_selection_colors(

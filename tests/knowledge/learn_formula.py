@@ -35,5 +35,5 @@ kb = knowledge.HybridInferer(weightedFormulas={
 
 sampleDf = kb.create_sampleDf(10)
 
-fBooster = knowledge.FormulaBooster(kb)
+fBooster = knowledge.Grafter(kb)
 print(fBooster.find_candidate(architectureDict, specDict, sampleDf))

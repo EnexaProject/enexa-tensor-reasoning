@@ -19,7 +19,7 @@ class HybridLearnerTest(unittest.TestCase):
             weightedFormulas={"w1": ["not", "a3", 2],
                               "w2": ["a2", -1]}
         ))
-        learner.boost_formula({
+        learner.graft_formula({
             "method": "exactEnergyMax",
             "sweeps": 10,
             "headNeurons": ["neur1"],

@@ -1,7 +1,7 @@
 import pandas as pd
 
 from tnreason.knowledge import weight_estimation as wees
-from tnreason.knowledge import formula_boosting as fb
+from tnreason.knowledge import grafting as gf
 from tnreason.knowledge import distributions as dist
 from tnreason.knowledge import deductive as ded
 
@@ -23,9 +23,9 @@ class HybridLearner:
     def get_knowledge_base(self):
         return self.hybridKB
 
-    def boost_formula(self, specDict, sampleDf, stepName="_boostStep"):
+    def graft_formula(self, specDict, sampleDf, stepName="_grafted"):
         """
-        Boosting with
+        Grafting with
         * specDict: Dictionary specification of the Hyperparameters of the Boosting Step:
             - method: Method for structure learning: als or gibbs supported
             - sweeps: Number of sweeps in structure learning
@@ -36,7 +36,7 @@ class HybridLearner:
         * stepName: Specifies a name suffix for the learned formula to be stored in the HybridKnowledgeBase.
                     Needs to differ for each Step to avoid key conflicts.
         """
-        booster = fb.FormulaBooster(self.hybridKB, specDict)
+        booster = gf.Grafter(self.hybridKB, specDict)
         booster.find_candidate(sampleDf)
         print("Learned formulas: {}".format(booster.candidates))
         if booster.test_candidates():
@@ -69,4 +69,4 @@ class HybridLearner:
             if factsDict[key]:
                 self.hybridKB.facts[key] = formula[:-1]
             else:
-                self.hybridKB.facts[key] = ["not",formula[:-1]]
+                self.hybridKB.facts[key] = ["not", formula[:-1]]

@@ -21,20 +21,20 @@ sampleDf = knowledge.InferenceProvider(genKB).draw_samples(100)
 
 class FormulaBoostingTest(unittest.TestCase):
     def test_yaml_als(self):
-        booster = knowledge.FormulaBooster(knowledgeBase=backKb,
-                                           specDict={**encoding.load_from_yaml("./assets/fb_als_boostSpec.yaml"),
+        booster = knowledge.Grafter(knowledgeBase=backKb,
+                                    specDict={**encoding.load_from_yaml("./assets/fb_als_boostSpec.yaml"),
                                                      "headNeurons": ["neur1"], "architecture": architecture})
         booster.find_candidate(sampleDf=pd.read_csv("assets/fb_sampleDf.csv"))
 
     def test_yaml_gibbs(self):
-        booster = knowledge.FormulaBooster(knowledgeBase=backKb,
-                                           specDict={**encoding.load_from_yaml("./assets/fb_gibbs_boostSpec.yaml"),
+        booster = knowledge.Grafter(knowledgeBase=backKb,
+                                    specDict={**encoding.load_from_yaml("./assets/fb_gibbs_boostSpec.yaml"),
                                                      "headNeurons": ["neur1"], "architecture": architecture})
         booster.find_candidate(sampleDf=pd.read_csv("assets/fb_sampleDf.csv"))
 
     def test_exact_implication_finding(self):
-        booster = knowledge.FormulaBooster(knowledgeBase=knowledge.HybridKnowledgeBase(),
-                                           specDict= {
+        booster = knowledge.Grafter(knowledgeBase=knowledge.HybridKnowledgeBase(),
+                                    specDict= {
             "method": "exactEnergyMax",
             "sweeps": 10,
             "headNeurons": ["neur1"],
@@ -50,8 +50,8 @@ class FormulaBoostingTest(unittest.TestCase):
         self.assertEquals(booster.candidates["neur1"][-1],"a2")
 
     def test_gibbs_implication_finding(self):
-        booster = knowledge.FormulaBooster(knowledgeBase=knowledge.HybridKnowledgeBase(),
-                                               specDict={
+        booster = knowledge.Grafter(knowledgeBase=knowledge.HybridKnowledgeBase(),
+                                    specDict={
                                                    "method": "gibbsSample",
                                                    "sweeps": 10,
                                                    "headNeurons": ["neur1"],

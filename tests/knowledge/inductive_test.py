@@ -37,7 +37,7 @@ boostSpecDict = {
     "calibrationSweeps": 2
 }
 
-learner.boost_formula(boostSpecDict, sampleDf)
+learner.graft_formula(boostSpecDict, sampleDf)
 
 exit()
 calibrationSpecDict = {

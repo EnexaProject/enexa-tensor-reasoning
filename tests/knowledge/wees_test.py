@@ -35,6 +35,6 @@ kb = knowledge.HybridKnowledgeBase(weightedFormulas={
 
 sampleDf = knowledge.InferenceProvider(kb).draw_samples(10)
 
-fBooster = knowledge.FormulaBooster(kb)
+fBooster = knowledge.Grafter(kb)
 fBooster.find_candidate()
 

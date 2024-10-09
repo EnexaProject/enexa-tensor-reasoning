@@ -2,11 +2,33 @@ from tnreason import engine
 
 import numpy as np
 
+## Energy-based
+gibbsMethodString = "gibbsSample"
+meanFieldMethodString = "meanFieldSample"
+energyMaximumMethodString = "exactEnergyMax"
+energyOptimizationMethods = [gibbsMethodString, meanFieldMethodString, energyMaximumMethodString]
 
-def create_affectionDict(energyDict, colors):
-    return {color: [energyKey for energyKey in energyDict if
-                    any([color in energyDict[energyKey][0][coreKey].colors for coreKey in energyDict[energyKey][0]])]
-            for color in colors}
+
+def optimize_energy(energyDict, colors=[], dimDict={}, method=gibbsMethodString,
+                    temperatureList=[1 for i in range(10)]):
+    if method == gibbsMethodString:
+        sampler = EnergyGibbs(energyDict=energyDict, colors=colors, dimDict=dimDict)
+        sampler.annealed_sample(temperatureList)
+        return sampler.sample
+    elif method == meanFieldMethodString:
+        approximator = EnergyMeanField(energyDict=energyDict, colors=colors, dimDict=dimDict)
+        approximator.anneal(temperatureList=temperatureList)
+        return approximator.draw_sample()
+    elif method == energyMaximumMethodString:
+        contracted = engine.create_trivial_core("contracted", [dimDict[color] for color in colors], colors)
+        for energyKey in energyDict:
+            contracted = contracted.sum_with(
+                engine.contract(energyDict[energyKey][0], openColors=colors, dimDict=dimDict).multiply(
+                    energyDict[energyKey][1]))
+        return contracted.get_argmax()
+    else:
+        raise ValueError("Energy Optimization Method {} not implemented.".format(energyMaximumMethodString,
+                                                                                 method))
 
 
 class EnergyMeanField:
@@ -112,3 +134,9 @@ class EnergyGibbs:
         for i, temperature in enumerate(temperatureList):
             for j, upKey in enumerate(partitionColorDict):
                 self.sample_colors(partitionColorDict[upKey], temperature=temperature)
+
+
+def create_affectionDict(energyDict, colors):
+    return {color: [energyKey for energyKey in energyDict if
+                    any([color in energyDict[energyKey][0][coreKey].colors for coreKey in energyDict[energyKey][0]])]
+            for color in colors}
