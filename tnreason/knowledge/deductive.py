@@ -66,3 +66,13 @@ class InferenceProvider:
                  pd.DataFrame(self.forward_sample(variableList=variableList),
                               index=[samplePos])])
         return sampleDf.astype(outType)
+
+    ## Energy-based: Creates always a full sample!
+    # Can be used for sample (temperatures converging to 1) or for maximum search (temperature converging to 0)
+    ## TO DO: Add support for evidenceDict
+    def energy_based_sample(self, method, temperatureList=[1 for i in range(10)]):
+        return algorithms.optimize_energy(energyDict={**self.distribution.get_energy_dict()},
+                                          colors=list(self.distribution.get_dimension_dict().keys()),
+                                          dimDict=self.distribution.get_dimension_dict(),
+                                          method=method,
+                                          temperatureList=temperatureList)

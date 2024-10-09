@@ -65,7 +65,7 @@ class HybridKnowledgeBase:
         self.backCores = backCores
 
         self.find_atoms()
-        self.dimensionDict=dimensionDict
+        self.dimensionDict = dimensionDict
 
     def __str__(self):
         outString = "Hybrid Knowledge Base consistent of"
@@ -159,3 +159,24 @@ class HybridKnowledgeBase:
         """
         return engine.contract(coreDict=self.create_hard_cores(),
                                openColors=[]).values > 0
+
+    ## Energy Representation
+    def get_energy_dict(self, cutoffWeight=100):
+        weightedEnergyDict = {
+            formulaKey: [{**encoding.create_raw_formula_cores(self.weightedFormulas[formulaKey][:-1]),
+                          **encoding.create_head_core(self.weightedFormulas[formulaKey][:-1],
+                                                      headType="truthEvaluation")
+                          }, self.weightedFormulas[formulaKey][-1]] for formulaKey in self.weightedFormulas}
+        factsEnergyDict = {formulaKey: [{**encoding.create_raw_formula_cores(self.facts[formulaKey]),
+                                         **encoding.create_head_core(self.facts[formulaKey],
+                                                                     headType="truthEvaluation")
+                                         }, cutoffWeight] for formulaKey in
+                           self.facts}
+        constraintsEnergyDict = {constraintKey: [
+            encoding.create_constraintCoresDict(self.categoricalConstraints[constraintKey], constraintKey),
+            cutoffWeight] for constraintKey in self.categoricalConstraints}
+
+        return {**weightedEnergyDict, **factsEnergyDict, **constraintsEnergyDict}
+
+    def get_dimension_dict(self):
+        return {atom: 2 for atom in self.atoms}
