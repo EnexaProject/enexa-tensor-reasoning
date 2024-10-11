@@ -2,7 +2,7 @@ from tnreason import engine
 
 from tnreason.encoding import connectives as con
 
-import numpy as np
+import math
 
 connectiveFixCoreSuffix = "_conCore"
 headCoreSuffix = "_headCore"
@@ -94,30 +94,22 @@ def create_head_core(expression, headType, weight=None, name=None):
     Created the head core to an expression activating it
     """
     if headType == "truthEvaluation":
-        headValues = np.zeros(shape=(2))
-        headValues[1] = 1
+        headFunction = lambda x: x
     elif headType == "falseEvaluation":
-        headValues = np.zeros(shape=(2))
-        headValues[0] = 1
-    elif headType == "weightedTruthEvaluation":
-        headValues = np.zeros(shape=(2))
-        headValues[1] = weight
+        headFunction = lambda x: 1 - x
     elif headType == "expFactor":
-        headValues = np.zeros(shape=(2))
-        headValues[0] = 1
-        headValues[1] = np.exp(weight)
-    elif headType == "diffExpFactor":
-        headValues = np.zeros(shape=(2))
-        headValues[1] = np.exp(weight)
+        headFunction = lambda x: math.exp(weight * x)
+    # elif headType == "weightedTruthEvaluation":
+    #    headFunction = lambda x: weight * x
+    # elif headType == "diffExpFactor":
+    #   function = lambda x: x*math.exp(weight*x)
     else:
         raise ValueError("Headtype {} not understood!".format(headType))
 
     color = get_formula_color(expression)
-
     if name is None:
         name = color + headCoreSuffix
-
-    return {name: engine.get_core()(headValues, [color], name)}
+    return {name: engine.create_tensor_encoding([2], [color], headFunction, coreType=engine.defaultCoreType, name=name)}
 
 
 def create_evidence_cores(evidenceDict):

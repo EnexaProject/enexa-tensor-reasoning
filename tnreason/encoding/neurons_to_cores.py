@@ -3,8 +3,6 @@ from tnreason import engine
 from tnreason.encoding import connectives as con
 from tnreason.encoding import formulas_to_cores as enform
 
-import numpy as np
-
 connectiveSelColorSuffix = "_actVar"
 connectiveSelCoreSuffix = "_actCore"
 
@@ -44,11 +42,11 @@ def create_neuron(neuronName, connectiveList, candidatesDict={}):
                                                                           connectiveList)}
     for candidateKey in candidatesDict:
         neuronCores = {**neuronCores, **create_variable_selectors(
-            neuronName, candidateKey, candidatesDict[candidateKey])}
+            candidateKey, candidatesDict[candidateKey])}
     return neuronCores
 
 
-def create_variable_selectors(neuronName, candidateKey, variables):
+def create_variable_selectors(candidateKey, variables):  # candidateKey was created by neuronName + p + str(pos)
     """
     Creates the selection cores to one argument at a neuron.
     There are two possibilities to specify variables
@@ -59,28 +57,20 @@ def create_variable_selectors(neuronName, candidateKey, variables):
     if isinstance(variables, str):
         catName, dimBracket = variables.split("=")
         dim = int(dimBracket.split("[")[1][:-1])
-        values = np.zeros(shape=(dim, dim, 2))
-        values[:, :, 0] = np.ones(shape=(dim, dim)) - np.eye(dim)
-        values[:, :, 1] = np.eye(dim)
-        return {candidateKey + "_" + variables + candidatesCoreSuffix:
-                    engine.get_core()(values,
-                                      [candidateKey + candidatesColorSuffix, catName, candidateKey],
-                                      candidateKey + "_" + variables + candidatesCoreSuffix)
-                }
 
+        selFunc = lambda s, c: c == s  # Whether selection variable coincides with control variable
+        return {candidateKey + "_" + variables + candidatesCoreSuffix: engine.create_relational_encoding(
+            inshape=[dim, dim], outshape=[2], incolors=[candidateKey + candidatesColorSuffix, catName],
+            outcolors=[candidateKey],
+            function=selFunc, coreType=engine.defaultCoreType,
+            name=candidateKey + "_" + variables + candidatesCoreSuffix)}
     cSelectorDict = {}
     for i, variableKey in enumerate(variables):
-        values = np.ones(
-            shape=(len(variables), 2, 2))  # control, atom (subexpression), formulatruth (headexpression)
-        values[i, 0, 1] = 0
-        values[i, 1, 0] = 0
-
-        cSelectorDict[candidateKey + "_" + variableKey + candidatesCoreSuffix] = engine.get_core()(
-            values,
-            [candidateKey + candidatesColorSuffix,
-             variableKey,
-             candidateKey],
-            candidateKey + "_" + variableKey + candidatesCoreSuffix
+        coreFunc = lambda c, a, o: (not (c == i)) or (a == o)
+        cSelectorDict[candidateKey + "_" + variableKey + candidatesCoreSuffix] = engine.create_tensor_encoding(
+            inshape=[len(variables), 2, 2], incolors=[candidateKey + candidatesColorSuffix, variableKey, candidateKey],
+            function=coreFunc, coreType=engine.defaultCoreType,
+            name=candidateKey + "_" + variableKey + candidatesCoreSuffix
         )
     return cSelectorDict
 
@@ -94,17 +84,18 @@ def create_connective_selectors(neuronName, candidateKeys, connectiveList):
                                                  incolors=[neuronName + connectiveSelColorSuffix, *candidateKeys],
                                                  outcolors=[neuronName],
                                                  function=con.get_unary_connective_selector(connectiveList),
-                                                 name=neuronName+connectiveSelCoreSuffix)
+                                                 name=neuronName + connectiveSelCoreSuffix)
     elif len(candidateKeys) == 2:
         return engine.create_relational_encoding(inshape=[len(connectiveList), 2, 2], outshape=[2],
                                                  incolors=[neuronName + connectiveSelColorSuffix, *candidateKeys],
                                                  outcolors=[neuronName],
                                                  function=con.get_binary_connective_selector(connectiveList),
-                                                 name=neuronName+connectiveSelCoreSuffix)
+                                                 name=neuronName + connectiveSelCoreSuffix)
     else:
         raise ValueError(
             "Number {} of candidates wrong in Neuron {} with connectives {}!".format(len(candidateKeys), neuronName,
                                                                                      connectiveList))
+
 
 ## Functions to identify solution expressions when candidates are selected
 def create_solution_expression(neuronDict, selectionDict):
@@ -184,6 +175,7 @@ def find_selection_dimDict(specDict):
                            for i, candidates in enumerate(specDict[neuronName][1:])}})
     return dimDict
 
+
 def find_selection_colors(specDict):
     """
     Extracts the default selection colors from a architecture dict
@@ -191,5 +183,6 @@ def find_selection_colors(specDict):
     colors = []
     for neuronName in specDict:
         colors.append(neuronName + connectiveSelColorSuffix)
-        colors = colors + [neuronName + "_" + posPrefix + str(i) + candidatesColorSuffix for i in range(len(specDict[neuronName][1:]))]
+        colors = colors + [neuronName + "_" + posPrefix + str(i) + candidatesColorSuffix for i in
+                           range(len(specDict[neuronName][1:]))]
     return colors
