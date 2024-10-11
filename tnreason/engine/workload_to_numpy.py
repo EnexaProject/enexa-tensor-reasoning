@@ -3,13 +3,15 @@ import numpy as np
 from tnreason.engine import subscript_creation as subc
 
 
-def np_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name="NPEncoding"):
+def np_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name="NPREncoding"):
     values = np.zeros(inshape + outshape)
     for i in np.ndindex(*inshape):
         values[i + tuple(
             [int(entry) for entry in function(*i)])] = 1
     return NumpyCore(values=values, colors=incolors + outcolors, name=name)
 
+def np_tencoding_from_function(inshape, incolors, function, name="NPTEncoding"):
+    return NumpyCore(values=np.fromfunction(np.vectorize(function), inshape), colors=incolors, name=name)
 
 class NumpyCore:
     def __init__(self, values, colors, name=None):

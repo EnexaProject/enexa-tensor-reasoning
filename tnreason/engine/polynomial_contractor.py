@@ -2,13 +2,15 @@ import numpy as np
 
 
 def poly_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name="PolyEncoding"):
-    sliceList = []
-    colors = incolors + outcolors
-    for i in np.ndindex(*inshape):
-        sliceList.append((1, {colors[k]: assignment for k, assignment in
-                              enumerate(i + tuple([int(entry) for entry in function(*i)]))}))
+    sliceList = [(1, {(incolors + outcolors)[k]: assignment for k, assignment in
+                      enumerate(i + tuple([int(entry) for entry in function(*i)]))}) for i in np.ndindex(*inshape)]
     return PolynomialCore(values=SliceValues(slices=sliceList, shape=inshape + outshape), colors=incolors + outcolors,
                           name=name)
+
+def poly_tencoding_from_function(inshape, incolors, function, name="PolyEncoding"):
+    sliceList = [(function(*i), {incolors[k]: assignment for k, assignment in enumerate(i)}) for i in
+                 np.ndindex(*inshape)]
+    return PolynomialCore(values=SliceValues(slices=sliceList, shape=inshape), colors=incolors, name=name)
 
 
 class SliceValues:

@@ -12,8 +12,22 @@ def get_core(coreType=defaultCoreType):
         raise ValueError("Core Type {} not supported.".format(coreType))
 
 
+def create_tensor_encoding(inshape, incolors, function, coreType=defaultCoreType, name="Encoding"):
+    if coreType == "NumpyTensorCore":
+        from tnreason.engine.workload_to_numpy import np_tencoding_from_function
+        return np_tencoding_from_function(inshape, incolors, function, name)
+    elif coreType == "PolynomialCore":
+        from tnreason.engine.polynomial_contractor import poly_tencoding_from_function
+        return poly_tencoding_from_function(inshape, incolors, function, name)
+    else:
+        raise ValueError("Core Type {} not supported for .".format(coreType))
+
+
 def create_relational_encoding(inshape, outshape, incolors, outcolors, function, coreType=defaultCoreType,
                                name="Encoding"):
+    """
+    Creates relational encoding of a function as a single core.
+    """
     if coreType == "NumpyTensorCore":
         from tnreason.engine.workload_to_numpy import np_rencoding_from_function
         return np_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name)
@@ -30,17 +44,18 @@ def reduce_function(function, coordinates):
 
 def create_partitioned_relational_encoding(inshape, outshape, incolors, outcolors, function, coreType=defaultCoreType,
                                            partitionDict=None, nameSuffix="_encodingCore"):
+    """
+    Creates relational encoding of a function as a tensor network, where the output axis are splitted according to the partionDict.
+    """
     if partitionDict is None:
         partitionDict = {color: [color] for color in outcolors}
-    indDict = {}
-    for parKey in partitionDict:
-        indDict[parKey] = [outcolors.index(outcolor) for outcolor in partitionDict[parKey]]
     return {parKey + nameSuffix:
                 create_relational_encoding(inshape=inshape,
-                                           outshape=[outshape[i] for i in indDict[parKey]],
+                                           outshape=[outshape[outcolors.index(c)] for c in partitionDict[parKey]],
                                            incolors=incolors,
                                            outcolors=partitionDict[parKey],
-                                           function=reduce_function(function, indDict[parKey]),
+                                           function=lambda x: [function(x)[outcolors.index(c)] for c in
+                                                               partitionDict[parKey]],
                                            coreType=coreType,
                                            name=parKey + nameSuffix)
             for parKey in partitionDict}
