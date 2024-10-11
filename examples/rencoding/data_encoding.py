@@ -1,6 +1,6 @@
 from examples.rencoding.generate_rencoding import generate_relational_encoding, create_coreDict_relational_encoding
 
-from tnreason import knowledge
+
 
 
 def samples_to_map(samples, variableList):
@@ -8,10 +8,22 @@ def samples_to_map(samples, variableList):
 
 
 if __name__ == "__main__":
+
+
+    from tnreason.encoding import data_to_cores as dc
+    from tnreason import knowledge, engine
     dataNum = 10
 
     samples = knowledge.InferenceProvider(
         knowledge.HybridKnowledgeBase(weightedFormulas={"w": ["imp", "a", "b", 1]})).draw_samples(dataNum)
+
+    dataCores = dc.categorical_to_relational_encoding(samples)
+    print(dataCores["a_dataCore"].values)
+    print(samples.values)
+    engine.draw_factor_graph(dataCores)
+
+    exit()
+
 
     # As a single core
     dataCore = generate_relational_encoding(inshape=[dataNum], outshape=[2, 2], incolors=["j"], outcolors=["a", "b"],
