@@ -10,8 +10,19 @@ def np_rencoding_from_function(inshape, outshape, incolors, outcolors, function,
             [int(entry) for entry in function(*i)])] = 1
     return NumpyCore(values=values, colors=incolors + outcolors, name=name)
 
+
 def np_tencoding_from_function(inshape, incolors, function, name="NPTEncoding"):
     return NumpyCore(values=np.fromfunction(np.vectorize(function), inshape), colors=incolors, name=name)
+
+
+def np_random_core(shape, colors, randomEngine, name):
+    if randomEngine == "NumpyUniform":
+        return NumpyCore(values=np.random.random(size=shape), colors=colors, name=name)
+    elif randomEngine == "NumpyNormal":
+        return NumpyCore(values=np.random.normal(size=shape), colors=colors, name=name)
+    else:
+        raise ValueError("Random Engine {} not known for core creation!".format(randomEngine))
+
 
 class NumpyCore:
     def __init__(self, values, colors, name=None):

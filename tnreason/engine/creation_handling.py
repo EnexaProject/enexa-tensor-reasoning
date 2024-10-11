@@ -13,6 +13,8 @@ def get_core(coreType=defaultCoreType):
 
 
 def create_tensor_encoding(inshape, incolors, function, coreType=defaultCoreType, name="Encoding"):
+    if coreType is None:
+        coreType = defaultCoreType
     if coreType == "NumpyTensorCore":
         from tnreason.engine.workload_to_numpy import np_tencoding_from_function
         return np_tencoding_from_function(inshape, incolors, function, name)
@@ -23,11 +25,19 @@ def create_tensor_encoding(inshape, incolors, function, coreType=defaultCoreType
         raise ValueError("Core Type {} not supported for .".format(coreType))
 
 
+def create_random_core(name, shape, colors,
+                       randomEngine="NumpyUniform"):  # Works only for numpy cores! (do not have a random engine else)
+    from tnreason.engine.workload_to_numpy import np_random_core
+    return np_random_core(shape, colors, randomEngine, name)
+
+
 def create_relational_encoding(inshape, outshape, incolors, outcolors, function, coreType=defaultCoreType,
                                name="Encoding"):
     """
     Creates relational encoding of a function as a single core.
     """
+    if coreType is None:
+        coreType = defaultCoreType
     if coreType == "NumpyTensorCore":
         from tnreason.engine.workload_to_numpy import np_rencoding_from_function
         return np_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name)
