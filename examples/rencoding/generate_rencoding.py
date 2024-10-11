@@ -30,7 +30,6 @@ def create_coreDict_relational_encoding(inshape, outshape, incolors, outcolors, 
     indDict = {}
     for parKey in partitionDict:
         indDict[parKey] = [outcolors.index(outcolor) for outcolor in partitionDict[parKey]]
-
     return {parKey + "_encodingCore": generate_relational_encoding(inshape=inshape, outshape=[outshape[i] for i in indDict[parKey]],
                                                                      incolors=incolors, outcolors=partitionDict[parKey],
                                                                      function=reduce_function(function, indDict[parKey]),
