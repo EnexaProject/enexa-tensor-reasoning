@@ -6,16 +6,9 @@ from tnreason.engine.auxiliary_cores import create_trivial_cores, create_trivial
 
 from tnreason.engine.contraction_handling import contract, defaultContractionMethod
 
-defaultCoreType = "NumpyTensorCore"
-def get_core(coreType="NumpyTensorCore"):
-    if coreType == "NumpyTensorCore":
-        from tnreason.engine.workload_to_numpy import NumpyCore
-        return NumpyCore
-    elif coreType == "PolynomialCore":
-        from tnreason.engine.polynomial_contractor import PolynomialCore
-        return PolynomialCore
-    else:
-        raise ValueError("Core Type {} not supported.".format(coreType))
+from tnreason.engine.creation_handling import get_core, defaultCoreType, create_relational_encoding, \
+    create_partitioned_relational_encoding
+
 
 def get_dimDict(coreDict):
     dimDict = {}

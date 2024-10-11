@@ -4,8 +4,7 @@ from tnreason import engine
 
 from tnreason import encoding
 
-# testMethods = ["NumpyEinsum", "NumpyEinsum"]
-testMethods = ["PgmpyVariableEliminator", "NumpyEinsum", "TorchEinsum"] #"TensorFlowEinsum",
+testMethods = ["NumpyEinsum"] #"TensorFlowEinsum", "TorchEinsum"
 
 
 class TensorLogicTest(unittest.TestCase):

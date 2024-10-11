@@ -1,6 +1,16 @@
 import numpy as np
 
 
+def poly_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name="PolyEncoding"):
+    sliceList = []
+    colors = incolors + outcolors
+    for i in np.ndindex(*inshape):
+        sliceList.append((1, {colors[k]: assignment for k, assignment in
+                              enumerate(i + tuple([int(entry) for entry in function(*i)]))}))
+    return PolynomialCore(values=SliceValues(slices=sliceList, shape=inshape + outshape), colors=incolors + outcolors,
+                          name=name)
+
+
 class SliceValues:
     """
     Storing the polynomial by a list of tuples, each representing a weighted monomial by
@@ -10,6 +20,7 @@ class SliceValues:
             - its value k specifies the variable to X==k
     Each monomial seen as a tensor is specified by a weighted trivial slice.
     """
+
     def __init__(self, slices=[(1, dict())], shape=[]):
         self.slices = slices  # List of tuples (value, positionDict)
         self.shape = shape

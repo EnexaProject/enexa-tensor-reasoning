@@ -18,20 +18,18 @@ def clauses_to_lambda(clauseList, atomList, maxSize):
 
 
 if __name__ == "__main__":
-
-
-    testClause = [{"c": 0, "b": 1}, {"a": 0}]  # (not a) or b
+    testClause = [{"c": 0, "b": 1}, {"a": 0}]
     atomList = ["a","b","c"]
     maxSize = 2
 
-    relCor = gr.generate_relational_encoding(
+    relCor = engine.create_relational_encoding(
         inshape=[len(testClause)],
         outshape=[len(atomList)+1 for i in range(maxSize)] + [2 for i in range(maxSize)],
         incolors=["l"],
         outcolors=["neur"+str(i)+"_p0_selVar" for i in range(maxSize)] + ["neur"+str(i)+"_actVar" for i in range(maxSize)],
         function=clauses_to_lambda(testClause, atomList, 2))
 
-    relCores = gr.create_coreDict_relational_encoding(
+    relCores = engine.create_partitioned_relational_encoding(
         inshape=[len(testClause)],
         outshape=[len(atomList)+1 for i in range(maxSize)] + [2 for i in range(maxSize)],
         incolors=["l"],

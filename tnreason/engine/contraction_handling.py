@@ -1,4 +1,4 @@
-defaultContractionMethod = "PgmpyVariableEliminator"
+defaultContractionMethod = "NumpyEinsum"
 
 
 def contract(coreDict, openColors, dimDict={}, method=defaultContractionMethod):
