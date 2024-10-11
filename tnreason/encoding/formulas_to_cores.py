@@ -1,8 +1,8 @@
 from tnreason import engine
 
-import numpy as np
+from tnreason.encoding import connectives as con
 
-from tnreason.encoding import truth_tables as ttab
+import numpy as np
 
 connectiveFixCoreSuffix = "_conCore"
 headCoreSuffix = "_headCore"
@@ -18,8 +18,9 @@ def create_formulas_cores(expressionsDict, alreadyCreated=[]):
     for formulaName in expressionsDict.keys():
         if isinstance(expressionsDict[formulaName][-1], float) or isinstance(expressionsDict[formulaName][-1], int):
             knowledgeCores = {**knowledgeCores,
-                              **create_head_core(get_formula_color(expressionsDict[formulaName][:-1]), "expFactor", weight=
-                              expressionsDict[formulaName][-1]),
+                              **create_head_core(get_formula_color(expressionsDict[formulaName][:-1]), "expFactor",
+                                                 weight=
+                                                 expressionsDict[formulaName][-1]),
                               **create_raw_formula_cores(expressionsDict[formulaName][:-1],
                                                          alreadyCreated=
                                                          list(knowledgeCores.keys()) + alreadyCreated)}
@@ -67,22 +68,23 @@ def create_connective_core(expression):
 
     elif len(expression) == 2:
         preExpressionString = get_formula_color(expression[1])
-        return {expressionString + connectiveFixCoreSuffix: engine.get_core()(
-            ttab.get_unary_tensor(expression[0]),
-            [preExpressionString, expressionString],
-            expressionString + connectiveFixCoreSuffix)
-        }
+        return {expressionString + connectiveFixCoreSuffix:
+                    engine.create_relational_encoding(inshape=[2], outshape=[2], incolors=[preExpressionString],
+                                                      outcolors=[expressionString],
+                                                      function=con.get_connectives(expression[0]),
+                                                      coreType=engine.defaultCoreType,
+                                                      name=expressionString + connectiveFixCoreSuffix)}
 
     elif len(expression) == 3:
         leftExpressionString = get_formula_color(expression[1])
         rightExpressionString = get_formula_color(expression[2])
-        return {
-            expressionString + connectiveFixCoreSuffix: engine.get_core()(
-                ttab.get_binary_tensor(expression[0]),
-                [leftExpressionString,
-                 rightExpressionString,
-                 expressionString],
-                expressionString + connectiveFixCoreSuffix)}
+        return {expressionString + connectiveFixCoreSuffix:
+                    engine.create_relational_encoding(inshape=[2, 2], outshape=[2],
+                                                      incolors=[leftExpressionString, rightExpressionString],
+                                                      outcolors=[expressionString],
+                                                      function=con.get_connectives(expression[0]),
+                                                      coreType=engine.defaultCoreType,
+                                                      name=expressionString + connectiveFixCoreSuffix)}
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 
@@ -117,6 +119,7 @@ def create_head_core(expression, headType, weight=None, name=None):
 
     return {name: engine.get_core()(headValues, [color], name)}
 
+
 def create_evidence_cores(evidenceDict):
     """
     Turns positive and negative evidence into literal formulas and encodes them
@@ -124,6 +127,7 @@ def create_evidence_cores(evidenceDict):
     return create_formulas_cores({**{key: [key] for key in evidenceDict if evidenceDict[key]},
                                   **{key: ["not", key] for key in evidenceDict if not evidenceDict[key]}
                                   })
+
 
 def get_formula_color(expression):
     """
@@ -139,6 +143,7 @@ def get_formula_color(expression):
             raise ValueError("Connective {} has wrong type!".format(expression[0]))
         return "(" + expression[0] + "_" + "_".join(
             [get_formula_color(entry) for entry in expression[1:]]) + ")"
+
 
 def get_all_atoms(expressionsDict):
     """

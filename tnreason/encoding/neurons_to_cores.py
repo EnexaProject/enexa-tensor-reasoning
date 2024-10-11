@@ -1,5 +1,6 @@
 from tnreason import engine
-from tnreason.encoding import truth_tables as ttab
+
+from tnreason.encoding import connectives as con
 from tnreason.encoding import formulas_to_cores as enform
 
 import numpy as np
@@ -89,20 +90,21 @@ def create_connective_selectors(neuronName, candidateKeys, connectiveList):
     Creates the connective selection core, using the candidateKeys as color and arity specification
     """
     if len(candidateKeys) == 1:
-        values = np.empty((len(connectiveList), 2, 2))
-        for i, connectiveKey in enumerate(connectiveList):
-            values[i] = ttab.get_unary_tensor(connectiveKey)
-
+        return engine.create_relational_encoding(inshape=[len(connectiveList), 2], outshape=[2],
+                                                 incolors=[neuronName + connectiveSelColorSuffix, *candidateKeys],
+                                                 outcolors=[neuronName],
+                                                 function=con.get_unary_connective_selector(connectiveList),
+                                                 name=neuronName+connectiveSelCoreSuffix)
     elif len(candidateKeys) == 2:
-        values = np.empty((len(connectiveList), 2, 2, 2))
-        for i, connectiveKey in enumerate(connectiveList):
-            values[i] = ttab.get_binary_tensor(connectiveKey)
+        return engine.create_relational_encoding(inshape=[len(connectiveList), 2, 2], outshape=[2],
+                                                 incolors=[neuronName + connectiveSelColorSuffix, *candidateKeys],
+                                                 outcolors=[neuronName],
+                                                 function=con.get_binary_connective_selector(connectiveList),
+                                                 name=neuronName+connectiveSelCoreSuffix)
     else:
         raise ValueError(
             "Number {} of candidates wrong in Neuron {} with connectives {}!".format(len(candidateKeys), neuronName,
                                                                                      connectiveList))
-    return engine.get_core()(values, [neuronName + connectiveSelColorSuffix, *candidateKeys, neuronName])
-
 
 ## Functions to identify solution expressions when candidates are selected
 def create_solution_expression(neuronDict, selectionDict):
