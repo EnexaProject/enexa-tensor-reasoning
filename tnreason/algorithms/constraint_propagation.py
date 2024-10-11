@@ -11,6 +11,7 @@ class ConstraintPropagator:
     """
     Updates binary domain cores based on local contractions.
     """
+
     def __init__(self, binaryCoresDict, domainCoresDict=None, verbose=False):
         self.verbose = verbose
         self.binaryCoresDict = binaryCoresDict
@@ -29,10 +30,10 @@ class ConstraintPropagator:
         for coreKey in self.binaryCoresDict:
             for i, color in enumerate(self.binaryCoresDict[coreKey].colors):
                 if color + domainCoreSuffix not in self.domainCoresDict:
-                    self.domainCoresDict[color + domainCoreSuffix] = engine.get_core()(
-                        np.ones(self.binaryCoresDict[coreKey].values.shape[i]),
-                        [color],
-                        color + domainCoreSuffix)
+                    self.domainCoresDict[color + domainCoreSuffix] = \
+                        engine.create_trivial_core(name=color + domainCoreSuffix,
+                                                   shape=[self.binaryCoresDict[coreKey].values.shape[i]],
+                                                   colors=[color])
 
     def create_affectionDict(self):
         self.colorAffectionDict = {}
@@ -93,8 +94,10 @@ class ConstraintPropagator:
                            variableShapes={}):  ## Add variables to domainCoreDict when they are not there!
         for variable in variables:
             if variable + domainCoreSuffix not in self.domainCoresDict:
-                self.domainCoresDict[variable + domainCoreSuffix] = engine.get_core()(
-                    np.ones(variableShapes[variable]), [variable], variable + domainCoreSuffix)
+                self.domainCoresDict[variable + domainCoreSuffix] = engine.create_trivial_core(
+                    name=variable + domainCoreSuffix,
+                    shape=variableShapes[variable],
+                    colors=[variable])
         variablesQueue = Queue()
         for variable in variables:
             variablesQueue.put(variable)

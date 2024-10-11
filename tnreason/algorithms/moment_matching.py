@@ -1,7 +1,5 @@
 from tnreason import engine
 
-import numpy as np
-
 momentCoreSuffix = "_momentCore"
 targetCoreSuffix = "_targetCore"
 
@@ -22,6 +20,7 @@ class MomentMatcher:
 
         self.updateDimDict = {self.targetCores[key].colors[0]: self.targetCores[key].values.shape[0] for key in
                               self.targetCores}
+        self.dimDict = engine.get_dimDict(self.networkCores)
 
     def ones_initialization(self):
         """
@@ -29,17 +28,23 @@ class MomentMatcher:
         """
         self.networkCores.update(
             engine.create_trivial_cores(list(self.updateDimDict.keys()), shapeDict=self.updateDimDict,
-                                          suffix=momentCoreSuffix)
+                                        suffix=momentCoreSuffix)
         )
 
     def matching_step(self, updateColor):
         self.networkCores.pop(updateColor + momentCoreSuffix)
 
-        self.networkCores[updateColor + momentCoreSuffix] = engine.get_core()(
-            values=solve_moment_equation(
+        self.networkCores[updateColor + momentCoreSuffix] = engine.create_tensor_encoding(
+            inshape=[self.dimDict[updateColor]], incolors=[updateColor], function=solve_moment_equation(
                 satVect=engine.contract(coreDict=self.networkCores, openColors=[updateColor]).values,
                 empVect=self.targetCores[updateColor + targetCoreSuffix].values
-            ), colors=[updateColor], name=updateColor + momentCoreSuffix)
+            ), name=updateColor + momentCoreSuffix
+        )
+        # self.networkCores[updateColor + momentCoreSuffix] = engine.get_core()(
+        #     values=solve_moment_equation(
+        #         satVect=engine.contract(coreDict=self.networkCores, openColors=[updateColor]).values,
+        #         empVect=self.targetCores[updateColor + targetCoreSuffix].values
+        #     ), colors=[updateColor], name=updateColor + momentCoreSuffix)
 
         print(self.networkCores[updateColor + momentCoreSuffix].values)
 
@@ -67,15 +72,12 @@ def solve_moment_equation(satVect, empVect):
     Solves the local expected statistics matching of
         * satVect: Marginal probability of color wrt alien cores
         * empVect: Desired marginal probability (expected statistics)
+    To Do: Update, such that partition function constant and not one reference coordinate!
     """
-    solVect = np.ones(shape=satVect.shape)
-
     refPos = find_common_nonzero(satVect, empVect)
     if refPos == -1:
         print("Warning: Moments cannot be matched!")
-        return solVect
+        return lambda i: 1
 
-    for i in range(satVect.shape[0]):
-        solVect[i] = (satVect[refPos] / empVect[refPos]) * (empVect[i] / satVect[i])
-
-    return solVect
+    #return solVect
+    return lambda i: (satVect[refPos] / empVect[refPos]) * (empVect[int(i)] / satVect[int(i)])

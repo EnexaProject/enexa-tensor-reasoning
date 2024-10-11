@@ -26,9 +26,11 @@ class BinaryContractionPropagator:
         if not all([all([color in colorShapes for color in queryVariables[key]]) for key in queryVariables]):
             raise ValueError("A query color is not appearing in the subnetworks!")
 
-        self.answerCores = {key + answerCoreSuffix: engine.get_core()(
-            values=np.ones(shape=[colorShapes[color] for color in queryVariables[key]]),
-            colors=queryVariables[key]) for key in queryVariables}
+        self.answerCores = {key + answerCoreSuffix:
+                                engine.create_trivial_core(
+                                    name=key+answerCoreSuffix,
+                                    shape=[colorShapes[color] for color in queryVariables[key]],
+                                    colors=queryVariables[key]) for key in queryVariables}
 
     def initialize_queue(self):
         self.networkQueue = set()

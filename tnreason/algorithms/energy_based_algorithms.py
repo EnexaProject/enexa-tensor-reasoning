@@ -68,10 +68,7 @@ class EnergyMeanField:
                                 openColors=self.partitionColorDict[upKey], dimDict=self.dimDict).multiply(
                     self.energyDict[energyKey][1])
             )
-
-        contracted = contracted.multiply(1 / temperature)
-        self.meanCores[upKey] = engine.get_core("NumpyTensorCore")(values=contracted.values,
-                                                                   colors=contracted.colors).exponentiate().normalize()
+        self.meanCores[upKey] = contracted.multiply(1/temperature).exponentiate().normalize()
 
         angle = engine.contract({"old": oldMean, "new": self.meanCores[upKey]}, openColors=[])
         return angle.values

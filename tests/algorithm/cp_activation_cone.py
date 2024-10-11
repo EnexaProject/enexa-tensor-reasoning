@@ -2,7 +2,7 @@ from tnreason import algorithms
 from tnreason import knowledge
 
 testKB = knowledge.load_kb_from_yaml("../knowledge/test_kb.yaml")
-cores = testKB.create_cores({"a1": 0})
+cores = testKB.create_cores()
 print(cores.keys())
 
 cp = algorithms.ConstraintPropagator(cores)
