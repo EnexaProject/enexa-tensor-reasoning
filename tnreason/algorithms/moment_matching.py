@@ -13,7 +13,7 @@ class MomentMatcher:
     Generalizes the weight estimation (which is the special case of leg dimension 2 and fitting of exponentiated first coordinate.
     """
 
-    def __init__(self, networkCores, targetCores):
+    def __init__(self, networkCores, targetCores, coreType=None, contractionMethod=None):
         self.networkCores = networkCores
 
         self.targetCores = {targetCores[key].colors[0] + targetCoreSuffix: targetCores[key] for key in targetCores}
@@ -22,13 +22,19 @@ class MomentMatcher:
                               self.targetCores}
         self.dimDict = engine.get_dimDict(self.networkCores)
 
+        self.coreType = coreType
+        self.contractionMethod = contractionMethod
+
     def ones_initialization(self):
         """
         varDimDict: Dictionary with keys the colors of the moments and the shape the dimension of the axis
         """
         self.networkCores.update(
-            engine.create_trivial_cores(list(self.updateDimDict.keys()), shapeDict=self.updateDimDict,
-                                        suffix=momentCoreSuffix)
+            engine.create_trivial_cores(list(self.updateDimDict.keys()),
+                                        shapeDict={key: [self.updateDimDict[key]] for key in self.updateDimDict},
+                                        suffix=momentCoreSuffix,
+                                        coreType=self.coreType
+                                        )
         )
 
     def matching_step(self, updateColor):
@@ -36,9 +42,10 @@ class MomentMatcher:
 
         self.networkCores[updateColor + momentCoreSuffix] = engine.create_tensor_encoding(
             inshape=[self.dimDict[updateColor]], incolors=[updateColor], function=solve_moment_equation(
-                satVect=engine.contract(coreDict=self.networkCores, openColors=[updateColor]).values,
+                satVect=engine.contract(coreDict=self.networkCores, openColors=[updateColor],
+                                        method=self.contractionMethod).values,
                 empVect=self.targetCores[updateColor + targetCoreSuffix].values
-            ), name=updateColor + momentCoreSuffix
+            ), name=updateColor + momentCoreSuffix, coreType=self.coreType
         )
         # self.networkCores[updateColor + momentCoreSuffix] = engine.get_core()(
         #     values=solve_moment_equation(
@@ -79,5 +86,5 @@ def solve_moment_equation(satVect, empVect):
         print("Warning: Moments cannot be matched!")
         return lambda i: 1
 
-    #return solVect
+    # return solVect
     return lambda i: (satVect[refPos] / empVect[refPos]) * (empVect[int(i)] / satVect[int(i)])

@@ -1,13 +1,15 @@
 defaultContractionMethod = "NumpyEinsum"
 
 
-def contract(coreDict, openColors, dimDict={}, method=defaultContractionMethod):
+def contract(coreDict, openColors, dimDict={}, method=None):
     """
     Contractors are initialized with
         * coreDict: Dictionary of colored tensor cores specifying a network
         * openColors: List of colors to leave open in the contraction
         * dimDict: Dictionary of dimension to each color, required only when colors do not appear in the cores
     """
+    if method is None:
+        method = defaultContractionMethod
 
     ## Handling trivial colors (not appearing in coreDict)
     from tnreason.engine.auxiliary_cores import create_trivial_core

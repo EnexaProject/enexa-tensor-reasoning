@@ -10,20 +10,24 @@ energyOptimizationMethods = [gibbsMethodString, meanFieldMethodString, energyMax
 
 
 def optimize_energy(energyDict, colors=[], dimDict={}, method=gibbsMethodString,
-                    temperatureList=[1 for i in range(10)]):
+                    temperatureList=[1 for i in range(10)], coreType=None, contractionMethod=None):
     if method == gibbsMethodString:
-        sampler = EnergyGibbs(energyDict=energyDict, colors=colors, dimDict=dimDict)
+        sampler = EnergyGibbs(energyDict=energyDict, colors=colors, dimDict=dimDict, coreType=coreType,
+                              contractionMethod=contractionMethod)
         sampler.annealed_sample(temperatureList)
         return sampler.sample
     elif method == meanFieldMethodString:
-        approximator = EnergyMeanField(energyDict=energyDict, colors=colors, dimDict=dimDict)
+        approximator = EnergyMeanField(energyDict=energyDict, colors=colors, dimDict=dimDict, coreType=coreType,
+                                       contractionMethod=contractionMethod)
         approximator.anneal(temperatureList=temperatureList)
         return approximator.draw_sample()
     elif method == energyMaximumMethodString:
-        contracted = engine.create_trivial_core("contracted", [dimDict[color] for color in colors], colors)
+        contracted = engine.create_trivial_core("contracted", [dimDict[color] for color in colors], colors,
+                                                coreType=coreType)
         for energyKey in energyDict:
             contracted = contracted.sum_with(
-                engine.contract(energyDict[energyKey][0], openColors=colors, dimDict=dimDict).multiply(
+                engine.contract(energyDict[energyKey][0], openColors=colors, dimDict=dimDict,
+                                method=contractionMethod).multiply(
                     energyDict[energyKey][1]))
         return contracted.get_argmax()
     else:
@@ -32,12 +36,16 @@ def optimize_energy(energyDict, colors=[], dimDict={}, method=gibbsMethodString,
 
 
 class EnergyMeanField:
-    def __init__(self, energyDict, colors=[], dimDict={}, partitionColorDict=None):
+    def __init__(self, energyDict, colors=[], dimDict={}, partitionColorDict=None, coreType=None,
+                 contractionMethod=None):
         self.energyDict = energyDict
         self.colors = colors
 
         self.affectionDict = create_affectionDict(energyDict, colors)
         self.dimDict = dimDict
+
+        self.coreType = coreType
+        self.contractionMethod = contractionMethod
 
         # Only distinction to Gibbs: MeanCores instead of samples turned into cores
         if partitionColorDict is None:
@@ -46,7 +54,8 @@ class EnergyMeanField:
             self.partitionColorDict = partitionColorDict
         self.meanCores = {parKey: engine.create_trivial_core(parKey, [self.dimDict[color] for color in
                                                                       self.partitionColorDict[parKey]],
-                                                             self.partitionColorDict[parKey]).multiply(
+                                                             self.partitionColorDict[parKey],
+                                                             coreType=coreType).multiply(
             1 / np.prod([self.dimDict[color] for color in self.partitionColorDict[parKey]])) for parKey
             in self.partitionColorDict}
 
@@ -59,18 +68,21 @@ class EnergyMeanField:
         contracted = engine.contract(
             {**restMeanCores,
              **self.energyDict[affectedEnergyKeys[0]][0]
-             }, openColors=self.partitionColorDict[upKey], dimDict=self.dimDict).multiply(
+             }, openColors=self.partitionColorDict[upKey], dimDict=self.dimDict,
+            method=self.contractionMethod).multiply(
             self.energyDict[affectedEnergyKeys[0]][1])
         for energyKey in affectedEnergyKeys[1:]:
             contracted.sum_with(
                 engine.contract({**restMeanCores,
                                  **self.energyDict[energyKey][0]},
-                                openColors=self.partitionColorDict[upKey], dimDict=self.dimDict).multiply(
+                                openColors=self.partitionColorDict[upKey], dimDict=self.dimDict,
+                                method=self.contractionMethod).multiply(
                     self.energyDict[energyKey][1])
             )
-        self.meanCores[upKey] = contracted.multiply(1/temperature).exponentiate().normalize()
+        self.meanCores[upKey] = contracted.multiply(1 / temperature).exponentiate().normalize()
 
-        angle = engine.contract({"old": oldMean, "new": self.meanCores[upKey]}, openColors=[])
+        angle = engine.contract({"old": oldMean, "new": self.meanCores[upKey]}, openColors=[],
+                                method=self.contractionMethod)
         return angle.values
 
     def anneal(self, temperatureList):
@@ -91,7 +103,7 @@ class EnergyMeanField:
 
 
 class EnergyGibbs:
-    def __init__(self, energyDict, colors=[], dimDict={}):
+    def __init__(self, energyDict, colors=[], dimDict={}, coreType=None, contractionMethod=None):
         self.energyDict = energyDict
         self.colors = colors
 
@@ -100,24 +112,29 @@ class EnergyGibbs:
         self.dimDict = dimDict
         self.sample = {}
 
+        self.coreType = coreType
+        self.contractionMethod = contractionMethod
+
     def initialize_sample_uniform(self):
         for color in self.colors:
             self.sample.update(
-                engine.create_trivial_core(color + "_probCore", self.dimDict[color], [color]).draw_sample())
+                engine.create_trivial_core(color + "_probCore", [self.dimDict[color]], [color],
+                                           coreType=self.coreType).draw_sample())
 
     def calculate_energy(self, upColors):
         affectedEnergyKeys = list(set().union(*[self.affectionDict[color] for color in upColors]))
         sampleCores = {
             color + "_sampleCore": engine.create_basis_core(color + "_sampleCore", [self.dimDict[color]], [color],
-                                                            (self.sample[color])) for
+                                                            (self.sample[color]), coreType=self.coreType) for
             color in self.sample if color not in upColors}
         contractedEnergy = engine.contract(coreDict={**self.energyDict[affectedEnergyKeys[0]][0], **sampleCores},
-                                           openColors=upColors, dimDict=self.dimDict).multiply(
+                                           openColors=upColors, dimDict=self.dimDict,
+                                           method=self.contractionMethod).multiply(
             self.energyDict[affectedEnergyKeys[0]][1])
         for energyKey in affectedEnergyKeys[1:]:
             contractedEnergy = contractedEnergy.sum_with(
                 engine.contract({**self.energyDict[energyKey][0], **sampleCores}, openColors=upColors,
-                                dimDict=self.dimDict).multiply(
+                                dimDict=self.dimDict, method=self.contractionMethod).multiply(
                     self.energyDict[energyKey][1]))
         return contractedEnergy
 
