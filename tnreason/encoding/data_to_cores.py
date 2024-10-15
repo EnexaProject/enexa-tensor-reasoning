@@ -6,7 +6,7 @@ defaultDataColor = "j"
 
 
 def create_data_cores(sampleDf, atomKeys=None, dataColor=defaultDataColor, interpretation="atomic", dimensionsDict=None,
-                      coreType=engine.defaultCoreType, partitionDict=None):
+                      coreType=None, partitionDict=None):
     """
     Creates a tensor network of data cores, each storing the by atomKey selected column of sampleDf as a core of
     the CP Decomposition of the one-hot encoding (empirical distribution)
@@ -25,7 +25,7 @@ def create_data_cores(sampleDf, atomKeys=None, dataColor=defaultDataColor, inter
         raise ValueError("Interpretation {} not understood!".format(interpretation))
 
 def categorical_to_relational_encoding(sampleDf, atomKeys=None, dataColor=defaultDataColor, dimensionsDict=None,
-                                       coreType=engine.defaultCoreType, partitionDict=None):
+                                       coreType=None, partitionDict=None):
     """
     Relational Encoding of samples, which are interpreted as certain states of categorical variables.
     """
@@ -43,7 +43,7 @@ def categorical_to_relational_encoding(sampleDf, atomKeys=None, dataColor=defaul
     )
 
 
-def atomValues_from_sampleDf(sampleDf, atomKey, dataColor):
+def atomValues_from_sampleDf(sampleDf, atomKey, dataColor, coreType=None):
     """
     Tensor Encoding of samples, which are interpreted as atomic uncertainties.
     """
@@ -51,4 +51,5 @@ def atomValues_from_sampleDf(sampleDf, atomKey, dataColor):
     dfEntries = sampleDf[atomKey].values
     tensorFunc = lambda j, a: (1 - a) * (1 - dfEntries[int(j)]) + a * dfEntries[int(j)]
     return engine.create_tensor_encoding(inshape=[dataNum, 2], incolors=[dataColor, atomKey], function=tensorFunc,
+                                         coreType=coreType,
                                          name=atomKey + dataCoreSuffix)

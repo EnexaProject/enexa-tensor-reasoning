@@ -9,7 +9,7 @@ def poly_rencoding_from_function(inshape, outshape, incolors, outcolors, functio
 
 def poly_tencoding_from_function(inshape, incolors, function, name="PolyEncoding"):
     sliceList = [(function(*i), {incolors[k]: assignment for k, assignment in enumerate(i)}) for i in
-                 np.ndindex(*inshape)]
+                 np.ndindex(*inshape) if function(*i) != 0]
     return PolynomialCore(values=SliceValues(slices=sliceList, shape=inshape), colors=incolors, name=name)
 
 

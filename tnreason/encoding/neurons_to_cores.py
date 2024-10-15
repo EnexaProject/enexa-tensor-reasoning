@@ -12,7 +12,7 @@ candidatesCoreSuffix = "_selCore"
 posPrefix = "p"
 
 
-def create_architecture(neuronDict, headNeurons=[]):
+def create_architecture(neuronDict, headNeurons=[], coreType=None):
     """
     Creates a tensor network of neuron cores with selection colors
         * neuronDict: Dictionary specifying to each neuronName a list of candidates (for the connective and the arguments)
@@ -24,13 +24,13 @@ def create_architecture(neuronDict, headNeurons=[]):
                              **create_neuron(neuronName, neuronDict[neuronName][0], {
                                  neuronName + "_" + posPrefix + str(i): posCandidates for i, posCandidates in
                                  enumerate(neuronDict[neuronName][1:])
-                             })}
+                             }, coreType=coreType)}
     for headNeuron in headNeurons:
         architectureCores = {**architectureCores, **enform.create_head_core(headNeuron, headType="truthEvaluation")}
     return architectureCores
 
 
-def create_neuron(neuronName, connectiveList, candidatesDict={}):
+def create_neuron(neuronName, connectiveList, candidatesDict={}, coreType=None):
     """
     Creates the cores to one neuron 
         * neuronName: String to use as prefix of the key to each core
@@ -39,14 +39,14 @@ def create_neuron(neuronName, connectiveList, candidatesDict={}):
     """
     neuronCores = {
         neuronName + connectiveSelCoreSuffix: create_connective_selectors(neuronName, candidatesDict.keys(),
-                                                                          connectiveList)}
+                                                                          connectiveList, coreType=coreType)}
     for candidateKey in candidatesDict:
         neuronCores = {**neuronCores, **create_variable_selectors(
-            candidateKey, candidatesDict[candidateKey])}
+            candidateKey, candidatesDict[candidateKey], coreType=coreType)}
     return neuronCores
 
 
-def create_variable_selectors(candidateKey, variables):  # candidateKey was created by neuronName + p + str(pos)
+def create_variable_selectors(candidateKey, variables, coreType=None):  # candidateKey was created by neuronName + p + str(pos)
     """
     Creates the selection cores to one argument at a neuron.
     There are two possibilities to specify variables
@@ -62,20 +62,20 @@ def create_variable_selectors(candidateKey, variables):  # candidateKey was crea
         return {candidateKey + "_" + variables + candidatesCoreSuffix: engine.create_relational_encoding(
             inshape=[dim, dim], outshape=[2], incolors=[candidateKey + candidatesColorSuffix, catName],
             outcolors=[candidateKey],
-            function=selFunc, coreType=engine.defaultCoreType,
+            function=selFunc, coreType=coreType,
             name=candidateKey + "_" + variables + candidatesCoreSuffix)}
     cSelectorDict = {}
     for i, variableKey in enumerate(variables):
         coreFunc = lambda c, a, o: (not (c == i)) or (a == o)
         cSelectorDict[candidateKey + "_" + variableKey + candidatesCoreSuffix] = engine.create_tensor_encoding(
             inshape=[len(variables), 2, 2], incolors=[candidateKey + candidatesColorSuffix, variableKey, candidateKey],
-            function=coreFunc, coreType=engine.defaultCoreType,
+            function=coreFunc, coreType=coreType,
             name=candidateKey + "_" + variableKey + candidatesCoreSuffix
         )
     return cSelectorDict
 
 
-def create_connective_selectors(neuronName, candidateKeys, connectiveList):
+def create_connective_selectors(neuronName, candidateKeys, connectiveList, coreType=None):
     """
     Creates the connective selection core, using the candidateKeys as color and arity specification
     """
@@ -84,12 +84,14 @@ def create_connective_selectors(neuronName, candidateKeys, connectiveList):
                                                  incolors=[neuronName + connectiveSelColorSuffix, *candidateKeys],
                                                  outcolors=[neuronName],
                                                  function=con.get_unary_connective_selector(connectiveList),
+                                                 coreType=coreType,
                                                  name=neuronName + connectiveSelCoreSuffix)
     elif len(candidateKeys) == 2:
         return engine.create_relational_encoding(inshape=[len(connectiveList), 2, 2], outshape=[2],
                                                  incolors=[neuronName + connectiveSelColorSuffix, *candidateKeys],
                                                  outcolors=[neuronName],
                                                  function=con.get_binary_connective_selector(connectiveList),
+                                                 coreType=coreType,
                                                  name=neuronName + connectiveSelCoreSuffix)
     else:
         raise ValueError(

@@ -8,7 +8,7 @@ connectiveFixCoreSuffix = "_conCore"
 headCoreSuffix = "_headCore"
 
 
-def create_formulas_cores(expressionsDict, alreadyCreated=[]):
+def create_formulas_cores(expressionsDict, alreadyCreated=[], coreType=None):
     """
     Creates a tensor network of connective and head cores
         * expressionsDict: Dictionary of nested listed representing expressions
@@ -20,19 +20,22 @@ def create_formulas_cores(expressionsDict, alreadyCreated=[]):
             knowledgeCores = {**knowledgeCores,
                               **create_head_core(get_formula_color(expressionsDict[formulaName][:-1]), "expFactor",
                                                  weight=
-                                                 expressionsDict[formulaName][-1]),
+                                                 expressionsDict[formulaName][-1], coreType=coreType),
                               **create_raw_formula_cores(expressionsDict[formulaName][:-1],
                                                          alreadyCreated=
-                                                         list(knowledgeCores.keys()) + alreadyCreated)}
+                                                         list(knowledgeCores.keys()) + alreadyCreated,
+                                                         coreType=coreType)}
         else:
             knowledgeCores = {**knowledgeCores,
-                              **create_head_core(get_formula_color(expressionsDict[formulaName]), "truthEvaluation"),
+                              **create_head_core(get_formula_color(expressionsDict[formulaName]), "truthEvaluation",
+                                                 coreType=coreType),
                               **create_raw_formula_cores(expressionsDict[formulaName],
-                                                         alreadyCreated=list(knowledgeCores.keys()) + alreadyCreated)}
+                                                         alreadyCreated=list(knowledgeCores.keys()) + alreadyCreated,
+                                                         coreType=coreType)}
     return knowledgeCores
 
 
-def create_raw_formula_cores(expression, alreadyCreated=[]):
+def create_raw_formula_cores(expression, alreadyCreated=[], coreType=None):
     """
     Creates the connective cores to an expression, omitting the elsewhere created cores
         * expression: Nested list specifying a formula
@@ -47,18 +50,18 @@ def create_raw_formula_cores(expression, alreadyCreated=[]):
         return {}
 
     elif len(expression) == 2:
-        return {**create_connective_core(expression),
-                **create_raw_formula_cores(expression[1], alreadyCreated=alreadyCreated)}
+        return {**create_connective_core(expression, coreType=coreType),
+                **create_raw_formula_cores(expression[1], alreadyCreated=alreadyCreated, coreType=coreType)}
     elif len(expression) == 3:
-        return {**create_connective_core(expression),
-                **create_raw_formula_cores(expression[1], alreadyCreated=alreadyCreated),
-                **create_raw_formula_cores(expression[2], alreadyCreated=alreadyCreated)
+        return {**create_connective_core(expression, coreType=coreType),
+                **create_raw_formula_cores(expression[1], alreadyCreated=alreadyCreated, coreType=coreType),
+                **create_raw_formula_cores(expression[2], alreadyCreated=alreadyCreated, coreType=coreType)
                 }
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 
 
-def create_connective_core(expression):
+def create_connective_core(expression, coreType=None):
     """
     Creates the connective core at the head of the expression by loading the truth table
     """
@@ -72,7 +75,7 @@ def create_connective_core(expression):
                     engine.create_relational_encoding(inshape=[2], outshape=[2], incolors=[preExpressionString],
                                                       outcolors=[expressionString],
                                                       function=con.get_connectives(expression[0]),
-                                                      coreType=engine.defaultCoreType,
+                                                      coreType=coreType,
                                                       name=expressionString + connectiveFixCoreSuffix)}
 
     elif len(expression) == 3:
@@ -83,13 +86,13 @@ def create_connective_core(expression):
                                                       incolors=[leftExpressionString, rightExpressionString],
                                                       outcolors=[expressionString],
                                                       function=con.get_connectives(expression[0]),
-                                                      coreType=engine.defaultCoreType,
+                                                      coreType=coreType,
                                                       name=expressionString + connectiveFixCoreSuffix)}
     else:
         raise ValueError("Expression {} not understood!".format(expression))
 
 
-def create_head_core(expression, headType, weight=None, name=None):
+def create_head_core(expression, headType, weight=None, name=None, coreType=None):
     """
     Created the head core to an expression activating it
     """
@@ -109,16 +112,16 @@ def create_head_core(expression, headType, weight=None, name=None):
     color = get_formula_color(expression)
     if name is None:
         name = color + headCoreSuffix
-    return {name: engine.create_tensor_encoding([2], [color], headFunction, coreType=engine.defaultCoreType, name=name)}
+    return {name: engine.create_tensor_encoding([2], [color], headFunction, coreType=coreType, name=name)}
 
 
-def create_evidence_cores(evidenceDict):
+def create_evidence_cores(evidenceDict, coreType=None):
     """
     Turns positive and negative evidence into literal formulas and encodes them
     """
     return create_formulas_cores({**{key: [key] for key in evidenceDict if evidenceDict[key]},
                                   **{key: ["not", key] for key in evidenceDict if not evidenceDict[key]}
-                                  })
+                                  }, coreType=coreType)
 
 
 def get_formula_color(expression):
