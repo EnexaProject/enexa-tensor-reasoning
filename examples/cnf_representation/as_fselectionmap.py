@@ -1,7 +1,5 @@
 from tnreason import encoding, engine
 
-from examples.rencoding import generate_rencoding as gr
-
 def get_cnf_architecture(maxSize, atomList):
     return {
         **{"colNeur" + str(i): [["or"], ["neur" + str(i + 1)], ["colNeur" + str(i - 1)]] for i in
