@@ -68,7 +68,7 @@ class HypertrieCore:
             numpyValues[tuple(entry[0])] = entry[1]
         return numpyValues
 
-    def to_NumpyTensorCore(self):
+    def to_NumpyCore(self):
         return cor.NumpyCore(values=self.values_to_numpy(), colors=self.colors, name=self.name)
 
 

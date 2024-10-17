@@ -5,15 +5,15 @@ from tnreason.engine import subscript_creation as subc
 
 
 class TorchCore:
-    def __init__(self, values, colors, name=None, inType="NumpyTensorCore"):
-        if inType == "NumpyTensorCore":
+    def __init__(self, values, colors, name=None, inType="NumpyCore"):
+        if inType == "NumpyCore":
             self.values = tor.from_numpy(values)
         else:
             self.values = values
         self.colors = colors
         self.name = name
 
-    def to_NumpyTensorCore(self):
+    def to_NumpyCore(self):
         return cor.NumpyCore(self.values.numpy(), self.colors, self.name)
 
 

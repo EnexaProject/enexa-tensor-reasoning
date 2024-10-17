@@ -1,10 +1,10 @@
-defaultCoreType = "NumpyTensorCore"
+defaultCoreType = "NumpyCore"
 
 
 def get_core(coreType=None):
     if coreType is None:
         coreType = defaultCoreType
-    if coreType == "NumpyTensorCore":
+    if coreType == "NumpyCore":
         from tnreason.engine.workload_to_numpy import NumpyCore
         return NumpyCore
     elif coreType == "PolynomialCore":
@@ -20,7 +20,7 @@ def get_core(coreType=None):
 def create_tensor_encoding(inshape, incolors, function, coreType=None, name="Encoding"):
     if coreType is None:
         coreType = defaultCoreType
-    if coreType == "NumpyTensorCore":
+    if coreType == "NumpyCore":
         from tnreason.engine.workload_to_numpy import np_tencoding_from_function
         return np_tencoding_from_function(inshape, incolors, function, name)
     elif coreType == "PolynomialCore":
@@ -47,7 +47,7 @@ def create_relational_encoding(inshape, outshape, incolors, outcolors, function,
     """
     if coreType is None:
         coreType = defaultCoreType
-    if coreType == "NumpyTensorCore":
+    if coreType == "NumpyCore":
         from tnreason.engine.workload_to_numpy import np_rencoding_from_function
         return np_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name)
     elif coreType == "PolynomialCore":

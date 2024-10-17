@@ -10,7 +10,7 @@ class TensorFlowCore:
         self.colors = colors
         self.name = name
 
-    def to_NumpyTensorCore(self):
+    def to_NumpyCore(self):
         return cor.NumpyCore(self.values.numpy(), self.colors, self.name)
 
 

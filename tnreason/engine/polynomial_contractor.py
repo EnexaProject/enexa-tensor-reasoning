@@ -41,6 +41,8 @@ class PolynomialCore:
             self.colors)
 
     def __getitem__(self, item):
+        if isinstance(item, int):
+            item = [item]
         value = 0
         for entry in self.values:
             if agreeing_dicts(entry[1], {color: item[i] for i, color in enumerate(self.colors)}):
@@ -116,6 +118,11 @@ class PolynomialCore:
         self.values = [(entry[0], {**entry[1], enumerationColor: i}) for i, entry in enumerate(self.values)]
         self.shape = self.shape + [len(self.values)]
 
+    def reorder_colors(self, newColors):
+        if set(self.colors) == set(newColors):
+            self.colors = newColors
+        else:
+            raise ValueError("Reordering of Colors in Core {} not possible, since different!".format(self.name))
 
 class PolynomialContractor:
 
