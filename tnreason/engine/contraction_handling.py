@@ -33,8 +33,8 @@ def contract(coreDict, openColors, dimDict={}, method=None):
         from tnreason.engine.workload_to_torch import TorchContractor
         return TorchContractor(coreDict=coreDict, openColors=openColors).einsum().to_NumpyTensorCore()
     elif method == "TentrisEinsum":
-        from tnreason.engine.workload_to_tentris import TentrisContractor
-        return TentrisContractor(coreDict=coreDict, openColors=openColors).einsum().to_NumpyTensorCore()
+        from tnreason.engine.workload_to_tentris import HypertrieContractor
+        return HypertrieContractor(coreDict=coreDict, openColors=openColors).einsum()#.to_NumpyTensorCore()
 
     ## Variable Elimination Contractors
     elif method == "PgmpyVariableEliminator":

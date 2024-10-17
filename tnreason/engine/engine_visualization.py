@@ -1,7 +1,8 @@
-import networkx as nx
-import matplotlib.pyplot as plt
-
 def draw_factor_graph(coreDict, fontsize=10, title="Factor Graph", pos=None, bipartite=False):
+
+    import networkx as nx
+    import matplotlib.pyplot as plt
+
     coreNodes = list(coreDict.keys())
 
     colorNodes = []

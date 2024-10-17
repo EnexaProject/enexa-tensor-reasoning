@@ -10,6 +10,9 @@ def get_core(coreType=None):
     elif coreType == "PolynomialCore":
         from tnreason.engine.polynomial_contractor import PolynomialCore
         return PolynomialCore
+    elif coreType == "HypertrieCore":
+        from tnreason.engine.workload_to_tentris import HypertrieCore
+        return HypertrieCore
     else:
         raise ValueError("Core Type {} not supported.".format(coreType))
 
@@ -23,6 +26,9 @@ def create_tensor_encoding(inshape, incolors, function, coreType=None, name="Enc
     elif coreType == "PolynomialCore":
         from tnreason.engine.polynomial_contractor import poly_tencoding_from_function
         return poly_tencoding_from_function(inshape, incolors, function, name)
+    elif coreType == "HypertrieCore":
+        from tnreason.engine.workload_to_tentris import ht_tencoding_from_function
+        return ht_tencoding_from_function(inshape, incolors, function, name)
     else:
         raise ValueError("Core Type {} not supported for .".format(coreType))
 
@@ -46,6 +52,9 @@ def create_relational_encoding(inshape, outshape, incolors, outcolors, function,
     elif coreType == "PolynomialCore":
         from tnreason.engine.polynomial_contractor import poly_rencoding_from_function
         return poly_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name)
+    elif coreType == "HypertrieCore":
+        from tnreason.engine.workload_to_tentris import ht_rencoding_from_function
+        return ht_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name)
     else:
         raise ValueError("Core Type {} not supported for .".format(coreType))
 

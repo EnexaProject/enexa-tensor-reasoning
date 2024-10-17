@@ -1,4 +1,5 @@
 @prefix ns1: <rdf:> .
+@prefix gentev: <gentev:> .
 
 <gentev:q_1> ns1:type <Erloeskonto> .
 

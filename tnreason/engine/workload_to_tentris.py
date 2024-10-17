@@ -7,69 +7,77 @@ from tnreason.engine import subscript_creation as subc
 import numpy as np
 
 
-class TentrisCore:
-    def __init__(self, values, colors, name=None, inType="Hypertrie"):
-        if inType == "Hypertrie":
-            self.values = values
-        elif inType == "Numpy":
-            self.values_from_numpy(array=values)
-        elif inType == "rdf":
-            self.values_from_rdf(path=values)
+def ht_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name="PolyEncoding"):
+    values = Hypertrie(dtype=int, depth=len(inshape + outshape))
+    for i in np.ndindex(*inshape):
+        values[tuple(i) + tuple(function(*i))] = 1
+    return HypertrieCore(values=values, colors=incolors + outcolors, name=name)
 
+
+def ht_tencoding_from_function(inshape, incolors, function, name="PolyEncoding", dtype=float):
+    values = Hypertrie(dtype=dtype, depth=len(inshape))
+    for i in np.ndindex(*inshape):
+        values[tuple(i)] = float(function(*i))
+    return HypertrieCore(values=values, colors=incolors, name=name)
+
+
+def ht_from_rdf(path, tripleColors=["s", "p", "o"], name="KnowledgeGraphCore"):
+    tStore = tentris.TripleStore()
+    tStore.load_rdf_data(path)
+    return HypertrieCore(values=tStore.hypertrie(), colors=tripleColors, name=name)
+
+
+class HypertrieCore:
+    def __init__(self, values, colors, name=None):
+        if isinstance(values, Hypertrie):
+            self.values = values
+        elif isinstance(values, np.ndarray):
+            self.values_from_numpy(array=values)
+        else:
+            raise ValueError("Values {} to initialize Hypertrie Core not understood!".format(values))
         self.colors = colors
         self.name = name
 
-    def values_from_rdf(self, path):
-        tStore = tentris.TripleStore()
-        tStore.load_rdf_data(path)
-        self.values = tStore.hypertrie()
+    def get_shape(self):
+        shape = np.zeros(self.values.depth)
+        for entry in self.values:
+            for i in range(len(shape)):
+                if entry[0][i] + 1 > shape[i]:
+                    shape[i] = entry[0][i] + 1
+        return [int(dim) for dim in shape]
 
     def values_from_numpy(self, array):
         self.values = Hypertrie(dtype=array.dtype, depth=len(array.shape))
-        for index, coordinate in enumerate(np.nditer([array, array.shape])):
-            if coordinate != 0:
-                self.values[np.unravel_index(index, array.shape)] = coordinate
+        for index in np.ndindex(array.shape):
+            if array[index] != 0:
+                self.values[index] = array[index]
 
     def values_to_numpy(self):
-        depth = self.values.depth
-
-        ## Get size -> Better to extend to coordinate dictionaries?
-        size = np.zeros(depth)
+        numpyValues = np.zeros(shape=self.get_shape())
         for entry in self.values:
-            for i in range(depth):
-                if entry[0][i] > size[i]:
-                    size[i] = entry[0][i]
-
-        numpyValues = np.empty(shape=[int(size[i]) for i in range(depth)])
-        for entry in self.values:
-            numpyValues[entry[0]] = entry[1]
+            numpyValues[tuple(entry[0])] = entry[1]
         return numpyValues
 
     def to_NumpyTensorCore(self):
-        return cor.NumpyCore(self.values_to_numpy(), self.colors, self.name)
+        return cor.NumpyCore(values=self.values_to_numpy(), colors=self.colors, name=self.name)
 
 
-class TentrisContractor:
+class HypertrieContractor:
     def __init__(self, coreDict, openColors):
-        self.tentrisCores = {
-            key: TentrisCore(values=coreDict[key].values, colors=coreDict[key].colors, name=coreDict[key].name, inType="Hypertrie") for
-            key in coreDict
-        }
+        for key in coreDict:
+            if not isinstance(coreDict[key], HypertrieCore):
+                if isinstance(coreDict[key], cor.NumpyCore):
+                    coreDict[key] = HypertrieCore(coreDict[key].values, coreDict[key].colors, coreDict[key].name)
+                else:
+                    raise ValueError("Hypertrie Contractions works only for Hypertrie or Numpy Cores!")
+        self.coreDict = coreDict
         self.openColors = openColors
 
     def einsum(self):
-        substring, coreOrder, colorDict, colorOrder = subc.get_einsum_substring(self.tentrisCores, self.openColors)
-        with tentris.einsumsum(subscript=substring, operands=[self.tentrisCores[key].values for key in coreOrder]) as e:
+        substring, coreOrder, colorDict, colorOrder = subc.get_einsum_substring(self.coreDict, self.openColors)
+        with tentris.einsumsum(subscript=substring, operands=[self.coreDict[key].values for key in coreOrder]) as e:
             resultValues = Hypertrie(dtype=e.result_dtype, depth=e.result_depth)
             e.try_extend_hypertrie(resultValues)
 
-        return TentrisCore(values=resultValues,
-                           colors=[color for color in colorOrder if color in self.openColors],
-                           inType="Hypertrie")
-
-if __name__ == "__main__":
-    testCore1 = TentrisCore(np.array([[1.1, 2], [0.12, -1.1]]), colors=["a", "b"])
-    testCore2 = TentrisCore(np.array([[1.1, 2], [0.12, -1.1]]), colors=["a", "c"])
-
-    testContractor = TentrisContractor({"1": testCore1, "2":testCore2}, ["b","c"])
-    print(testContractor.einsum().to_NumpyTensorCore().values)
+        return HypertrieCore(values=resultValues,
+                             colors=[color for color in colorOrder if color in self.openColors])
