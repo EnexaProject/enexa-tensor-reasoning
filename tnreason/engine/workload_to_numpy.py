@@ -30,10 +30,19 @@ class NumpyCore:
         self.colors = colors
         self.name = name
 
+        self.shape = self.values.shape
+
         if len(self.colors) != len(self.values.shape):
             raise ValueError("Number of Colors does not match the Value Shape in Core {}!".format(name))
         if len(self.colors) != len(set(self.colors)):
             raise ValueError("There are duplicate colors in the colors {} of Core {}!".format(colors, name))
+
+    def __str__(self):
+        return "## Numpy Core " + str(self.name) + " ##\nValues with shape: " + str(self.shape) + "\nColors: " + str(
+            self.colors)
+
+    def __getitem__(self, item):
+        return self.values[item]
 
     def clone(self):
         return NumpyCore(self.values.copy(), self.colors.copy(), self.name)  # ! Shallow Copies?

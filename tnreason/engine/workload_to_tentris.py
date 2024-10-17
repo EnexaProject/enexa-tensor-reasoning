@@ -28,7 +28,7 @@ def ht_from_rdf(path, tripleColors=["s", "p", "o"], name="KnowledgeGraphCore"):
 
 
 class HypertrieCore:
-    def __init__(self, values, colors, name=None):
+    def __init__(self, values, colors, name=None, calculateShape=False):
         if isinstance(values, Hypertrie):
             self.values = values
         elif isinstance(values, np.ndarray):
@@ -37,6 +37,15 @@ class HypertrieCore:
             raise ValueError("Values {} to initialize Hypertrie Core not understood!".format(values))
         self.colors = colors
         self.name = name
+
+        if calculateShape:
+            self.shape = self.get_shape()
+
+    def __str__(self):
+        return "## Hypertrie Core " + str(self.name) + "\nColors: " + str(self.colors)
+
+    def __getitem__(self, item):
+        return self.values[item]
 
     def get_shape(self):
         shape = np.zeros(self.values.depth)
