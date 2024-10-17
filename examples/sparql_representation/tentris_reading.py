@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     entryPositionList, interpretationsDict = sparql_evaluation_to_entryPositionList(querySolution)
     core = PolynomialCore(
-        values=SliceValues([(1, posDict) for posDict in entryPositionList]),
+        values=[(1, posDict) for posDict in entryPositionList],
         colors=projectionVariables
     )
     print(entryPositionList)

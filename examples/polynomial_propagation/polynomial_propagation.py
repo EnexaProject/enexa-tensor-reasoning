@@ -48,11 +48,11 @@ class PolynomialPropagator:
 def propagate_fromToAlong(sendingCore, receivingCore, color):
     ## Colors in sendingCore
     changed = False
-    if all([color in posDict for scalar, posDict in sendingCore.values.slices]):
-        message = np.unique([posDict[color] for scalar, posDict in sendingCore.values.slices])
+    if all([color in posDict for scalar, posDict in sendingCore.values]):
+        message = np.unique([posDict[color] for scalar, posDict in sendingCore.values])
 
         newSlices = []
-        for scalar, posDict in receivingCore.values.slices:
+        for scalar, posDict in receivingCore.values:
             if color in posDict:
                 if posDict[color] in message:
                     newSlices.append((scalar, posDict))
@@ -60,20 +60,19 @@ def propagate_fromToAlong(sendingCore, receivingCore, color):
                     changed = True
             else:
                 newSlices.append((scalar, posDict))
-        receivingCore.values = engine.SliceValues(newSlices,
-                                                  receivingCore.values.shape)
+        receivingCore.values = newSlices
     return changed
 
 
 if __name__ == "__main__":
     core1 = engine.get_core("PolynomialCore")(
-        values=engine.SliceValues([(1, {"a": 3, "b": 2}), (2, {"a": 2, "b": 3})],
-                                  shape=[5, 4]),
+        values=[(1, {"a": 3, "b": 2}), (2, {"a": 2, "b": 3})],
+                                  shape=[5, 4],
         colors=["a", "b"]
     )
     core2 = engine.get_core("PolynomialCore")(
-        values=engine.SliceValues([(1, {"a": 3, "c": 2}), (2, {"a": 0, "c": 3})],  # (1, {"c":1}),
-                                  shape=[5, 4]),
+        values=[(1, {"a": 3, "c": 2}), (2, {"a": 0, "c": 3})],  # (1, {"c":1}),
+                                  shape=[5, 4],
         colors=["a", "c"]
     )
     print("### Test1")
@@ -83,8 +82,8 @@ if __name__ == "__main__":
         print(pp.coresDict[core])
 
     core3 = engine.get_core("PolynomialCore")(
-        values=engine.SliceValues([(1, {"b": 3, "a": 2, "d": 2}), (2, {"b": 0, "a": 3})],
-                                  shape=[5, 4]),
+        values=[(1, {"b": 3, "a": 2, "d": 2}), (2, {"b": 0, "a": 3})],
+        shape=[5, 4],
         colors=["b", "d", "e", "a"]
     )
 

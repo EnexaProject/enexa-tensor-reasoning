@@ -8,7 +8,7 @@ def query_as_polynomial(kg, query, individuals, variables=[]):
     slices = []
     for row in query:
         slices.append([1,{variable : individuals.index(str(row[i])) for i,variable in enumerate(variables)}])
-    return engine.get_core("PolynomialCore")(engine.SliceValues(slices, shape=[]), colors=variables)
+    return engine.get_core("PolynomialCore")(values=slices, colors=variables)
 
 
 

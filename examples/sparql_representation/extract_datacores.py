@@ -16,7 +16,7 @@ if __name__ == "__main__":
     import rdflib
 
     g = rdflib.Graph()
-    g.parse("./hypertrie_cores/THWS_demo.ttl")
+    g.parse("../tests/engine/hypertrie_cores/THWS_demo.ttl")
 
     queryString = """
         SELECT DISTINCT ?x ?z ?y
@@ -31,7 +31,8 @@ if __name__ == "__main__":
 
 
     importanceCore = PolynomialCore(
-        values=SliceValues([(1, posDict) for posDict in importancePositionList], shape=[10, 10, 10]),
+        values=[(1, posDict) for posDict in importancePositionList],
+        shape=[10, 10, 10],
         colors=["x", "z", "y"]
     )
 
@@ -44,7 +45,8 @@ if __name__ == "__main__":
     result = g.query(atomAString)
     atomAPositionList, interpretationDict = rr.rdflib_sparql_evaluation_to_entryPositionList(result, interpretationDict)
     atomACore = PolynomialCore(
-        values=SliceValues([(1, posDict) for posDict in atomAPositionList], shape=[10, 10, 10]),
+        values=[(1, posDict) for posDict in atomAPositionList],
+        shape=[10, 10, 10],
         colors=["x"]
     )
 

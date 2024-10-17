@@ -70,8 +70,8 @@ def get_image(core, inShape, imageValues=[float(0), float(1)]):
 
 
 def core_to_relational_encoding(core, headColor, outCoreType=None):
-    imageValues = get_image(core, core.values.shape)
-    return create_relational_encoding(inshape=core.values.shape, outshape=[len(imageValues)], incolors=core.colors,
+    imageValues = get_image(core, core.shape)
+    return create_relational_encoding(inshape=core.shape, outshape=[len(imageValues)], incolors=core.colors,
                                       outcolors=[headColor], function=lambda *args: [imageValues.index(core[args])],
                                       coreType=outCoreType), imageValues
 
