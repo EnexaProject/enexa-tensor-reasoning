@@ -7,6 +7,7 @@ def poly_rencoding_from_function(inshape, outshape, incolors, outcolors, functio
     return PolynomialCore(values=SliceValues(slices=sliceList, shape=inshape + outshape), colors=incolors + outcolors,
                           name=name)
 
+
 def poly_tencoding_from_function(inshape, incolors, function, name="PolyEncoding"):
     sliceList = [(function(*i), {incolors[k]: assignment for k, assignment in enumerate(i)}) for i in
                  np.ndindex(*inshape) if function(*i) != 0]
@@ -109,8 +110,21 @@ class PolynomialCore:
     def normalize(self):
         return self
 
+    def enumerate_slices(self, enumerationColor="j"):
+        self.colors = self.colors + [enumerationColor]
+        self.values = SliceValues(
+            [(entry[0], {**entry[1], enumerationColor: i}) for i, entry in enumerate(self.values.slices)],
+            shape=self.values.shape + [len(self.values.slices)])
+
+    def __getitem__(self, item):
+        value = 0
+        for entry in self.values.slices:
+            if agreeing_dicts(entry[1], {color: item[i] for i, color in enumerate(self.colors)}):
+                value += entry[0]
+        return value
 
 class GenericSliceContractor:
+
     def __init__(self, coreDict={}, openColors=[]):
         self.coreDict = {key: PolynomialCore(coreDict[key].values, coreDict[key].colors, name=key) for key in
                          coreDict}

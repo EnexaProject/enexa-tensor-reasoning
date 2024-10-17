@@ -43,6 +43,7 @@ def create_relational_encoding(inshape, outshape, incolors, outcolors, function,
                                name="Encoding"):
     """
     Creates relational encoding of a function as a single core.
+    The function has to be a map from the indices in inshape to the indices in outshape.
     """
     if coreType is None:
         coreType = defaultCoreType
@@ -57,6 +58,22 @@ def create_relational_encoding(inshape, outshape, incolors, outcolors, function,
         return ht_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name)
     else:
         raise ValueError("Core Type {} not supported for .".format(coreType))
+
+
+def get_image(core, inShape, imageValues=[float(0), float(1)]):
+    import numpy as np
+    for indices in np.ndindex(tuple(inShape)):
+        coordinate = float(core[indices])
+        if coordinate not in imageValues:
+            imageValues.append(coordinate)
+    return imageValues
+
+
+def core_to_relational_encoding(core, headColor, outCoreType=None):
+    imageValues = get_image(core, core.values.shape)
+    return create_relational_encoding(inshape=core.values.shape, outshape=[len(imageValues)], incolors=core.colors,
+                                      outcolors=[headColor], function=lambda *args: [imageValues.index(core[args])],
+                                      coreType=outCoreType), imageValues
 
 
 def reduce_function(function, coordinates):

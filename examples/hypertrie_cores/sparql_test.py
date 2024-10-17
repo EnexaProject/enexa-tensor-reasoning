@@ -24,5 +24,3 @@ core = PolynomialCore(
     values=SliceValues([(1, posDict) for posDict in entryPositionList]),
     colors=projectionVariables
 )
-
-print(core.values.slices)
