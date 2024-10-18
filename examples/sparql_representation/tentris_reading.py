@@ -1,6 +1,7 @@
-from tentris import Variable
+from tentris import tentris, Variable
 
-def sparql_evaluation_to_entryPositionList(querySolution, interpretationDict={}):
+
+def tentris_sparql_evaluation_to_entryPositionList(querySolution, interpretationDict=dict()):
     """
     Handling of evaluated queries of Tentris
     :querySolution: Instance of tentris.tentris.SPARQLSolutionGenerator
@@ -25,32 +26,26 @@ def sparql_evaluation_to_entryPositionList(querySolution, interpretationDict={})
     return entryPositionList, interpretationDict
 
 
-if __name__ == "__main__":
-    from tentris import tentris, Hypertrie, Variable
-
-    from examples.sparql_representation.tentris_reading import sparql_evaluation_to_entryPositionList
-
+def tentris_evaluate_query(rdfFilePath, queryString):
     tripler = tentris.TripleStore()
-    tripler.load_rdf_data("/home/examples/hypertrie_cores/THWS_demo.ttl")
-    #tripler.hypertrie()
+    tripler.load_rdf_data(rdfFilePath)
+    return tripler.eval_sparql_query(queryString)
 
+
+if __name__ == "__main__":
     queryString = """
         SELECT ?x ?z ?y
         WHERE {
             ?x ?z ?y .
         }
     """
+    querySolution = tentris_evaluate_query(rdfFilePath="/home/examples/sparql_representation/example_kg/THWS_demo.ttl",
+                                           queryString=queryString)
 
-    querySolution = tripler.eval_sparql_query(queryString)
-    projectionVariables = [str(variable)[1:] for variable in querySolution.projected_variables]
+    entryPositionList, interpretationsDict = tentris_sparql_evaluation_to_entryPositionList(querySolution)
 
-    from tnreason.engine.polynomial_contractor import PolynomialCore, SliceValues
+    from examples.sparql_representation import extract_datacores as ed
 
-    entryPositionList, interpretationsDict = sparql_evaluation_to_entryPositionList(querySolution)
-    core = PolynomialCore(
-        values=[(1, posDict) for posDict in entryPositionList],
-        colors=projectionVariables
-    )
-    print(entryPositionList)
-    print(interpretationsDict)
-
+    core = ed.positionList_to_polynomialCore(entryPositionList, variables=[str(variable)[1:] for variable in
+                                                                           querySolution.projected_variables])
+    print(core.values)

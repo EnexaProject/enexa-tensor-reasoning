@@ -1,6 +1,6 @@
 import rdflib
 
-def rdflib_sparql_evaluation_to_entryPositionList(querySolution, interpretationDict={}):
+def rdflib_sparql_evaluation_to_entryPositionList(querySolution, interpretationDict=dict()):
     """
     Handling of evaluated queries of rdflib
     :querySolution: Solution iterator of rdflib
@@ -24,18 +24,20 @@ def rdflib_sparql_evaluation_to_entryPositionList(querySolution, interpretationD
 
     return entryPositionList, interpretationDict
 
-if __name__ == "__main__":
+def rdflib_evaluate_query(rdfFilePath, queryString):
     g = rdflib.Graph()
-    g.parse("./hypertrie_cores/THWS_demo.ttl")
+    g.parse(rdfFilePath)
+    return g.query(queryString)
 
+
+if __name__ == "__main__":
     queryString = """
         SELECT ?x ?z ?y
         WHERE {
             ?x ?z ?y .
         }
     """
-
-    result = g.query(queryString)
+    result = rdflib_evaluate_query(rdfFilePath="./example_kg/THWS_demo.ttl", queryString=queryString)
 
     entryPositionList, interpretationDict = rdflib_sparql_evaluation_to_entryPositionList(result)
     print(entryPositionList)
