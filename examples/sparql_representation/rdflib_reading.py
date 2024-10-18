@@ -1,6 +1,12 @@
 import rdflib
 
 def rdflib_sparql_evaluation_to_entryPositionList(querySolution, interpretationDict={}):
+    """
+    Handling of evaluated queries of rdflib
+    :querySolution: Solution iterator of rdflib
+    :interpretationDict: Dictionary of lists to each projection variable defining the position of individuals
+    :return: List of Dictionaries assigning an index to each variable, Modified interpretationDict
+    """
     projectedVariables = [str(variable) for variable in querySolution.vars]
     for variable in projectedVariables:
         if variable not in interpretationDict:

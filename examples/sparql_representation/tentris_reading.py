@@ -2,6 +2,7 @@ from tentris import Variable
 
 def sparql_evaluation_to_entryPositionList(querySolution, interpretationDict={}):
     """
+    Handling of evaluated queries of Tentris
     :querySolution: Instance of tentris.tentris.SPARQLSolutionGenerator
     :interpretationDict: Dictionary storing to each variable a list of string IRI identifiers
     :return: List of Dictionaries assigning an index to each variable, Modified interpretationDict
