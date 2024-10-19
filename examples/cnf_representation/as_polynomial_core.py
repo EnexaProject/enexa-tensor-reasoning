@@ -23,5 +23,4 @@ def clauseList_to_pcore(clauseList):
 
 if __name__ == "__main__":
     testClause = [{"c": 0, "b": 1}, {"a": 0}, {"d": 0, "a": 1}]
-
     print(clauseList_to_pcore(testClause))

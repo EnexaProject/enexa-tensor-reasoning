@@ -1,33 +1,9 @@
-def cnf_to_dict(expression):
-    if isinstance(expression, str):
-        return [{expression: 1}]
-    elif len(expression) == 2:
-        if expression[0] == "not":  ## Then at literal level
-            return [{expression[1]: 0}]
-        elif expression[0] == "id":
-            return cnf_to_dict(expression[1])
-    elif len(expression) == 3:
-        if expression[0] == "and":
-            return [entry for entry in cnf_to_dict(expression[1]) if len(entry) != 0] + [entry for entry in
-                                                                                         cnf_to_dict(expression[2]) if
-                                                                                         len(entry) != 0]
-        elif expression[0] == "or":
-            leftDict = cnf_to_dict(expression[1])[0]
-            rightDict = cnf_to_dict(expression[2])[0]
-            for key in rightDict:  ## Rightdict merged into leftDict
-                if key in leftDict:
-                    if rightDict[key] != leftDict[key]:  ## Then the clause is a tautology represented by the empty dict
-                        return [dict()]
-                else:
-                    leftDict[key] = rightDict[key]
-            return [leftDict]
-
-
-def to_cnf(expression):
+def to_cnf(expression, uppushAnd=False):  ## Allowing for ors before ands if uppushAnd=False
     expression = eliminate_eq_xor(expression)
     expression = eliminate_imp(expression)
     expression = groundpush_not(expression)
-    expression = uppush_and(expression)
+    if uppushAnd:
+        expression = uppush_and(expression)
     return expression
 
 
@@ -85,7 +61,7 @@ def groundpush_not(expression):
         raise ValueError("Expression {} not groundpushable!".format(expression))
 
 
-def uppush_and(expression):
+def uppush_and(expression): ## Redundant, only when aiming at a CNF in nested language -> Better to go to clauseLists before that!
     while not and_above_or_checker(expression):
         expression = and_or_modify(expression)
     return expression
@@ -141,12 +117,16 @@ def not_containing_and(expression):
 
 
 if __name__ == "__main__":
+    testFormula = ["or", ["and", "b", "c"], ["and", "b", "c"]]
+    cnf = to_cnf(testFormula, uppushAnd=False)
+    print(cnf)
+    cnf = to_cnf(testFormula, uppushAnd=True)
+    print(cnf)
+
     testFormula = ["not", ["eq", "a", "b"]]
     cnf = to_cnf(testFormula)
     print(cnf)
-    print(cnf_to_dict(cnf))
 
     testFormula = ["eq", ["eq", "a", "b"], ["not", ["imp", "b", "c"]]]
     cnf = to_cnf(testFormula)
     print(cnf)
-    print(cnf_to_dict(cnf))
