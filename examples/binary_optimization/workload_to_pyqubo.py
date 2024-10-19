@@ -4,7 +4,7 @@ from pyqubo import Binary
 def genericSliceCore_to_hamiltonian(genericSliceCore):
     binariesColorDict = {color: Binary(color) for color in genericSliceCore.colors}
     hamiltonian = 0
-    for val, positions in genericSliceCore.values.slices:
+    for val, positions in genericSliceCore.values:
         hamiltonian = hamiltonian + create_potential(
             val, {key for key in positions if not positions[key]}, {key for key in positions if positions[key]},
             binariesColorDict
@@ -29,17 +29,13 @@ def create_potential(val, neg, pos, binariesDict):
 
 
 if __name__ == "__main__":
-    from tnreason import knowledge
+    from examples.cnf_representation import formula_to_polynomial_core as ftp
 
-    hybridKB = knowledge.HybridKnowledgeBase(facts={
-        "f1": ["imp", "a", "b"]
+    polyCore = ftp.weightedFormulas_to_polynomialCore({
+        "w1": ["imp", "a", "b", 0.678],
+        "w2": ["a", 0.34]
     })
-
-    provider = knowledge.InferenceProvider(hybridKB, contractionMethod="PolynomialContractor")
-    result = provider.query(["a", "b"])
-    result.add_identical_slices()
-
-    hamiltonian = genericSliceCore_to_hamiltonian(result)
+    hamiltonian = genericSliceCore_to_hamiltonian(polyCore)
     model = hamiltonian.compile()
 
     qubo, offset = model.to_qubo()

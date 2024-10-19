@@ -1,6 +1,21 @@
 from examples.cnf_representation import cnf_building as cb
 from examples.cnf_representation import as_polynomial_core as ap
 
+from tnreason import engine
+
+
+def weightedFormulas_to_polynomialCore(weightedFormulas):
+    """
+    Builds the weighted sum of the formulas as a Polynomial Core
+    """
+    sumCore = engine.get_core("PolynomialCore")(values=[], colors=[], shape=[])
+    for key in weightedFormulas:
+        sumCore = sumCore.sum_with(
+            formula_to_polynomialCore(weightedFormulas[key][:-1]).multiply(weightedFormulas[key][-1])
+        )
+    sumCore.add_identical_slices()
+    return sumCore
+
 
 def formula_to_polynomialCore(expression):
     """
@@ -50,12 +65,19 @@ def simplify_clauseList(clauseList):
 
 if __name__ == "__main__":
     testFormula = ["xor", ["eq", "a", "b"], ["not", ["imp", "b", "c"]]]
-    formula_to_polynomialCore(testFormula)
+    print(formula_to_polynomialCore(testFormula))
 
     testFormula = ["eq", ["eq", "a", "b"], ["not", ["imp", "b", "c"]]]
     formula_to_polynomialCore(testFormula)
 
     testFormula = ["or", ["and", "b", "c"], ["and", "b", "c"]]
     clauseList = cnf_to_dict(cb.to_cnf(testFormula, uppushAnd=False))
-    assert len(simplify_clauseList(clauseList)) == 2 # Needs to be {"b": 1}, {"c": 1}
+    assert len(simplify_clauseList(clauseList)) == 2  # Needs to be {"b": 1}, {"c": 1}
     formula_to_polynomialCore(testFormula)
+
+    print(
+        weightedFormulas_to_polynomialCore({
+            "w1": ["imp", "a", "b", 2],
+            "w2": ["or", "c", "d", 1.1]
+        })
+    )

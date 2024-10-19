@@ -1,4 +1,6 @@
 def to_cnf(expression, uppushAnd=False):  ## Allowing for ors before ands if uppushAnd=False
+    if not isinstance(expression, str) and len(expression) == 1: # To handle stripped weightedFormulas
+        expression = expression[0]
     expression = eliminate_eq_xor(expression)
     expression = eliminate_imp(expression)
     expression = groundpush_not(expression)

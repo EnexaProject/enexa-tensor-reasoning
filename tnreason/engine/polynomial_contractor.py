@@ -108,7 +108,8 @@ class PolynomialCore:
 
     def sum_with(self, sumCore):
         return PolynomialCore(values=self.values + sumCore.values,
-                              shape=self.shape, colors=self.colors, name=self.name)
+                              shape=self.shape, colors=list(set(self.colors).union(set(sumCore.colors))),
+                              name=self.name)
 
     def normalize(self):
         return self
@@ -123,6 +124,7 @@ class PolynomialCore:
             self.colors = newColors
         else:
             raise ValueError("Reordering of Colors in Core {} not possible, since different!".format(self.name))
+
 
 class PolynomialContractor:
 

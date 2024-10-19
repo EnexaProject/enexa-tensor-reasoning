@@ -1,5 +1,14 @@
 from tnreason import engine
 
+"""
+Old transformation for binary optimization problems (April 2024)
+Outdated since: 
+    - Here supporting only not - and constructs.
+    - More generic to build the PolynomialCore out of the CNF -> examples/cnf_representation
+Besides that: Similarities in PolynomialCore creation in recursion formula_to_slices!
+"""
+
+
 def expressionsDict_to_PolynomialCore(expressionsDict):
     slices = expressionsDict_to_slices(expressionsDict)
     activeColors = []
