@@ -15,6 +15,15 @@ def np_tencoding_from_function(inshape, incolors, function, name="NPTEncoding"):
     return NumpyCore(values=np.fromfunction(np.vectorize(function), inshape), colors=incolors, name=name)
 
 
+def np_from_poly(polyCore):
+    values = np.zeros(shape=polyCore.shape)
+    for val, posDict in polyCore.values:
+        slicesTuple = tuple(posDict.get(color, slice(None)) for color in polyCore.colors)
+        tbAdded = np.zeros(polyCore.shape)
+        tbAdded[slicesTuple] = val*np.ones(shape=[polyCore.shape[polyCore.colors.index(color)] for color in polyCore.colors if color not in posDict])
+        values = values + tbAdded
+    return NumpyCore(values=values, colors=polyCore.colors, name=polyCore.name)
+
 def np_random_core(shape, colors, randomEngine, name):
     if randomEngine == "NumpyUniform":
         return NumpyCore(values=np.random.random(size=shape), colors=colors, name=name)

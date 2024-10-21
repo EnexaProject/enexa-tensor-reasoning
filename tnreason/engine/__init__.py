@@ -5,7 +5,7 @@ from tnreason.engine.auxiliary_cores import create_trivial_cores, create_trivial
 from tnreason.engine.contraction_handling import contract, defaultContractionMethod
 
 from tnreason.engine.creation_handling import get_core, defaultCoreType, create_tensor_encoding, \
-    create_relational_encoding, create_partitioned_relational_encoding, create_random_core
+    create_relational_encoding, create_partitioned_relational_encoding, create_random_core, convert
 
 
 def get_dimDict(coreDict):

@@ -107,8 +107,14 @@ class PolynomialCore:
                               shape=self.shape, colors=self.colors, name=self.name)
 
     def sum_with(self, sumCore):
+        newColors = list(set(self.colors).union(set(sumCore.colors)))
+        newShape = [0 for col in newColors]
+        for i, col in enumerate(self.colors):
+            newShape[newColors.index(col)] = self.shape[i]
+        for i, col in enumerate(sumCore.colors):
+            newShape[newColors.index(col)] = sumCore.shape[i]
         return PolynomialCore(values=self.values + sumCore.values,
-                              shape=self.shape, colors=list(set(self.colors).union(set(sumCore.colors))),
+                              shape=newShape, colors=newColors,
                               name=self.name)
 
     def normalize(self):

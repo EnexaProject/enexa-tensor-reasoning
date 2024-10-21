@@ -23,4 +23,10 @@ def clauseList_to_pcore(clauseList):
 
 if __name__ == "__main__":
     testClause = [{"c": 0, "b": 1}, {"a": 0}, {"d": 0, "a": 1}]
-    print(clauseList_to_pcore(testClause))
+
+    pcore1 = clause_to_pcore({"c": 0, "b": 1})
+    pcore2 = clause_to_pcore({"c": 0, "d": 1})
+
+    print(pcore2.shape, pcore1.shape)
+    print(pcore2.contract_with(pcore1).shape)
+    print(clauseList_to_pcore(testClause).shape)

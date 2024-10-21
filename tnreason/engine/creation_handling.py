@@ -97,3 +97,11 @@ def create_partitioned_relational_encoding(inshape, outshape, incolors, outcolor
                                            coreType=coreType,
                                            name=parKey + nameSuffix)
             for parKey in partitionDict}
+
+
+def convert(inCore, inCoreType="PolynomialCore", outCoreType="NumpyCore"):
+    if inCoreType == "PolynomialCore":
+        if outCoreType == "NumpyCore":
+            from tnreason.engine.workload_to_numpy import np_from_poly
+            return np_from_poly(inCore)
+    raise ValueError("Conversion of {} to {} not implemented!".format(inCoreType, outCoreType))
