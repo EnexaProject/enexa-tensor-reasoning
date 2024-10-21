@@ -19,6 +19,7 @@ def dimod_exact_solution(model):
     return best_sample, energies
 
 def simulated_annealing_solution(model):
+
     sampler = neal.SimulatedAnnealingSampler()
 
     bqm = model.to_bqm()
@@ -28,7 +29,7 @@ def simulated_annealing_solution(model):
     decoded_samples = model.decode_sampleset(sampleset)
 
     best_sample = min(decoded_samples, key=lambda x: x.energy)
-    
+
     return best_sample
 
 if __name__ == "__main__":
@@ -45,7 +46,11 @@ if __name__ == "__main__":
         "w2": ["a", 0.34]
     }
 
-    polyCore = ftp.weightedFormulas_to_polynomialCore(knowledgeBase2)
+    knowledgeBase3 = {"formula1" : ["imp", "S", "M", 10],
+    "formula2" : ["imp", ["or", "hL", "vB"], "A", 10],
+    "formula3" : ["imp", ["and", "A", ["and", "vB", ["and", "B", ["and", "hB", "M"]]]], "U", 10] }
+
+    polyCore = ftp.weightedFormulas_to_polynomialCore(knowledgeBase3)
     hamiltonian = wtp.polynomialCore_to_pyqubo_hamiltonian(polyCore)
     model = hamiltonian.compile()
 
