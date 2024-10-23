@@ -84,7 +84,9 @@ class PolynomialCore:
                                        col not in self.values[j][1] and col not in newColors]) * self.values[j][0],
                               {key: self.values[j][1][key] for key in self.values[j][1] if key in newColors}))
         self.values = newValues
+        self.shape = [self.shape[k] for k, col in enumerate(self.colors) if col in newColors]
         self.colors = newColors
+
 
     def add_identical_slices(self):
         newSlices = []

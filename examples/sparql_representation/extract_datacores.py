@@ -2,7 +2,7 @@ from tnreason import engine
 from tnreason.engine.creation_handling import core_to_relational_encoding
 
 
-def get_dataCores(importanceQueryCore, atomQueryCoreDict, dataColor="j", coreType=None,
+def get_dataCores(importanceQueryCore, atomQueryCoreDict=dict(), dataColor="j", categoricalColors=[], coreType=None,
                   contractionMethod="PolynomialContractor"):
     """
     :importanceQueryCore: Tensor Core representing the evaluation of the importance query (before slice enumeration!)
@@ -11,10 +11,14 @@ def get_dataCores(importanceQueryCore, atomQueryCoreDict, dataColor="j", coreTyp
     :coreType: Type of the resulting data cores
     """
     importanceQueryCore.enumerate_slices(enumerationColor=dataColor)
-    return {atomKey + "_dataCore": core_to_relational_encoding(
+    dataCores = {atomKey + "_dataCore": core_to_relational_encoding(
         core=engine.contract({"imCore": importanceQueryCore, atomKey: atomQueryCoreDict[atomKey]},
                              openColors=[dataColor], method=contractionMethod), headColor=atomKey,
         outCoreType=coreType)[0] for atomKey in atomQueryCoreDict}
+    if not len(categoricalColors) == 0:
+        dataCores["_".join([color for color in categoricalColors]) + "_dataCore"] = engine.contract(
+            {"imCore": importanceQueryCore}, openColors=[dataColor] + categoricalColors, method=contractionMethod)
+    return dataCores
 
 
 def positionList_to_polynomialCore(positionList, variables=[], shape=[]):
@@ -57,5 +61,6 @@ if __name__ == "__main__":
     atomAPositionList, interpretationDict = rr.rdflib_sparql_evaluation_to_entryPositionList(result, interpretationDict)
     atomACore = positionList_to_polynomialCore(atomAPositionList, variables=["x"], shape=[10])
 
-    dataCores = get_dataCores(importanceCore, atomQueryCoreDict={"aCore": atomACore})
-    print(dataCores["aCore_dataCore"].values)
+    dataCores = get_dataCores(importanceCore, atomQueryCoreDict={"aCore": atomACore}, categoricalColors=["z"],
+                              coreType="PolynomialCore")
+    print(dataCores["z_dataCore"].values)
