@@ -4,8 +4,11 @@ from tnreason import engine
 
 from tnreason import encoding
 
-methodList = [{"coreType" : "NumpyCore", "contractionMethod": "NumpyEinsum"},
-              {"coreType" : "PolynomialCore", "contractionMethod":"PolynomialContractor"}]
+methodList = [{"coreType": "NumpyCore", "contractionMethod": "NumpyEinsum"},
+              {"coreType": "PolynomialCore", "contractionMethod": "PolynomialContractor"},
+              {"coreType": "PandasCore", "contractionMethod": "PolynomialContractor"}
+              ]
+
 
 class TensorLogicTest(unittest.TestCase):
     def test_and(self):
@@ -20,7 +23,8 @@ class TensorLogicTest(unittest.TestCase):
     def test_and_not(self):
 
         for method in methodList:
-            cores = encoding.create_formulas_cores({"f1": ["and", ["not", "a"], ["or", "b", "c"]]}, coreType=method["coreType"])
+            cores = encoding.create_formulas_cores({"f1": ["and", ["not", "a"], ["or", "b", "c"]]},
+                                                   coreType=method["coreType"])
             contractionResult = engine.contract(coreDict=cores, openColors=["a"], method=method["contractionMethod"])
 
             self.assertEqual(contractionResult[0], 3)
@@ -30,7 +34,8 @@ class TensorLogicTest(unittest.TestCase):
 
         for method in methodList:
             cores = encoding.create_formulas_cores({"a": ["imp", "a", "b"]}, coreType=method["coreType"])
-            contractionResult = engine.contract(coreDict=cores, openColors=["a", "b"], method=method["contractionMethod"])
+            contractionResult = engine.contract(coreDict=cores, openColors=["a", "b"],
+                                                method=method["contractionMethod"])
             contractionResult.reorder_colors(["a", "b"])
 
             self.assertEqual(contractionResult[1, 0], 0)
@@ -41,8 +46,10 @@ class TensorLogicTest(unittest.TestCase):
     def test_eq(self):
 
         for method in methodList:
-            cores = encoding.create_formulas_cores({"a": ["and", ["eq", "a", "b"], ["not", "c"]]}, coreType=method["coreType"])
-            contractionResult = engine.contract(coreDict=cores, openColors=["a", "b"], method=method["contractionMethod"])
+            cores = encoding.create_formulas_cores({"a": ["and", ["eq", "a", "b"], ["not", "c"]]},
+                                                   coreType=method["coreType"])
+            contractionResult = engine.contract(coreDict=cores, openColors=["a", "b"],
+                                                method=method["contractionMethod"])
             contractionResult.reorder_colors(["a", "b"])
 
             self.assertEqual(contractionResult[1, 0], 0)
@@ -53,8 +60,10 @@ class TensorLogicTest(unittest.TestCase):
     def test_xor(self):
 
         for method in methodList:
-            cores = encoding.create_formulas_cores({"xor": ["and", "c1", ["xor", "a", "b"]]}, coreType=method["coreType"])
-            contractionResult = engine.contract(coreDict=cores, openColors=["a", "b"], method=method["contractionMethod"])
+            cores = encoding.create_formulas_cores({"xor": ["and", "c1", ["xor", "a", "b"]]},
+                                                   coreType=method["coreType"])
+            contractionResult = engine.contract(coreDict=cores, openColors=["a", "b"],
+                                                method=method["contractionMethod"])
             contractionResult.reorder_colors(["a", "b"])
 
             self.assertEqual(contractionResult[1, 0], 1)
