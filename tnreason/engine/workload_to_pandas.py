@@ -47,11 +47,14 @@ class PandasCore:
         core2.values = core2.values.rename(columns={core2.valueColumn: self.valueColumn + "_sec"})
         colorsShapeDict = {**{color: self.shape[i] for i, color in enumerate(self.colors)},
                            **{color: core2.shape[i] for i, color in enumerate(core2.colors)}}
-        preValues = self.values.merge(core2.values, how="cross") # Build the naive product
-        for newColor in colorsShapeDict.keys(): # Drop zero rows
+        preValues = self.values.merge(core2.values, how="cross")  # Build the naive product
+        for newColor in colorsShapeDict.keys():  # Drop zero rows
             if newColor in self.colors and newColor in core2.colors:
-                preValues = preValues[preValues[newColor + "_x"] == preValues[newColor + "_y"]].drop(newColor + "_y",
-                                                                                                     axis=1)
+                preValues = preValues[
+                    preValues[newColor + "_x"] == preValues[newColor + "_y"] & ~preValues[newColor + "_x"].astype(
+                        str).str.contains(str(self.nanValue)) & ~preValues[newColor + "_y"].astype(str).str.contains(
+                        str(core2.nanValue))].drop(newColor + "_y",
+                                                   axis=1)
         contractedValues = preValues.rename(
             columns={col: col[:-2] for col in preValues.columns if col.endswith("_x") or col.endswith("_y")})
         contractedValues[self.valueColumn] = contractedValues[self.valueColumn] * contractedValues[
