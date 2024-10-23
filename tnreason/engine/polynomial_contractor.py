@@ -77,17 +77,14 @@ class PolynomialCore:
             name=str(self.name) + "_" + str(core2.name)
         )
 
-    def drop_color(self, color):
-        colorDim = self.shape.pop(self.colors.index(color))
-        newSlices = []
-        for (val, pos) in self.values:
-            if color in pos:
-                pos.pop(color)
-                newSlices.append((val, pos))
-            else:
-                newSlices.append((colorDim * val, pos))
-        self.values = newSlices
-        self.colors.pop(self.colors.index(color))
+    def reduce_colors(self, newColors):
+        newValues = []
+        for j in range(len(self.values)):
+            newValues.append((np.prod([self.shape[k] for k, col in enumerate(self.colors) if
+                                       col not in self.values[j][1] and col not in newColors]) * self.values[j][0],
+                              {key: self.values[j][1][key] for key in self.values[j][1] if key in newColors}))
+        self.values = newValues
+        self.colors = newColors
 
     def add_identical_slices(self):
         newSlices = []
@@ -107,18 +104,11 @@ class PolynomialCore:
                               shape=self.shape, colors=self.colors, name=self.name)
 
     def sum_with(self, sumCore):
-        newColors = list(set(self.colors).union(set(sumCore.colors)))
-        newShape = [0 for col in newColors]
-        for i, col in enumerate(self.colors):
-            newShape[newColors.index(col)] = self.shape[i]
-        for i, col in enumerate(sumCore.colors):
-            newShape[newColors.index(col)] = sumCore.shape[i]
+        colorsShapeDict = {**{color: self.shape[i] for i, color in enumerate(self.colors)},
+                           **{color: sumCore.shape[i] for i, color in enumerate(sumCore.colors)}}
         return PolynomialCore(values=self.values + sumCore.values,
-                              shape=newShape, colors=newColors,
+                              shape=list(colorsShapeDict.values()), colors=list(colorsShapeDict.keys()),
                               name=self.name)
-
-    def normalize(self):
-        return self
 
     def enumerate_slices(self, enumerationColor="j"):
         self.colors = self.colors + [enumerationColor]
@@ -136,23 +126,16 @@ class PolynomialContractor:
 
     def __init__(self, coreDict={}, openColors=[]):
         self.coreDict = coreDict
-        for key in self.coreDict:
-            if not isinstance(self.coreDict[key], PolynomialCore):
-                raise ValueError("Coretype {} not supported in Polynomial Contractor!".format(type(self.coreDict[key])))
-                # self.coreDict = {
-                #     key: PolynomialCore(coreDict[key].values, coreDict[key].colors, shape=coreDict[key].shape, name=key)
-                #     for key
-                #     in coreDict}
         self.openColors = openColors
 
     def contract(self):
         ## Without optimization -> Can apply optimization from version0
-        resultCore = PolynomialCore(values=[(1, dict())], shape=[], colors=[], name="Contraction")
+        if len(self.coreDict) == 0:
+            return PolynomialCore(values=[(1, dict())], shape=[], colors=self.openColors, name="Contraction")
+        name, resultCore = self.coreDict.popitem()
         for key in self.coreDict:
             resultCore = resultCore.contract_with(self.coreDict[key])
-        for color in list(resultCore.colors):
-            if color not in self.openColors:
-                resultCore.drop_color(color)
+        resultCore.reduce_colors(self.openColors)
         return resultCore
 
 

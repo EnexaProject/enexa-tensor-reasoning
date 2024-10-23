@@ -29,6 +29,9 @@ def create_tensor_encoding(inshape, incolors, function, coreType=None, name="Enc
     elif coreType == "HypertrieCore":
         from tnreason.engine.workload_to_tentris import ht_tencoding_from_function
         return ht_tencoding_from_function(inshape, incolors, function, name)
+    elif coreType == "PandasCore":
+        from tnreason.engine.workload_to_pandas import pandas_tencoding_from_function
+        return pandas_tencoding_from_function(inshape, incolors, function, name)
     else:
         raise ValueError("Core Type {} not supported for .".format(coreType))
 
@@ -56,6 +59,9 @@ def create_relational_encoding(inshape, outshape, incolors, outcolors, function,
     elif coreType == "HypertrieCore":
         from tnreason.engine.workload_to_tentris import ht_rencoding_from_function
         return ht_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name)
+    elif coreType == "PandasCore":
+        from tnreason.engine.workload_to_pandas import pandas_rencoding_from_function
+        return pandas_rencoding_from_function(inshape, outshape, incolors, outcolors, function, name)
     else:
         raise ValueError("Core Type {} not supported for .".format(coreType))
 
